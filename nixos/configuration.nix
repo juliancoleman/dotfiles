@@ -10,6 +10,8 @@
       ./hardware-configuration.nix
     ];
 
+  # Uncomment if doing this in a VirtualBox instance
+  virtualisation.virtualbox.guest.enable = true;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   
