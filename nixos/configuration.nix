@@ -35,12 +35,14 @@
   };
 
   environment.systemPackages = with pkgs; [
-    vim
-    wget
     ghostty
-    waybar
     git
     hyprpaper
+    stow
+    vim
+    waybar
+    wget
+    wofi
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
