@@ -8,12 +8,36 @@ Simply `cd` to your home directory and `git clone` this repo, or download via th
 above.
 
 > Caution: this will attempt to overwrite your existing configuration in `~/.config`. You
-> can either backup your existing configuration with `mv ~/.config `/.config-backup` or
-> use the `stow --amend` flag.
+> can either backup your existing configuration with `mv ~/.config /.config-backup` or
+> use the `stow --adopt` flag.
 
 From here you can run `stow .` and it'll put your files in the correct spot. If you don't
 want the nixos stuff, either ignore it via the stow command, or delete it after running
 the installation.
+
+## Fish
+
+If you're going to stow Fish, you will probably want to use the `--adopt` flag as your
+`fish_variables` are per-system and is auto-generated and maintained by Fish itself. This
+will look something like
+
+```bash
+cd ~/dotfiles
+stow --adopt fish # will adopt the current fish_variables and then symlink them
+```
+
+If you're going to do this, you probably want to empty the `~/.config/fish` directory
+besides that one file first as we want our changes, not the ones that get generated the
+first time you enter Fish.
+
+If you did `stow .` without reading the above, I suppose you could just
+
+```fish
+for var in (set -U)
+  echo "set -Ux $var (set -U $var)"
+end
+```
+and write the output to `~/.config/fish/fish_variables`
 
 ## NixOS
 
