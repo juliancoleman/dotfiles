@@ -28,22 +28,49 @@
     withUWSM = true;
   };
 
+  programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
+    shell = pkgs.fish;
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     packages = with pkgs; [  ];
   };
 
   environment.systemPackages = with pkgs; [
+    bat
+    btop
+    carapace
+    eza
+    fastfetch
+    fzf
+    gh
     ghostty
     git
     hyprpaper
+    jujutsu
+    lazygit
+    mise
+    neovim
+    pay-respects
+    ripgrep
     stow
+    tmux
+    uv
     vim
     waybar
     wget
     wofi
+    yazi
+    zoxide
   ];
+
+  # VTNR-specific configuration
+  console = {
+    earlySetup = true;
+    font = "${pkgs.terminus_font}/share/consolefonts/ter-v16n.psf.gz";
+    packages = with pkgs; [ terminus_font ];
+    keyMap = "us";
+  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # This option defines the first version of NixOS you have installed on this particular machine,

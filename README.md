@@ -17,27 +17,40 @@ the installation.
 
 ## Fish
 
-If you're going to stow Fish, you will probably want to use the `--adopt` flag as your
-`fish_variables` are per-system and is auto-generated and maintained by Fish itself. This
-will look something like
+This one is a doozy, so strap in. First up, home-manager maintains this section of
+`.config` (shoot me, I know). If you're using NixOS, this means we're pre-installing
+`fenv`. You're going to need this.
+
+### I'm using NixOS
 
 ```bash
+rm -rf ~/.config/fish
+sudo nixos-rebuild switch --flake ~/dotfiles/nixos#hyprland-btw
+rm ~/.config/fish/config.fish
 cd ~/dotfiles
-stow --adopt fish # will adopt the current fish_variables and then symlink them
+stow --adopt fish
 ```
 
-If you're going to do this, you probably want to empty the `~/.config/fish` directory
-besides that one file first as we want our changes, not the ones that get generated the
-first time you enter Fish.
+Please. For the love of God.
+The reason we have to do this is because home-manager will fail if something already
+lives here. So we need to nuke it to generate a new hash for the home-manager fish
+completions. Then we need to put everything back.
 
-If you did `stow .` without reading the above, I suppose you could just
+I recommend collecting garbage and removing the last generation at this point. This
+needlessly creates a whole new generation for no good reason.
 
-```fish
-for var in (set -U)
-  echo "set -Ux $var (set -U $var)"
-end
+### I'm not using NixOS
+
+Okay, you're cool then.
+
+```bash
+cd ~/.config/fish
+rm -rf functions conf.d config.fish
+cd ~/dotfiles
+stow --adopt fish
 ```
-and write the output to `~/.config/fish/fish_variables`
+You will want to keep your `fish_variables` as Fish actually generates these and
+maintains them on your behalf.
 
 ## NixOS
 

@@ -54,7 +54,8 @@ function fish_prompt
 		set arrow_color "$red"
 	end
 
-	set -l arrow "$arrow_color\n\u03bb " # lambda character 
+	set -l lambda (printf "\u03bb")
+	set -l arrow "$arrow_color\n$lambda "
 
 	if fish_is_root_user
 		set arrow_color "$red"
