@@ -17,6 +17,7 @@
   
   networking.hostName = "hyprland-btw";
   networking.networkmanager.enable = true;
+  hardware.bluetooth.enable = true;
 
   time.timeZone = "America/Denver";
 
@@ -33,8 +34,15 @@
     shell = pkgs.fish;
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    packages = with pkgs; [  ];
+    packages = with pkgs; [
+      brave
+    ];
   };
+
+  fonts.packages = with pkgs; [
+    pkgs.plemoljp-nf
+    pkgs.nerd-fonts.jetbrains-mono
+  ];
 
   environment.systemPackages = with pkgs; [
     bat

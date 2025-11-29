@@ -1,0 +1,109 @@
+/* Global styles */
+* {
+  /* unfortunate amounts of overrides here */
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: black;
+  font-family: "PlemolJP Console NF", "JetBrains Mono", sans-serif;
+  font-size: 0;
+  letter-spacing: 0;
+  margin: 0;
+  min-height: 0;
+  padding: 0;
+  min-width: 0;
+  outline: none;
+  outline-offset: 0;
+  text-shadow: none;
+}
+
+label {
+  font-size: .75rem;
+}
+
+/* Bar styles */
+window#waybar {
+  background: transparent;
+  border: none;
+}
+window#waybar.hidden { }
+
+/* Module group styles */
+.modules-left {
+  border: 1px solid white;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.4);
+  padding: 4px 2px;
+}
+
+#workspaces {
+  padding: 2px;
+}
+#workspaces button {
+  background-color: #ccc;
+  padding: .45rem;
+  margin-bottom: 8px;
+  border-radius: 9999px;
+  box-shadow: 0 0 2px 0px #dddddd;
+  transition: all 100ms;
+}
+#workspaces button:hover,
+#workspaces button.active:hover {
+  background-color: #000000;
+  box-shadow: 0 0 2px 0px #ddddd;
+}
+#workspaces button:last-child {
+  margin-bottom: 0;
+}
+#workspaces button.active {
+  background-color: #aaa;
+  min-height: 1rem;
+}
+
+#workspaces label {
+  font-size: 0;
+}
+
+.modules-center {
+  border: 1px solid white;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  padding: 8px 2px;
+}
+#custom-clock {
+  font-size: 0.875rem;
+}
+
+.modules-right {
+  border: 1px solid white;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
+  padding: 4px;
+}
+#custom-power {
+  color: white;
+  font-size: 13px;
+}
+
+/* Menu styles */
+menu {
+  border-radius: 16px;
+  background: rgb(255, 255, 255);
+  border: 2px solid #ddd;
+}
+menuitem {
+  color: black;
+  transition: 150ms background-color;
+  padding: 8px 16px;
+}
+menuitem:hover {
+  background-color: #ccc;
+}
+menuitem:first-child {
+  border-radius: 16px 16px 4px 4px;
+}
+menuitem:last-child {
+  border-radius: 4px 4px 16px 16px;
+}

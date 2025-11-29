@@ -1,0 +1,78 @@
+// -*- mode: jsonc -*-
+{
+  "reload_style_on_change": true,
+
+  // Non-stylesheet styles
+  "margin-top": 8,
+  "margin-right": 8,
+  "margin-bottom": 8,
+  "margin-left": 3,
+  "position": "right",
+
+  // Module positioning
+  "modules-left": [ "hyprland/workspaces" ],
+  "modules-center": [ "custom/clock" ],
+  "modules-right": [ "bluetooth", "privacy", "custom/power" ],
+
+  // Module definitions
+  "hyprland/workspaces": {
+    "format": "",
+    "on-click": "activate",
+    "max-length": 0,
+    "tooltip": "Workspace {number}",
+    "persistent-workspaces": {
+      "*": 5
+    }
+  },
+  "custom/clock": {
+    // show the current date, and a calendar tooltip
+    "exec": "~/.config/waybar/scripts/time_jp.sh", // did you chmod +x?
+    "interval": 1,
+    "return-type": "json",
+    "format": "{text}",
+    "justify": "center"
+  },
+  "bluetooth": {
+	// "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+    "format": " {status}",
+    "format-disabled": "", // an empty format will hide the module
+    "format-connected": " {num_connections} connected",
+    "tooltip-format": "{controller_alias}\t{controller_address}",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
+  },
+  "privacy": { // needs testing. nothing will show until one of these events happen, so I will need to test once I get one of those services going.
+    "icon-spacing": 4,
+    "icon-size": 13,
+    "transition-duration": 150,
+    "modules": [
+      {
+	"type": "screenshare",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      },
+      {
+	"type": "audio-out",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      },
+      {
+	"type": "audio-in",
+	"tooltip": true,
+	"tooltip-icon-size": 24
+      }
+    ]
+  },
+  "custom/power": {
+    "format": "󰐦",
+    "justify": "center",
+    "menu": "on-click",
+    "menu-file": "$HOME/.config/waybar/custom_modules/power_menu.xml",
+    "menu-actions": {
+      // sleep, restart, shut down, lock screen, logout {user}
+      "shutdown": "shutdown",
+      "reboot": "reboot",
+      "suspend": "systemctl suspend"
+    }
+  }
+}
