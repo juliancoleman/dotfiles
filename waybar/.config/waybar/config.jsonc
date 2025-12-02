@@ -12,7 +12,7 @@
   // Module positioning
   "modules-left": [ "hyprland/workspaces" ],
   "modules-center": [ "custom/clock" ],
-  "modules-right": [ "bluetooth", "privacy", "custom/power" ],
+  "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/power" ],
 
   // Module definitions
   "hyprland/workspaces": {
@@ -31,15 +31,6 @@
     "return-type": "json",
     "format": "{text}",
     "justify": "center"
-  },
-  "bluetooth": {
-	// "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
-    "format": " {status}",
-    "format-disabled": "", // an empty format will hide the module
-    "format-connected": " {num_connections} connected",
-    "tooltip-format": "{controller_alias}\t{controller_address}",
-    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
-    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
   },
   "privacy": { // needs testing. nothing will show until one of these events happen, so I will need to test once I get one of those services going.
     "icon-spacing": 4,
@@ -62,6 +53,38 @@
 	"tooltip-icon-size": 24
       }
     ]
+  },
+  "group/peripherals": {
+    "orientation": "vertical",
+    "modules": [ "bluetooth" ]
+  },
+  "bluetooth": {
+	// "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+    "format": "\n{num_connections}",
+    "format-disabled": "", // an empty format will hide the module
+    "format-connected": " {num_connections} connected",
+    "tooltip-format": "{controller_alias}\t{controller_address}",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
+  },
+  "group/hardware": {
+    "orientation": "vertical",
+    "modules": [ "cpu", "memory", "disk" ]
+  },
+  "cpu": {
+    "format": " \n{usage}%",
+    "interval": 1,
+    "states": {
+      "warning": 70,
+      "critical": 90
+    }
+  },
+  "memory": {
+    "format": " \n{percentage}%\n󰓡 \n{swapPercentage}%"
+  },
+  "disk": {
+    "format": " \n{percentage_free}%",
+    "path": "/"
   },
   "custom/power": {
     "format": "󰐦",

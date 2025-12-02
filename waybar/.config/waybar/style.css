@@ -39,11 +39,11 @@ window#waybar.hidden { }
 }
 
 #workspaces {
-  padding: 2px;
+  padding: .25rem;
 }
 #workspaces button {
-  background-color: #ccc;
-  padding: .45rem;
+  background-color: #eaeaea;
+  padding: .4rem;
   margin-bottom: 8px;
   border-radius: 9999px;
   box-shadow: 0 0 2px 0px #dddddd;
@@ -51,15 +51,16 @@ window#waybar.hidden { }
 }
 #workspaces button:hover,
 #workspaces button.active:hover {
-  background-color: #000000;
+  background: #000000;
   box-shadow: 0 0 2px 0px #ddddd;
 }
 #workspaces button:last-child {
   margin-bottom: 0;
 }
 #workspaces button.active {
-  background-color: #aaa;
-  min-height: 1rem;
+  background: #888;
+background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 234, 1) 50%, rgba(245, 245, 245, 1) 100%);
+  min-height: 1rem; /* make it appear longer than the rest */
 }
 
 #workspaces label {
@@ -106,4 +107,22 @@ menuitem:first-child {
 }
 menuitem:last-child {
   border-radius: 4px 4px 16px 16px;
+}
+
+/* Built-in module styles (applied globally) */
+#hardware,
+#peripherals {
+  margin: 1rem 0;
+}
+#bluetooth,
+#cpu,
+#disk,
+#memory {
+  color: white;
+}
+.warning {
+  color: yellow;
+}
+.critical {
+  color: red;
 }
