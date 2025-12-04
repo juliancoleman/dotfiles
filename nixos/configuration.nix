@@ -10,8 +10,6 @@
       ./hardware-configuration.nix
     ];
 
-  # Uncomment if doing this in a VirtualBox instance
-  # virtualisation.virtualbox.guest.enable = true;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   
@@ -40,36 +38,37 @@
   };
 
   fonts.packages = with pkgs; [
-    pkgs.plemoljp-nf
-    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP
+    pkgs.nerd-fonts.jetbrains-mono	# Self-explanatory
   ];
 
   environment.systemPackages = with pkgs; [
-    bat
-    btop
-    carapace
-    eza
-    fastfetch
-    fzf
-    gh
-    ghostty
-    git
-    hyprpaper
-    jujutsu
-    lazygit
-    mise
-    neovim
-    pay-respects
-    ripgrep
-    stow
-    tmux
-    uv
-    vim
-    waybar
-    wget
-    wofi
-    yazi
-    zoxide
+    bat					# better than cat
+    btop				# better than top/htop
+    carapace				# completions on things you didn't know you needed
+    pkgs.catppuccin-cursors.latteLight	# Sorry, hyprland cursors--you suck.
+    eza					# better ls with icons!
+    fastfetch				# we all know why you're here
+    fzf					# lots of things depend on fzf, plus it's OP on its own
+    gh					# API version of git
+    ghostty				# yerp
+    git					# yeet
+    hyprpaper				# I just wanna see TJ Holowaychuk photos
+    jujutsu				# Graphite, but local
+    lazygit				# Because everyone can benefit from a git GUI
+    mise				# asdf, direnv, and devtool on roids
+    neovim				# hehe
+    pay-respects			# f
+    ripgrep				# lots of things depend on rg, plus it's OP on its own
+    stow				# gotta get those dotfiles somehow
+    tmux				# idk if I'm going to keep this or not
+    uv					# can be used with mise, replacement for pip
+    vim					# every other Linux distro comes with it, we should not discriminate
+    waybar				# Cleeeaaaaaannnnn
+    wget				# do we even need this?
+    wofi				# modal list views for everything and everyone
+    yazi				# because I don't have a GUI file manager
+    zoxide				# better cd
   ];
 
   # VTNR-specific configuration
@@ -98,7 +97,6 @@
   # and migrated your data accordingly.
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "25.05"; # Did you read the comment?
-
+  system.stateVersion = "25.11"; # Did you read the comment?
 }
 
