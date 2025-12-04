@@ -87,7 +87,7 @@
     "format": " \n{percentage}%\n󰓡 \n{swapPercentage}%"
   },
   "disk": {
-    "format": " \n{percentage_free}%",
+    "format": " \n{percentage_free}",
     "path": "/"
   },
   "custom/power": {

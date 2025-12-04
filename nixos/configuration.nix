@@ -22,6 +22,12 @@
 
   services.getty.autologinUser = "julian";
 
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+    withUWSM = true;
+  };
+
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
     shell = pkgs.fish;
@@ -69,6 +75,8 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
   };
+
+  nixpkgs.config.allowUnfree = true;
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # This option defines the first version of NixOS you have installed on this particular machine,
