@@ -23,5 +23,4 @@
 
   nixpkgs.config.allowUnfree = true;
   programs.hyprland.nvidiaPatches = true;
-  # boot.blacklistedKernelModules = [ "nouveau" ];
 }   
