@@ -13,6 +13,10 @@
       }
     ];
   };
+  home.packages = with pkgs; [
+    brave
+    pkgs.catppuccin-cursors.latteLight
+  ];
   home.sessionVariables = {
     IS_NIXOS = "1"; # we're going to use this with Fish to set some things in config.fish
   };

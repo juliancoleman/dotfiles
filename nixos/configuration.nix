@@ -4,10 +4,13 @@
 
 { config, lib, pkgs, ... }:
 
-{
+let
+  hasNvidiaGpu = (builtins.match ".*10de.*" (builtins.readFile /proc/bus/pci/devices)) != null; # NVIDIA vendor ID
+in {
   imports =
     [
       ./hardware-configuration.nix
+      (if hasNvidiaGpu then ./hardware/nvidia.nix else ./hardware/generic.nix)
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -21,20 +24,11 @@
 
   services.getty.autologinUser = "julian";
 
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-    withUWSM = true;
-  };
-
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
     shell = pkgs.fish;
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    packages = with pkgs; [
-      brave
-    ];
   };
 
   fonts.packages = with pkgs; [
@@ -46,7 +40,6 @@
     bat					# better than cat
     btop				# better than top/htop
     carapace				# completions on things you didn't know you needed
-    pkgs.catppuccin-cursors.latteLight	# Sorry, hyprland cursors--you suck.
     eza					# better ls with icons!
     fastfetch				# we all know why you're here
     fzf					# lots of things depend on fzf, plus it's OP on its own
@@ -99,4 +92,3 @@
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "25.11"; # Did you read the comment?
 }
-
