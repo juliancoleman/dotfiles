@@ -21,5 +21,7 @@
     WLR_NO_HARDWARE_CURSORS = "1";
   };
 
+  nixpkgs.config.allowUnfree = true;
   programs.hyprland.nvidiaPatches = true;
+  # boot.blacklistedKernelModules = [ "nouveau" ];
 }   
