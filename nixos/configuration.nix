@@ -4,13 +4,11 @@
 
 { config, lib, pkgs, ... }:
 
-let
-  hasNvidiaGpu = (builtins.match ".*10de.*" (builtins.readFile /proc/bus/pci/devices)) != null; # NVIDIA vendor ID
-in {
+{
   imports =
     [
       ./hardware-configuration.nix
-      (if hasNvidiaGpu then ./hardware/nvidia.nix else ./hardware/generic.nix)
+      ./specialisations.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
