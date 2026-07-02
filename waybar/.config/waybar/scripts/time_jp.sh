@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Get hour, minute, and AM/PM in Japanese + calendar tooltip
+# Clock with Japanese AM/PM + calendar tooltip
 ampm=$(date +%p)
 if [[ "$ampm" == "AM" ]]; then
     jpampm="午前"
@@ -8,17 +8,16 @@ else
 fi
 hour=$(date +%I)
 min=$(date +%M)
-string="$jpampm $hour $min"
-vertical=$(echo "$string" | sed "s/./&\\n/g" | sed "s/\\n$//")
 
-# Calendar (plain text)
+# Vertical: JP AM/PM, hour, min on separate lines
+vertical=$(printf "%s\n%s\n%s" "$jpampm" "$hour" "$min")
+
+# Calendar
 calendar=$(cal)
 
-# Use perl for safe JSON encoding
-export VERTICAL="$vertical"
-echo "$calendar" | perl -MJSON::PP -e '
-    my $cal = do { local $/; <STDIN> };
-    chomp $cal;
-    my $text = $ENV{VERTICAL};
-    print encode_json({ text => $text, tooltip => $cal });
-' 2>/dev/null || echo "{\"text\":\"$vertical\"}"
+# Build JSON manually with proper UTF-8
+# Escape newlines and quotes for JSON
+text_escaped=$(printf '%s' "$vertical" | sed 's/\\/\\\\/g; s/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+cal_escaped=$(printf '%s' "$calendar" | sed 's/\\/\\\\/g; s/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+
+printf '{"text":"%s","tooltip":"%s"}' "$text_escaped" "$cal_escaped"

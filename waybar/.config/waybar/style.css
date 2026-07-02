@@ -7,7 +7,7 @@
   box-shadow: none;
   color: white;
   font-family: "PlemolJP Console NF", "JetBrains Mono", sans-serif;
-  font-size: 0;
+  font-size: .75rem;
   letter-spacing: 0;
   margin: 0;
   min-height: 0;
@@ -18,7 +18,7 @@
   text-shadow: none;
 }
 label {
-  font-size: .75rem;
+
 }
 /* Bar styles */
 window#waybar {
@@ -63,7 +63,7 @@ window#waybar.hidden { }
   min-height: 1.2rem;
 }
 #workspaces label {
-  font-size: 0;
+  font-size: .75rem;
 }
 .modules-center {
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -115,7 +115,7 @@ menuitem:last-child {
 #memory {
   color: white;
   min-width: 0;
-  font-size: 0;
+  font-size: .75rem;
 }
 /* Red = take action */
 #cpu.critical,
