@@ -54,6 +54,19 @@ layout {
         proportion 0.66667
     }
 }
+// ── Named workspaces ────────────────────────────────────────────
+workspace "browser" {
+    open-on-output "DP-1"
+}
+workspace "terminal" {
+    open-on-output "DP-1"
+}
+workspace "scratch-1" {
+    open-on-output "DP-1"
+}
+workspace "scratch-2" {
+    open-on-output "DP-1"
+}
 
 // ── Spawn at startup ──────────────────────────────────────────
 spawn-at-startup "waybar"
@@ -137,4 +150,15 @@ binds {
 
     // Screenshot
     Print { screenshot; }
+}
+
+// ── Window rules ───────────────────────────────────────────────
+window-rule {
+    match app-id="brave-browser"
+    open-on-workspace "browser"
+}
+
+window-rule {
+    match app-id="com.mitchellh.ghostty"
+    open-on-workspace "terminal"
 }
