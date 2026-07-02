@@ -51,6 +51,7 @@
 
   # Lab-only: allow passwordless sudo so the harness can rebuild remotely
   security.sudo.wheelNeedsPassword = false;
+  security.pam.services.hyprlock = {};
 
   fonts.packages = with pkgs; [
     pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP
