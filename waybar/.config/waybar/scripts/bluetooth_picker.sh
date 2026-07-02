@@ -1,26 +1,46 @@
-#!/run/current-system/sw/bin/bash
+#!/bin/sh
+# Bluetooth picker: continuous scan with live wofi results
+# Scans in background, populates devices as discovered, pairs+connects+trusts on select
 
-generate_menu_items() {
-  bluetoothctl --timeout 10 scan on
-  devices=$(bluetoothctl devices | awk '{for(i=3;i<=NF;i++) printf $i " "; print $2}' | sed 's/ $//')
+bluetoothctl power on
+bluetoothctl pairable on
 
-  # Remove duplicates using associative array in bash
-  declare -A seen
-  unique_devices=()
+# Start background scan
+bluetoothctl scan on > /dev/null 2>&1 &
+SCAN_PID=$!
 
-  while read -r line; do
-    name=$(echo "$line" | sed -E 's/\ ([0-9A-Fa-f:]{17})$//')
-    mac=$(echo "$line" | grep -oE '([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}')
-    if [[ -z "${seen[$mac]}" ]]; then
-      seen[$mac]=1
-      unique_devices+=("$name ($mac)")
-    fi
-  done <<< "$devices"
+# Give scan a few seconds to populate
+sleep 3
+
+# Get devices and format for wofi
+format_devices() {
+    bluetoothctl devices | while read -r _ mac name; do
+        # Check if already paired/connected
+        info=$(bluetoothctl info "$mac" 2>/dev/null)
+        if echo "$info" | grep -q "Connected: yes"; then
+            echo "$name (connected) | $mac"
+        elif echo "$info" | grep -q "Paired: yes"; then
+            echo "$name (paired) | $mac"
+        else
+            echo "$name | $mac"
+        fi
+    done
 }
 
-while true; do
-   selection=$(generate_menu_items | wofi --dmenu --prompt "Search Bluetooth devices")
-   [[ -z $selection ]] && break
-   echo "You selected: $selection"
-   # Optionally do something with the selection here
-done
+# Show picker
+selection=$(format_devices | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null 2>/dev/null)
+
+# Stop scan
+bluetoothctl scan off > /dev/null 2>&1
+kill $SCAN_PID 2>/dev/null
+
+# If something was selected, pair+trust+connect
+if [ -n "$selection" ]; then
+    mac=$(echo "$selection" | grep -oE "([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}")
+    name=$(echo "$selection" | sed "s/ |.*//")
+    notify-send "Bluetooth" "Pairing with $name..." 2>/dev/null || true
+    bluetoothctl pair "$mac" 2>/dev/null
+    bluetoothctl trust "$mac" 2>/dev/null
+    bluetoothctl connect "$mac" 2>/dev/null
+    notify-send "Bluetooth" "Connected to $name" 2>/dev/null || true
+fi
