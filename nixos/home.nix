@@ -45,6 +45,10 @@
         else
           set -gx TERM xterm-256color
         end
+        # Auto-launch Niri on tty1 (boot → autologin → desktop)
+        if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1
+          exec niri-session
+        end
       end
     '';
 
@@ -64,30 +68,39 @@
               echo (string replace -r '^refs/heads/' ''' $branch)
             else
               echo (git rev-parse --short HEAD 2>/dev/null)
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
             end
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
           function _is_git_dirty
             not command git diff-index --cached --quiet HEAD -- &>/dev/null
             or not command git diff --no-ext-diff --quiet --exit-code &>/dev/null
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
           function _is_git_repo
             type -q git
             or return 1
             git rev-parse --git-dir >/dev/null 2>&1
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
           function _repo_branch_name
             _$argv[1]_branch_name
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
           function _is_repo_dirty
             _is_$argv[1]_dirty
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
           function _repo_type
             if _is_git_repo
               echo git
               return 0
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
             end
             return 1
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
         end
         set -l cyan (set_color -o cyan)
         set -l yellow (set_color -o yellow)
@@ -98,12 +111,14 @@
         set -l arrow_color "$green"
         if test $__last_command_exit_status != 0
           set arrow_color "$red"
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
         end
         set -l lambda (printf "\u03bb")
         set -l arrow "$arrow_color\n$lambda "
         if fish_is_root_user
           set arrow_color "$red"
           set arrow "$arrow_color\n# "
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
         end
         set -l cwd $cyan (prompt_pwd | path basename)
         set -l repo_info
@@ -113,7 +128,9 @@
           if _is_repo_dirty $repo_type
             set -l dirty "$yellow x"
             set repo_info "$repo_info$dirty"
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
           end
+      # Auto-launch Niri on tty1      if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1        exec niri-session      end
         end
         echo -n -s -e $cwd $repo_info $normal $arrow
       '';
@@ -138,4 +155,7 @@
   home.sessionPath = [
     "$HOME/.local/bin"
   ];
+
+  # ── Niri compositor config ────────────────────────────────────
+  xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
 }

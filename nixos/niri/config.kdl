@@ -1,0 +1,167 @@
+// Niri compositor config — migrated from Hyprland
+// Docs: https://github.com/YaLTeR/niri/wiki/Configuration
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+        }
+    }
+    touchpad {
+        tap true
+        natural-scroll true
+    }
+    focus-follows-mouse true
+}
+
+// ── Monitors ───────────────────────────────────────────────────
+// 2560x1440 @ 165Hz (matches Hyprland config)
+output "edp-1" {
+    mode "2560x1440@165Hz"
+}
+
+// ── Cursor ─────────────────────────────────────────────────────
+cursor {
+    xcursor-theme "catppuccin-latte-light-cursors"
+    xcursor-size 24
+}
+
+// ── Environment ────────────────────────────────────────────────
+environment {
+    QT_QPA_PLATFORM "wayland"
+    XDG_SESSION_TYPE "wayland"
+    NIXOS_OZONE_WL "1"
+}
+
+// ── Appearance ─────────────────────────────────────────────────
+layout {
+    gaps 8            // outer gaps (Hyprland gaps_out)
+    focus-ring {
+        off           // use border instead
+    }
+    border {
+        on
+        width 1
+        color "#33ccff"
+    }
+    center-focused-column "never"
+    default-column-width { proportion 0.5; }
+    preset-window-heights {
+        proportion 0.5;
+        proportion 1.0;
+    }
+}
+
+// ── Spawn at startup ──────────────────────────────────────────
+spawn-at-startup "waybar"
+spawn-at-startup "swww-daemon"
+spawn-at-startup "swww" "img" "/home/julian/dotfiles/nixos/niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg" "--transition-type" "grow" "--transition-fps" "165"
+
+// ── Keybindings ────────────────────────────────────────────────
+// Mods: Super=Win, Alt, Ctrl, Shift
+ binds {
+    // Essentials
+    Mod+Return { spawn "ghostty"; }
+    Mod+Space { spawn "wofi" "--show" "drun"; }
+    Mod+C { close-window; }
+    Mod+Shift+E { quit; }
+
+    // Floating / fullscreen
+    Mod+V { toggle-window-floating; }
+    Mod+F { maximize; }
+
+    // Focus movement
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up    { focus-window-up; }
+    Mod+Down  { focus-window-down; }
+
+    // Move windows
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+Down  { move-window-down; }
+
+    // Workspaces (1-10, where 0 = 10)
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+0 { focus-workspace 10; }
+
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+Shift+0 { move-column-to-workspace 10; }
+
+    // Column / window sizing
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { expand-column-to-available-width; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    // Scratchpad (equivalent to Hyprland special workspace)
+    Mod+S { toggle-workspace-scrolling; }
+
+    // Media keys
+    XF86AudioRaiseVolume { spawn "wpctl" "set-volume" "-l" "1" "@DEFAULT_AUDIO_SINK@" "5%+"; }
+    XF86AudioLowerVolume { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"; }
+    XF86AudioMute        { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86AudioMicMute     { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86MonBrightnessUp   { spawn "brightnessctl" "-e4" "-n2" "set" "5%+"; }
+    XF86MonBrightnessDown { spawn "brightnessctl" "-e4" "-n2" "set" "5%-"; }
+    XF86AudioNext  { spawn "playerctl" "next"; }
+    XF86AudioPause { spawn "playerctl" "play-pause"; }
+    XF86AudioPlay  { spawn "playerctl" "play-pause"; }
+    XF86AudioPrev  { spawn "playerctl" "previous"; }
+}
+
+// ── Window rules ───────────────────────────────────────────────
+window-rule {
+    // Float wofi
+    match app-id="wofi"
+    floating true
+}
+
+window-rule {
+    // Don't maximize — Niri manages sizing
+    match app-id=".*"
+    opacity 1.0
+}
+
+// ── Animations ─────────────────────────────────────────────────
+animations {
+    window-open {
+        duration-ms 150
+        curve "ease-out-expo"
+    }
+    window-close {
+        duration-ms 150
+        curve "ease-out-expo"
+    }
+    window-movement {
+        duration-ms 150
+        curve "ease-out-quint"
+    }
+    window-resize {
+        duration-ms 100
+        curve "ease-out-quad"
+    }
+    config-notification-open {
+        duration-ms 100
+        curve "ease-out-quad"
+    }
+}

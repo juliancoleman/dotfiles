@@ -29,11 +29,8 @@
     };
   };
 
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-    withUWSM = false;
-  };
+  programs.niri.enable = true;
+  programs.xwayland.enable = true;
 
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
@@ -60,7 +57,7 @@
     gh					# API version of git
     ghostty				# yerp
     git					# yeet
-    hyprpaper				# I just wanna see TJ Holowaychuk photos
+    swww                                # wallpaper daemon (GPU-backed, no leak)
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids
