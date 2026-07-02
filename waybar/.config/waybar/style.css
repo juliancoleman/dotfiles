@@ -110,7 +110,8 @@ menuitem:last-child {
 }
 #bluetooth,
 #cpu,
-#disk,
+ #disk,
+#custom-gpu,
 #memory {
   color: white;
   min-width: 0;
@@ -118,7 +119,8 @@ menuitem:last-child {
 /* Red = take action */
 #cpu.critical,
 #memory.critical,
-#disk.critical {
+#disk.critical,
+#custom-gpu.critical {
   color: #ff4444;
 }
 /* Hide the trailing empty unnamed workspace Niri always creates */
