@@ -11,13 +11,9 @@
   "modules-center": [ "custom/clock" ],
   "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/power" ],
   "niri/workspaces": {
-    "format": "{index}",
+    "format": "{icon}",
     "on-click": "activate",
     "format-icons": {
-      "browser": "󰈹",
-      "terminal": "󰆍",
-      "scratch-1": "󰋙",
-      "scratch-2": "󰋙",
       "focused": "●",
       "active": "●",
       "default": "○"
