@@ -13,8 +13,9 @@ min=$(date +%M)
 jp_vertical=$(printf '%s' "$jpampm" | grep -o . | paste -sd'\n')
 vertical=$(printf "%s\n%s\n%s" "$jp_vertical" "$hour" "$min")
 
-# Calendar
-calendar=$(cal)
+# Calendar with today's date highlighted in yellow (Pango markup)
+today=$(date +%d | sed 's/^0//')  # strip leading zero
+calendar=$(cal | sed "s/\b${today}\b/<span foreground=\"#ffcc00\" font_weight=\"bold\">${today}<\\/span>/")
 
 # Build JSON manually with proper UTF-8
 text_escaped=$(printf '%s' "$vertical" | sed 's/\\/\\\\/g; s/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
