@@ -16,7 +16,7 @@ input {
 
 // ── Monitors ───────────────────────────────────────────────────
 // 2560x1440, let Niri pick highest refresh rate
-output "DP-1" {
+output "DP-2" {
     mode "2560x1440@165.000"
 }
 
@@ -56,16 +56,16 @@ layout {
 }
 // ── Named workspaces ────────────────────────────────────────────
 workspace "browser" {
-    open-on-output "DP-1"
+    open-on-output "DP-2"
 }
 workspace "terminal" {
-    open-on-output "DP-1"
+    open-on-output "DP-2"
 }
 workspace "scratch-1" {
-    open-on-output "DP-1"
+    open-on-output "DP-2"
 }
 workspace "scratch-2" {
-    open-on-output "DP-1"
+    open-on-output "DP-2"
 }
 
 // ── Spawn at startup ──────────────────────────────────────────
