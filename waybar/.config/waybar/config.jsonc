@@ -11,13 +11,8 @@
   "modules-center": [ "custom/clock" ],
   "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/power" ],
   "niri/workspaces": {
-    "format": "{icon}",
+    "format": "",
     "on-click": "activate",
-    "format-icons": {
-      "focused": "●",
-      "active": "●",
-      "default": "○"
-    }
   },
   "custom/clock": {
     "exec": "~/.config/waybar/scripts/time_jp.sh",
