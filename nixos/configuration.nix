@@ -85,6 +85,7 @@
     git					# yeet
     swww                                # wallpaper daemon (GPU-backed, no leak)
     hyprlock                            # session locker (GPU-accelerated, blur effects)
+    bluetuith                            # TUI bluetooth manager (scan/pair/connect in one interface)
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids

@@ -1,6 +1,5 @@
 /* Global styles */
 * {
-  /* unfortunate amounts of overrides here */
   background-color: transparent;
   background-image: none;
   border: 0;
@@ -18,18 +17,15 @@
   outline-offset: 0;
   text-shadow: none;
 }
-
 label {
   font-size: .75rem;
 }
-
 /* Bar styles */
 window#waybar {
   background: transparent;
   border: none;
 }
 window#waybar.hidden { }
-
 /* Module group styles */
 .modules-left {
   border: 1px solid white;
@@ -37,7 +33,6 @@ window#waybar.hidden { }
   background-color: rgba(255, 255, 255, 0.4);
   padding: 4px 2px;
 }
-
 #workspaces {
   padding: .25rem;
 }
@@ -57,16 +52,18 @@ window#waybar.hidden { }
 #workspaces button:last-child {
   margin-bottom: 0;
 }
+/* Active workspace = elongated pill, inactive = small dots */
 #workspaces button.active {
-  background: #888;
-background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 234, 1) 50%, rgba(245, 245, 245, 1) 100%);
-  min-height: 1rem; /* make it appear longer than the rest */
+  background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 234, 1) 50%, rgba(245, 245, 245, 1) 100%);
+  min-height: 1.5rem;
 }
-
+#workspaces button.focused {
+  background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 234, 1) 50%, rgba(245, 245, 245, 1) 100%);
+  min-height: 1.5rem;
+}
 #workspaces label {
   font-size: 0;
 }
-
 .modules-center {
   border: 1px solid white;
   background-color: rgba(255, 255, 255, 0.5);
@@ -76,7 +73,6 @@ background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 2
 #custom-clock {
   font-size: 0.875rem;
 }
-
 .modules-right {
   border: 1px solid white;
   background-color: rgba(255, 255, 255, 0.4);
@@ -87,7 +83,6 @@ background: radial-gradient(ellipse, rgba(245, 245, 245, 1) 0%, rgba(234, 234, 2
   color: white;
   font-size: 13px;
 }
-
 /* Menu styles */
 menu {
   border-radius: 16px;
@@ -108,8 +103,7 @@ menuitem:first-child {
 menuitem:last-child {
   border-radius: 4px 4px 16px 16px;
 }
-
-/* Built-in module styles (applied globally) */
+/* Hardware modules — fixed width to prevent bar widening */
 #hardware,
 #peripherals {
   margin: 1rem 0;
@@ -119,6 +113,8 @@ menuitem:last-child {
 #disk,
 #memory {
   color: white;
+  min-width: 2.5rem;
+  text-align: center;
 }
 .warning {
   color: yellow;
