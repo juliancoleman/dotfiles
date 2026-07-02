@@ -1,4 +1,4 @@
-#!/run/current-system/sw/bin/bash
+#!/usr/bin/env bash
 
 # Get hour, minute, and AM/PM in Japanese
 ampm=$(date '+%p')

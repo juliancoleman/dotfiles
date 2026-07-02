@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Bluetooth picker: single bluetoothctl session, wofi with live results
 
 # Single interactive bluetoothctl session for everything
