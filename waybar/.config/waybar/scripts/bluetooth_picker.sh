@@ -1,6 +1,6 @@
 #!/bin/sh
 # Bluetooth picker: continuous scan with live wofi results
-# Scans in background, populates devices as discovered, pairs+connects+trusts on select
+# Pops wofi immediately, shows "Searching..." until devices appear
 
 bluetoothctl power on
 bluetoothctl pairable on
@@ -9,13 +9,8 @@ bluetoothctl pairable on
 bluetoothctl scan on > /dev/null 2>&1 &
 SCAN_PID=$!
 
-# Give scan a few seconds to populate
-sleep 3
-
-# Get devices and format for wofi
 format_devices() {
     bluetoothctl devices | while read -r _ mac name; do
-        # Check if already paired/connected
         info=$(bluetoothctl info "$mac" 2>/dev/null)
         if echo "$info" | grep -q "Connected: yes"; then
             echo "$name (connected) | $mac"
@@ -27,15 +22,37 @@ format_devices() {
     done
 }
 
-# Show picker
-selection=$(format_devices | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null 2>/dev/null)
+# Keep wofi open, refreshing device list every 1.5s until user picks or 30s timeout
+elapsed=0
+while [ $elapsed -lt 30 ]; do
+    devices=$(format_devices)
+    if [ -n "$devices" ]; then
+        selection=$(echo "$devices" | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null 2>/dev/null)
+    else
+        selection=$(echo "Searching..." | wofi --dmenu --prompt "Scanning for devices..." --cache-file /dev/null 2>/dev/null)
+    fi
+    
+    # If user selected something real, break
+    if [ -n "$selection" ] && [ "$selection" != "Searching..." ]; then
+        break
+    fi
+    
+    # If user closed wofi (empty selection), break
+    if [ -z "$selection" ]; then
+        break
+    fi
+    
+    # wofi was closed with "Searching..." selected — wait and reopen
+    sleep 1.5
+    elapsed=$((elapsed + 2))
+done
 
 # Stop scan
 bluetoothctl scan off > /dev/null 2>&1
 kill $SCAN_PID 2>/dev/null
 
-# If something was selected, pair+trust+connect
-if [ -n "$selection" ]; then
+# Pair+trust+connect if a real device was selected
+if [ -n "$selection" ] && [ "$selection" != "Searching..." ]; then
     mac=$(echo "$selection" | grep -oE "([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}")
     name=$(echo "$selection" | sed "s/ |.*//")
     notify-send "Bluetooth" "Pairing with $name..." 2>/dev/null || true
