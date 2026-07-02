@@ -58,7 +58,6 @@ layout {
 // ── Spawn at startup ──────────────────────────────────────────
 spawn-at-startup "waybar"
 spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swww.sh"
-spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swaylock.sh"
 
 hotkey-overlay {
     skip-at-startup
@@ -71,7 +70,6 @@ binds {
     Mod+Space { spawn "wofi" "--show" "drun"; }
     Mod+C { close-window; }
     Mod+Shift+E { quit; }
-    Mod+Alt+L { spawn "/home/julian/dotfiles/nixos/niri/start-swaylock.sh"; }
 
     // Floating / fullscreen
     Mod+V { toggle-window-floating; }

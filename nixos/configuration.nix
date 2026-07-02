@@ -19,17 +19,11 @@
   hardware.bluetooth.enable = true;
 
   time.timeZone = "America/Denver";
-
-  # Boot login: greetd launches Niri directly, swaylock on startup
-  # (single compositor, seamless wallpaper → frosted glass → unlock)
-  services.greetd = {
+  # Boot login: SDDM display manager (PAM auth, wallpaper, seamless Niri launch)
+  services.displayManager.sddm = {
     enable = true;
-    settings = {
-      default_session = {
-        command = "niri-session";
-        user = "julian";
-      };
-    };
+    wayland.enable = true;
+    theme = "catppuccin-corners";
   };
   services.openssh = {
     enable = true;
@@ -56,6 +50,7 @@
   fonts.packages = with pkgs; [
     pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP
     pkgs.nerd-fonts.jetbrains-mono	# Self-explanatory
+    pkgs.ibm-plex                        # IBM Plex Sans for hyprlock clock
   ];
 
   environment.systemPackages = with pkgs; [
@@ -70,6 +65,7 @@
     git					# yeet
     swww                                # wallpaper daemon (GPU-backed, no leak)
     hyprlock                            # session locker (GPU-accelerated, blur effects)
+    catppuccin-sddm-corners              # SDDM theme matching our cursor theme
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids
