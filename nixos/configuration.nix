@@ -8,7 +8,6 @@
   imports =
     [
       ./hardware-configuration.nix
-      ./specialisations.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -17,6 +16,22 @@
   networking.hostName = "hyprland-btw";
   networking.networkmanager.enable = true;
   hardware.bluetooth.enable = true;
+  # Nvidia GTX 1080
+  hardware.nvidia = {
+    modesetting.enable = true;
+    open = false;  # proprietary drivers
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    nvidiaSettings = true;  # provides nvidia-smi
+  };
+  hardware.graphics.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
+  environment.sessionVariables = {
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    WLR_NO_HARDWARE_CURSORS = "1";
+    XDG_SESSION_TYPE = "wayland";
+    NIXOS_OZONE_WL = "1";
+  };
 
   time.timeZone = "America/Denver";
   # Boot login: greetd auto-launches Niri, hyprlock locks on startup
