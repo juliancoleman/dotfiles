@@ -16,6 +16,12 @@
       "focused": "●",
       "active": "●",
       "default": "○"
+    },
+    "persistent-workspaces": {
+      "browser": true,
+      "terminal": true,
+      "scratch-1": true,
+      "scratch-2": true
     }
   },
   "custom/clock": {
