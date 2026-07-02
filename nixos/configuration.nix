@@ -21,11 +21,18 @@
   time.timeZone = "America/Denver";
 
   services.getty.autologinUser = "julian";
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = true;
+    };
+  };
 
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    withUWSM = true;
+    withUWSM = false;
   };
 
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
@@ -34,6 +41,9 @@
     isNormalUser = true;
     extraGroups = [ "wheel" ];
   };
+
+  # Lab-only: allow passwordless sudo so the harness can rebuild remotely
+  security.sudo.wheelNeedsPassword = false;
 
   fonts.packages = with pkgs; [
     pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP
