@@ -36,6 +36,7 @@ environment {
 
 // ── Appearance ─────────────────────────────────────────────────
 layout {
+    background-color "transparent"
     gaps 8
     focus-ring {
         off
@@ -161,4 +162,10 @@ window-rule {
 window-rule {
     match app-id="com.mitchellh.ghostty"
     open-on-workspace "terminal"
+}
+
+// Layer rules: keep wallpaper stationary
+layer-rule {
+    match namespace="^swww-daemon$"
+    place-within-backdrop true
 }
