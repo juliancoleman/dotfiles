@@ -19,11 +19,16 @@
   hardware.bluetooth.enable = true;
 
   time.timeZone = "America/Denver";
-  # Boot login: SDDM display manager (PAM auth, wallpaper, seamless Niri launch)
-  services.displayManager.sddm = {
+  # Boot login: greetd auto-launches Niri, hyprlock locks on startup
+  # (seamless: swww paints wallpaper → hyprlock frosted glass → unlock → sharp wallpaper)
+  services.greetd = {
     enable = true;
-    wayland.enable = true;
-    theme = "catppuccin-corners";
+    settings = {
+      default_session = {
+        command = "niri-session";
+        user = "julian";
+      };
+    };
   };
   services.openssh = {
     enable = true;
@@ -65,7 +70,6 @@
     git					# yeet
     swww                                # wallpaper daemon (GPU-backed, no leak)
     hyprlock                            # session locker (GPU-accelerated, blur effects)
-    catppuccin-sddm-corners              # SDDM theme matching our cursor theme
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids

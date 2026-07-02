@@ -59,6 +59,7 @@ layout {
 // ── Spawn at startup ──────────────────────────────────────────
 spawn-at-startup "waybar"
 spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swww.sh"
+spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swaylock.sh"
 
 hotkey-overlay {
     skip-at-startup
