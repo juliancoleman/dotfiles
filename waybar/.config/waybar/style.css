@@ -37,7 +37,7 @@ window#waybar.hidden { }
   padding: .15rem;
 }
 #workspaces button {
-  min-height: 0.6rem;
+  min-height: 0.5rem;
   background-color: rgba(255, 255, 255, 0.15);
   padding: .15rem;
   margin-bottom: 4px;
@@ -54,11 +54,11 @@ window#waybar.hidden { }
 /* Active workspace = elongated pill, inactive = small dots */
 #workspaces button.active {
   background: rgba(255, 255, 255, 0.5);
-  min-height: 1.5rem;
+  min-height: 1.2rem;
 }
 #workspaces button.focused {
   background: rgba(255, 255, 255, 0.7);
-  min-height: 1.5rem;
+  min-height: 1.2rem;
 }
 #workspaces label {
   font-size: 0;
