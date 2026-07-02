@@ -11,7 +11,7 @@ for i in $(seq 1 50); do
     sleep 0.1
 done
 
-# Brief pause for swww daemon to start (wallpaper paints behind lock surface)
-sleep 0.3
+# Give swww 0.8s to start daemon and paint wallpaper behind lock surface
+sleep 0.8
 
 hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf
