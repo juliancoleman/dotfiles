@@ -1,24 +1,15 @@
 #!/bin/bash
-# Bluetooth picker: interactive bluetoothctl scan, wofi with live results
+# Bluetooth picker: single bluetoothctl session, wofi with live results
 
-bluetoothctl power on
-bluetoothctl pairable on
-
-# Start interactive bluetoothctl with coproc to keep scan alive
+# Single interactive bluetoothctl session for everything
 coproc BT { bluetoothctl; }
+echo "power on" >&${BT[1]}
+echo "pairable on" >&${BT[1]}
 echo "scan on" >&${BT[1]}
 
 format_devices() {
     bluetoothctl devices | while read -r _ mac rest; do
-        name=$(echo "$rest" | xargs)
-        info=$(bluetoothctl info "$mac" 2>/dev/null)
-        if echo "$info" | grep -q "Connected: yes"; then
-            echo "$name (connected) | $mac"
-        elif echo "$info" | grep -q "Paired: yes"; then
-            echo "$name (paired) | $mac"
-        else
-            echo "$name | $mac"
-        fi
+        echo "$rest | $mac" | xargs
     done
 }
 
@@ -26,16 +17,16 @@ format_devices() {
 printf "Searching..." | wofi --dmenu --prompt "Scanning for devices..." --cache-file /dev/null -W 400 2>/dev/null &
 WOFI_PID=$!
 
-# Wait for devices (check every 1s, max 15s)
-for i in $(seq 1 15); do
+# Wait for devices (check every 0.5s, max 15s)
+for i in $(seq 1 30); do
     devices=$(format_devices)
     if [ -n "$devices" ]; then
         kill $WOFI_PID 2>/dev/null
-        sleep 0.3
+        sleep 0.2
         selection=$(echo "$devices" | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null -W 400 2>/dev/null)
         break
     fi
-    sleep 1
+    sleep 0.5
 done
 
 # If no devices found, let Searching wofi stay until user closes
