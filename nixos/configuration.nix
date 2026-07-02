@@ -20,7 +20,34 @@
 
   time.timeZone = "America/Denver";
 
-  services.getty.autologinUser = "julian";
+  # Boot login via greetd + regreet (replaces getty autologin)
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.cage}/bin/cage -- ${pkgs.greetd.regreet}/bin/regreet";
+        user = "greeter";
+      };
+    };
+  };
+
+  # regreet config — wallpaper + frosted glass, auto-select single user
+  programs.regreet = {
+    enable = true;
+    settings = {
+      background = {
+        path = "/home/julian/dotfiles/nixos/niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg";
+        fit = "Cover";
+      };
+      GTK = {
+        application_prefer_dark_theme = false;
+      };
+    };
+    theme = {
+      name = "adw-gtk3";
+      package = pkgs.adw-gtk3;
+    };
+  };
   services.openssh = {
     enable = true;
     settings = {
@@ -58,6 +85,8 @@
     ghostty				# yerp
     git					# yeet
     swww                                # wallpaper daemon (GPU-backed, no leak)
+    swaylock                            # session locker (ext-session-lock-v1, blur effects)
+    cage                                # kiosk compositor for regreet
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids
@@ -74,6 +103,7 @@
     yazi				# because I don't have a GUI file manager
     zoxide				# better cd
   ];
+  environment.pathsToLink = [ "/share/wayland-sessions" ];
 
   # VTNR-specific configuration
   console = {

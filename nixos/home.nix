@@ -45,10 +45,7 @@
         else
           set -gx TERM xterm-256color
         end
-        # Auto-launch Niri on tty1 (boot → autologin → desktop)
-        if test -z "$WAYLAND_DISPLAY" -a "$XDG_VTNR" = 1
-          exec niri-session
-        end
+        # Niri is now launched by greetd, not fish
       end
     '';
 
