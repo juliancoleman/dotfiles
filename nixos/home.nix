@@ -155,4 +155,5 @@
 
   # ── Niri compositor config ────────────────────────────────────
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
+  xdg.configFile."hypr/hyprlock.conf".source = ./niri/hyprlock.conf;
 }

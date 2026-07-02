@@ -68,7 +68,7 @@
     ghostty				# yerp
     git					# yeet
     swww                                # wallpaper daemon (GPU-backed, no leak)
-    swaylock                            # session locker (ext-session-lock-v1, blur effects)
+    hyprlock                            # session locker (GPU-accelerated, blur effects)
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
     mise				# asdf, direnv, and devtool on roids

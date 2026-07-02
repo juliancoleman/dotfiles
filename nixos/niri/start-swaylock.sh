@@ -1,5 +1,5 @@
 #!/bin/sh
-# Lock screen on startup — frosted glass wallpaper, same as session lock
+# Lock screen on startup — frosted glass wallpaper via hyprlock
 # Wait for Wayland display to be ready before locking
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-1}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -12,12 +12,4 @@ for i in $(seq 1 100); do
     sleep 0.1
 done
 
-swaylock \
-    --image /home/julian/dotfiles/nixos/niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg \
-    --effect-blur 10x3 \
-    --effect-vignette 0.5 \
-    --ring-color 33ccff \
-    --inside-color 00000050 \
-    --font-size 14 \
-    --indicator-radius 100 \
-    --indicator-thickness 5
+hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf
