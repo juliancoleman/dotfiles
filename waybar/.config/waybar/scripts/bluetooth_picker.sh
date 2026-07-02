@@ -1,16 +1,16 @@
 #!/bin/sh
-# Bluetooth picker: continuous scan with live wofi results
-# Pops wofi immediately, shows "Searching..." until devices appear
+# Bluetooth picker: scan, show wofi immediately, refresh as devices appear
 
 bluetoothctl power on
 bluetoothctl pairable on
 
-# Start background scan
+# Start scan and keep it running
 bluetoothctl scan on > /dev/null 2>&1 &
 SCAN_PID=$!
 
 format_devices() {
-    bluetoothctl devices | while read -r _ mac name; do
+    bluetoothctl devices | while read -r _ mac rest; do
+        name=$(echo "$rest" | xargs)
         info=$(bluetoothctl info "$mac" 2>/dev/null)
         if echo "$info" | grep -q "Connected: yes"; then
             echo "$name (connected) | $mac"
@@ -22,29 +22,21 @@ format_devices() {
     done
 }
 
-# Keep wofi open, refreshing device list every 1.5s until user picks or 30s timeout
-elapsed=0
-while [ $elapsed -lt 30 ]; do
+# Pop wofi immediately, refresh every 2s for 30s
+for i in $(seq 1 15); do
     devices=$(format_devices)
     if [ -n "$devices" ]; then
-        selection=$(echo "$devices" | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null 2>/dev/null)
+        selection=$(echo "$devices" | wofi --dmenu --prompt "Select Bluetooth device" --cache-file /dev/null -W 400 2>/dev/null)
     else
-        selection=$(echo "Searching..." | wofi --dmenu --prompt "Scanning for devices..." --cache-file /dev/null 2>/dev/null)
+        selection=$(printf "Searching..." | wofi --dmenu --prompt "Scanning for devices..." --cache-file /dev/null -W 400 2>/dev/null)
     fi
     
-    # If user selected something real, break
-    if [ -n "$selection" ] && [ "$selection" != "Searching..." ]; then
+    # User closed wofi or selected a real device
+    if [ -z "$selection" ] || [ "$selection" != "Searching..." ]; then
         break
     fi
     
-    # If user closed wofi (empty selection), break
-    if [ -z "$selection" ]; then
-        break
-    fi
-    
-    # wofi was closed with "Searching..." selected — wait and reopen
-    sleep 1.5
-    elapsed=$((elapsed + 2))
+    sleep 2
 done
 
 # Stop scan
