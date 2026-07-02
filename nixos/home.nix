@@ -139,6 +139,21 @@
   programs.carapace.enable = true;
 
   # ── Packages ───────────────────────────────────────────────────
+  # ── Font rendering ─────────────────────────────────────────────
+  fonts.fontconfig = {
+    enable = true;
+    settings = {
+      antialias = true;
+      hinting = {
+        enable = true;
+        style = "full";
+      };
+      subpixel = {
+        rgba = "rgb";
+        lcdfilter = "default";
+      };
+    };
+  };
   home.packages = with pkgs; [
     brave
     pkgs.catppuccin-cursors.latteLight
