@@ -152,6 +152,7 @@
     zoxide				# better cd
     # ── Communication ──
     signal-desktop-bin
+    libglvnd                            # EGL/GL dispatch (needed by signal-desktop-bin)
     telegram-desktop
     vesktop
     element-desktop
