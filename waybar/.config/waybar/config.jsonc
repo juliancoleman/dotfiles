@@ -49,7 +49,7 @@
   },
   "group/hardware": {
     "orientation": "vertical",
-    "modules": [ "cpu", "memory", "custom/gpu", "disk" ]
+    "modules": [ "cpu", "custom/mem", "custom/gpu", "custom/disk" ]
   },
   "cpu": {
     "format": "󰻠",
@@ -58,27 +58,26 @@
     "tooltip": true,
     "tooltip-format": "Total: {usage}%\nCore  0: {usage0}%\nCore  1: {usage1}%\nCore  2: {usage2}%\nCore  3: {usage3}%\nCore  4: {usage4}%\nCore  5: {usage5}%\nCore  6: {usage6}%\nCore  7: {usage7}%\nCore  8: {usage8}%\nCore  9: {usage9}%\nCore 10: {usage10}%\nCore 11: {usage11}%\nCore 12: {usage12}%\nCore 13: {usage13}%\nCore 14: {usage14}%\nCore 15: {usage15}%"
   },
-  "memory": {
-    "format": "󰍛",
+  "custom/mem": {
+    "exec": "~/.config/waybar/scripts/mem.sh",
     "interval": 2,
-    "states": { "critical": 80 },
-    "tooltip": true,
-    "tooltip-format": "Used: {used} / {total}\nFree: {avail}\nSwap: {swapUsed} / {swapTotal}"
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰍛" }
   },
   "custom/gpu": {
     "exec": "~/.config/waybar/scripts/gpu.sh",
     "interval": 2,
     "return-type": "json",
     "format": "{icon}",
-    "format-icons": { "default": "󰢮" },
-    "states": { "critical": 99 }
+    "format-icons": { "default": "󰢮" }
   },
-  "disk": {
-    "format": "󰋊",
+  "custom/disk": {
+    "exec": "~/.config/waybar/scripts/disk.sh",
     "interval": 10,
-    "states": { "critical": 20 },
-    "tooltip": true,
-    "tooltip-format": "{path}: {used} / {total} ({percentage_used}%)"
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰋊" }
   },
   "custom/power": {
     "format": "󰐦",
