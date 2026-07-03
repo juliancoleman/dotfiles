@@ -170,6 +170,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.permittedInsecurePackages = [ "qtwebengine-5.15.19" ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # This option defines the first version of NixOS you have installed on this particular machine,
