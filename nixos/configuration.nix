@@ -17,7 +17,6 @@
   
   networking.hostName = "hyprland-btw";
   networking.networkmanager.enable = true;
-  networking.nameservers = [ "1.1.1.1" "1.0.0.1" "8.8.8.8" ];
   hardware.bluetooth.enable = true;
   # Nvidia GTX 1080
   hardware.nvidia = {
