@@ -30,6 +30,7 @@ cursor {
 environment {
     QT_QPA_PLATFORM "wayland"
     WAYLAND_DISPLAY "wayland-1"
+    DISPLAY ":0"
     XDG_SESSION_TYPE "wayland"
     NIXOS_OZONE_WL "1"
 }
