@@ -151,7 +151,7 @@
     yazi				# because I don't have a GUI file manager
     zoxide				# better cd
     # ── Communication ──
-    signal-desktop
+    signal-desktop-bin
     telegram-desktop
     vesktop
     element-desktop
