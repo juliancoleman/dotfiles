@@ -7,6 +7,7 @@ hide_scroll=true
 allow_images=true
 image_size=24
 no_actions=true
+sort_order=alphabetical
 parse_search=true
 
 [drun]
