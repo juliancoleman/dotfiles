@@ -140,25 +140,25 @@
     wofi				# modal list views for everything and everyone
     yazi				# because I don't have a GUI file manager
     zoxide				# better cd
-  ];
     # ── Communication ──
-    signal-desktop                       # Signal messenger
-    telegram-desktop                     # Telegram
-    vesktop                              # Discord with Vencord (Wayland-friendly)
-    element-desktop                      # Matrix client
-    whatsie                              # WhatsApp desktop
+    signal-desktop
+    telegram-desktop
+    vesktop
+    element-desktop
+    whatsie
     # ── Productivity ──
-    libreoffice                          # Office suite
-    obsidian                             # Markdown knowledge base
-    openscad                             # 3D parametric modeler
-    bambu-studio                         # Bambu Lab 3D printer software
+    libreoffice
+    obsidian
+    openscad
+    bambu-studio
     # ── Fun ──
-    pcsx2                                # PS2 emulator
+    pcsx2
     # ── Utilities ──
-    noto-fonts-color-emoji               # Emoji support
-    wl-clipboard                         # wl-copy/wl-paste for Wayland clipboard
-    grim                                # Wayland screenshot utility
-    slurp                               # Wayland region selector
+    noto-fonts-color-emoji
+    wl-clipboard
+    grim
+    slurp
+  ];
   environment.pathsToLink = [ "/share/wayland-sessions" ];
 
   # VTNR-specific configuration
