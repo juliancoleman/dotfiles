@@ -1,7 +1,7 @@
 font=PlemolJP Console NF 12
-background-color=rgba(40,40,40,0.85)
+background-color=#282828d9
 text-color=#ffffff
-border-color=rgba(255,255,255,0.2)
+border-color=#ffffff33
 border-size=1
 border-radius=12
 padding=12
