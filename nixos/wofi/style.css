@@ -7,21 +7,20 @@ window {
 }
 
 #input {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     padding: 8px 12px;
     margin: 8px;
     color: white;
-    backdrop-filter: blur(10px);
 }
 
 #input:focus {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 #inner-box {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     margin: 0;
