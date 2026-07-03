@@ -7,4 +7,8 @@ hide_scroll=true
 normal_window=true
 allow_images=true
 image_size=24
+no_actions=true
+parse_search=true
 
+[drun]
+expandable=false
