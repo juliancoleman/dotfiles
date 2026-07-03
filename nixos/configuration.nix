@@ -12,6 +12,7 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelModules = [ "nct6775" ];
   
   networking.hostName = "hyprland-btw";
   networking.networkmanager.enable = true;
@@ -98,6 +99,7 @@
     swww                                # wallpaper daemon (GPU-backed, no leak)
     hyprlock                            # session locker (GPU-accelerated, blur effects)
     bluetuith                            # TUI bluetooth manager (scan/pair/connect in one interface)
+    lm_sensors                           # sensors-detect, pwmconfig, fancontrol
     libnotify                            # notify-send for bluetooth pairing notifications
     jujutsu				# Graphite, but local
     lazygit				# Because everyone can benefit from a git GUI
