@@ -162,7 +162,8 @@ binds {
     XF86AudioPrev  allow-when-locked=true { spawn "playerctl" "previous"; }
 
     // Screenshot
-    Print { screenshot; }
+    Print { spawn "/home/julian/dotfiles/nixos/niri/screenshot.sh"; }
+    Super+Shift+S { spawn "/home/julian/dotfiles/nixos/niri/screenshot-region.sh"; }
 }
 
 // ── Window rules ───────────────────────────────────────────────

@@ -73,6 +73,7 @@
 
   programs.niri.enable = true;
   programs.xwayland.enable = true;
+  programs.steam.enable = true;
 
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
@@ -101,6 +102,7 @@
     pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP
     pkgs.nerd-fonts.jetbrains-mono	# Self-explanatory
     pkgs.ibm-plex                        # IBM Plex Sans for hyprlock clock
+    pkgs.noto-fonts-color-emoji          # Color emoji support
   ];
 
   environment.systemPackages = with pkgs; [
@@ -139,6 +141,24 @@
     yazi				# because I don't have a GUI file manager
     zoxide				# better cd
   ];
+    # ── Communication ──
+    signal-desktop                       # Signal messenger
+    telegram-desktop                     # Telegram
+    vesktop                              # Discord with Vencord (Wayland-friendly)
+    element-desktop                      # Matrix client
+    whatsie                              # WhatsApp desktop
+    # ── Productivity ──
+    libreoffice                          # Office suite
+    obsidian                             # Markdown knowledge base
+    openscad                             # 3D parametric modeler
+    bambu-studio                         # Bambu Lab 3D printer software
+    # ── Fun ──
+    pcsx2                                # PS2 emulator
+    # ── Utilities ──
+    noto-fonts-color-emoji               # Emoji support
+    wl-clipboard                         # wl-copy/wl-paste for Wayland clipboard
+    grim                                # Wayland screenshot utility
+    slurp                               # Wayland region selector
   environment.pathsToLink = [ "/share/wayland-sessions" ];
 
   # VTNR-specific configuration
