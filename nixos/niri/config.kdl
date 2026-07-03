@@ -191,22 +191,22 @@ layer-rule {
 // ── Animations ─────────────────────────────────────────────────
 animations {
     workspace-switch {
-        spring damping-ratio=1.0 stiffness=4000 epsilon=0.0001
+        spring damping-ratio=1.0 stiffness=6000 epsilon=0.0001
     }
     window-open {
-        duration-ms 50
+        duration-ms 30
         curve "ease-out-expo"
     }
     window-close {
-        duration-ms 50
+        duration-ms 30
         curve "ease-out-expo"
     }
     window-movement {
-        duration-ms 50
+        duration-ms 30
         curve "ease-out-expo"
     }
     window-resize {
-        duration-ms 50
+        duration-ms 30
         curve "ease-out-expo"
     }
 }
