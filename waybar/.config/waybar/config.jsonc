@@ -41,9 +41,9 @@
     "format-off": "󰂲",
     "format-no-controller": "",
     "format-connected": "󰂯",
-    "tooltip-format": "{controller_alias}\t{controller_address}",
-    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
-    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "tooltip-format": "Not connected",
+    "tooltip-format-connected": "{num_connections} connected:\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "  {device_alias}",
     "on-click": "~/.config/waybar/scripts/bluetooth_toggle.sh",
     "on-click-right": "~/.config/waybar/scripts/bluetooth_picker.sh"
   },
@@ -54,23 +54,31 @@
   "cpu": {
     "format": "󰻠",
     "interval": 2,
-    "states": { "critical": 99 }
+    "states": { "critical": 99 },
+    "tooltip": true,
+    "tooltip-format": "Total: {usage}%\nCore  0: {usage0}%\nCore  1: {usage1}%\nCore  2: {usage2}%\nCore  3: {usage3}%\nCore  4: {usage4}%\nCore  5: {usage5}%\nCore  6: {usage6}%\nCore  7: {usage7}%\nCore  8: {usage8}%\nCore  9: {usage9}%\nCore 10: {usage10}%\nCore 11: {usage11}%\nCore 12: {usage12}%\nCore 13: {usage13}%\nCore 14: {usage14}%\nCore 15: {usage15}%"
   },
   "memory": {
     "format": "󰍛",
     "interval": 2,
-    "states": { "critical": 80 }
+    "states": { "critical": 80 },
+    "tooltip": true,
+    "tooltip-format": "Used: {used} / {total}\nFree: {avail}\nSwap: {swapUsed} / {swapTotal}"
   },
   "custom/gpu": {
-    "exec": "nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null || echo 0",
+    "exec": "~/.config/waybar/scripts/gpu.sh",
     "interval": 2,
-    "format": "󰢮",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰢮" },
     "states": { "critical": 99 }
   },
   "disk": {
     "format": "󰋊",
-    "path": "/",
-    "states": { "critical": 20 }
+    "interval": 10,
+    "states": { "critical": 20 },
+    "tooltip": true,
+    "tooltip-format": "{path}: {used} / {total} ({percentage_used}%)"
   },
   "custom/power": {
     "format": "󰐦",
