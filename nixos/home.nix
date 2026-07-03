@@ -200,4 +200,6 @@
   xdg.configFile."wofi/config".source = ./wofi/config;
   xdg.configFile."wofi/style.css".source = ./wofi/style.css;
   xdg.configFile."mako/config".source = ./mako/config;
+  xdg.configFile."waybar/config.jsonc".source = ../waybar/.config/waybar/config.jsonc;
+  xdg.configFile."waybar/style.css".source = ../waybar/.config/waybar/style.css;
 }
