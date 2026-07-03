@@ -45,13 +45,12 @@ layout {
         bottom 12
     }
     focus-ring {
-        off
+        on
         width 1
         active-color "#33ccff"
         inactive-color "#00000000"
     }
     border {
-        off
         width 1
         active-color "#33ccff"
         inactive-color "#00000000"
@@ -170,6 +169,7 @@ binds {
 prefer-no-csd
 window-rule {
     geometry-corner-radius 12
+    draw-border-with-background false
     clip-to-geometry true
 }
 window-rule {
