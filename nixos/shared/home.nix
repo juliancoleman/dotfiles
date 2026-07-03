@@ -204,11 +204,11 @@
   '';
   # ── Niri compositor config ────────────────────────────────────
   # Hide terminal/system apps from app launcher (wofi)
-  xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
-  xdg.configFile."hypr/hyprlock.conf".source = ./niri/hyprlock.conf;
-  xdg.configFile."wofi/config".source = ./wofi/config;
-  xdg.configFile."wofi/style.css".source = ./wofi/style.css;
-  xdg.configFile."mako/config".source = ./mako/config;
+  xdg.configFile."niri/config.kdl".source = ../niri/config.kdl;
+  xdg.configFile."hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
+  xdg.configFile."wofi/config".source = ../wofi/config;
+  xdg.configFile."wofi/style.css".source = ../wofi/style.css;
+  xdg.configFile."mako/config".source = ../mako/config;
   xdg.configFile."waybar/config.jsonc".source = ../waybar/.config/waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = ../waybar/.config/waybar/style.css;
   xdg.configFile."waybar/calendar.css".source = ../waybar/.config/waybar/calendar.css;
