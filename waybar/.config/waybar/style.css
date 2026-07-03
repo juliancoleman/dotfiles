@@ -71,14 +71,15 @@ window#waybar.hidden { }
   border-radius: 9999px;
   padding: 8px 2px;
 }
-#custom-clock {
+ #custom-clock {
+  font-size: 1rem;
   font-size: 0.875rem;
 }
 .modules-right {
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 9999px;
-  padding: 2px 4px 4px 4px;
+  padding: 2px 2px 6px 2px;
 }
 #custom-power {
   color: white;
