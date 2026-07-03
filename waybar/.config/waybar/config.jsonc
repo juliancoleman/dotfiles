@@ -36,11 +36,11 @@
     "modules": [ "bluetooth" ]
   },
   "bluetooth": {
-    "format": "●",
-    "format-on": "●",
-    "format-off": "●",
+    "format": "󰂯",
+    "format-on": "󰂯",
+    "format-off": "󰂲",
     "format-no-controller": "",
-    "format-connected": "●",
+    "format-connected": "󰂯",
     "tooltip-format": "{controller_alias}\t{controller_address}",
     "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
     "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
@@ -52,23 +52,23 @@
     "modules": [ "cpu", "memory", "custom/gpu", "disk" ]
   },
   "cpu": {
-    "format": "●",
+    "format": "󰻠",
     "interval": 2,
     "states": { "critical": 99 }
   },
   "memory": {
-    "format": "●",
+    "format": "󰍛",
     "interval": 2,
     "states": { "critical": 80 }
   },
   "custom/gpu": {
     "exec": "nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null || echo 0",
     "interval": 2,
-    "format": "●",
+    "format": "󰢮",
     "states": { "critical": 99 }
   },
   "disk": {
-    "format": "●",
+    "format": "󰋊",
     "path": "/",
     "states": { "critical": 20 }
   },
