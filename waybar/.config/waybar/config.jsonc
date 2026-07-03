@@ -9,7 +9,7 @@
   "layer": "top",
   "modules-left": [ "niri/workspaces" ],
   "modules-center": [ "custom/clock" ],
-  "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/power" ],
+  "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/fans", "custom/power" ],
   "niri/workspaces": {
     "format": "",
     "on-click": "activate"
@@ -78,6 +78,13 @@
     "return-type": "json",
     "format": "{icon}",
     "format-icons": { "default": "󰋊" }
+  },
+  "custom/fans": {
+    "exec": "~/.config/waybar/scripts/fans.sh",
+    "interval": 2,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰈐" }
   },
   "custom/power": {
     "format": "󰐦",
