@@ -79,10 +79,15 @@ workspace "scratch-2" {
 
 // ── Spawn at startup ──────────────────────────────────────────
 spawn-at-startup "waybar"
+spawn-at-startup "xwayland-satellite"
 spawn-at-startup "mako"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
 spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swww.sh"
 spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swaylock.sh"
+
+xwayland-satellite {
+    path "xwayland-satellite"
+}
 
 hotkey-overlay {
     skip-at-startup
