@@ -171,6 +171,7 @@
     # ── Utilities ──
     noto-fonts-color-emoji
     wl-clipboard
+    xwayland-satellite                   # XWayland support for Niri (X11 apps like Steam)
     grim
     slurp
   ];
