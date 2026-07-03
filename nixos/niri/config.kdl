@@ -95,7 +95,7 @@ binds {
     Super+Space { spawn "wofi" "--show" "drun"; }
     Super+Alt+L { spawn "hyprlock" "--config" "/home/julian/dotfiles/nixos/niri/hyprlock.conf"; }
     Super+U { spawn "/home/julian/dotfiles/nixos/niri/open-usb.sh"; }
-    Super+C { close-window; }
+    Super+Q { close-window; }
     Super+Shift+E { quit; }
 
     // Floating / fullscreen
