@@ -50,7 +50,7 @@ layout {
     border {
         on
         width 2
-        active-color "#33ccff"
+        active-color "#ffffff40"
         inactive-color "#00000000"
     }
     center-focused-column "never"
