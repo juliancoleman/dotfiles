@@ -175,7 +175,7 @@
     slurp
   ];
   environment.pathsToLink = [ "/share/wayland-sessions" ];
-  environment.variables.LD_LIBRARY_PATH = [ "${pkgs.curl.out}/lib" "${pkgs.libglvnd}/lib" ];
+  environment.variables.LD_LIBRARY_PATH = [ "${pkgs.curl.out}/lib" "${pkgs.libglvnd}/lib" "${pkgs.linuxPackages.nvidia_x11}/lib" ];
 
   # VTNR-specific configuration
   console = {
