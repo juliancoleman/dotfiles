@@ -1,0 +1,44 @@
+window {
+    background-color: rgba(0, 0, 0, 0.85);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-family: "PlemolJP Console NF", "JetBrains Mono", sans-serif;
+    font-size: 14px;
+    color: white;
+}
+
+#input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: none;
+    padding: 8px 12px;
+    margin: 8px;
+    color: white;
+}
+
+#input:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#entry {
+    padding: 8px 12px;
+    margin: 0 8px;
+    border-radius: 6px;
+    color: white;
+}
+
+#entry:selected {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+#entry:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#text {
+    color: white;
+}
+
+#text:selected {
+    color: white;
+}

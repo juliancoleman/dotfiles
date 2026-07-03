@@ -197,4 +197,13 @@
   # Hide terminal/system apps from app launcher (wofi)
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ./niri/hyprlock.conf;
+  xdg.configFile."wofi/config".source = ./wofi/config;
+  xdg.configFile."wofi/style.css".source = ./wofi/style.css;
+show=drun
+prompt=Search
+width=400
+lines=10
+hide_scroll=true
+normal_window=true
+";
 }
