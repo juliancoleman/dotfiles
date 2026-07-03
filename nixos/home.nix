@@ -193,6 +193,15 @@
     Name=xdg-desktop-portal-gtk
     NoDisplay=true
   '';
+  # Proton Mail needs XWayland (native Wayland doesn't work)
+  xdg.dataFile."applications/proton-mail.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Proton Mail
+    Exec=proton-mail --ozone-platform=x11 --no-sandbox %U
+    Icon=proton-mail
+    Categories=Network;Email;
+  '';
   # ── Niri compositor config ────────────────────────────────────
   # Hide terminal/system apps from app launcher (wofi)
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
