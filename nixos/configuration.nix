@@ -118,6 +118,9 @@
     swww                                # wallpaper daemon (GPU-backed, no leak)
     hyprlock                            # session locker (GPU-accelerated, blur effects)
     bluetuith                            # TUI bluetooth manager (scan/pair/connect in one interface)
+    udiskie                             # USB automount + notifications
+    mako                                # lightweight Wayland notification daemon
+    udisks2                             # D-Bus disk management backend
     lm_sensors                           # sensors-detect, pwmconfig, fancontrol
     libnotify                            # notify-send for bluetooth pairing notifications
     jujutsu				# Graphite, but local

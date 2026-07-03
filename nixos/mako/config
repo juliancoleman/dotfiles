@@ -1,0 +1,12 @@
+[font=PlemolJP Console NF 12]
+background-color=rgba(40,40,40,0.85)
+text-color=#ffffff
+border-color=rgba(255,255,255,0.2)
+border-size=1
+border-radius=12
+padding=12
+margin=8
+width=400
+height=100
+anchor=top-right
+default-timeout=5000
