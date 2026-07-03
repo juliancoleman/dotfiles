@@ -83,62 +83,62 @@ hotkey-overlay {
 // ── Keybindings ────────────────────────────────────────────────
 binds {
     // Essentials
-    Mod+Return { spawn "ghostty"; }
-    Mod+Space { spawn "wofi" "--show" "drun"; }
-    Mod+U { spawn "/home/julian/dotfiles/nixos/niri/open-usb.sh"; }
-    Mod+C { close-window; }
-    Mod+Shift+E { quit; }
+    Super+Return { spawn "ghostty"; }
+    Super+Space { spawn "wofi" "--show" "drun"; }
+    Super+U { spawn "/home/julian/dotfiles/nixos/niri/open-usb.sh"; }
+    Super+C { close-window; }
+    Super+Shift+E { quit; }
 
     // Floating / fullscreen
-    Mod+V { toggle-window-floating; }
-    Mod+F { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
+    Super+V { toggle-window-floating; }
+    Super+F { maximize-column; }
+    Super+Shift+F { fullscreen-window; }
 
     // Focus movement
-    Mod+Left  { focus-column-left; }
-    Mod+Right { focus-column-right; }
-    Mod+Up    { focus-window-up; }
-    Mod+Down  { focus-window-down; }
+    Super+Left  { focus-column-left; }
+    Super+Right { focus-column-right; }
+    Super+Up    { focus-window-up; }
+    Super+Down  { focus-window-down; }
 
     // Move windows
-    Mod+Shift+Left  { move-column-left; }
-    Mod+Shift+Right { move-column-right; }
-    Mod+Shift+Up    { move-window-up; }
-    Mod+Shift+Down  { move-window-down; }
+    Super+Shift+Left  { move-column-left; }
+    Super+Shift+Right { move-column-right; }
+    Super+Shift+Up    { move-window-up; }
+    Super+Shift+Down  { move-window-down; }
 
     // Workspaces (1-10, where 0 = 10)
-    Mod+1 { focus-workspace 1; }
-    Mod+2 { focus-workspace 2; }
-    Mod+3 { focus-workspace 3; }
-    Mod+4 { focus-workspace 4; }
-    Mod+5 { focus-workspace 5; }
-    Mod+6 { focus-workspace 6; }
-    Mod+7 { focus-workspace 7; }
-    Mod+8 { focus-workspace 8; }
-    Mod+9 { focus-workspace 9; }
-    Mod+0 { focus-workspace 10; }
+    Super+1 { focus-workspace 1; }
+    Super+2 { focus-workspace 2; }
+    Super+3 { focus-workspace 3; }
+    Super+4 { focus-workspace 4; }
+    Super+5 { focus-workspace 5; }
+    Super+6 { focus-workspace 6; }
+    Super+7 { focus-workspace 7; }
+    Super+8 { focus-workspace 8; }
+    Super+9 { focus-workspace 9; }
+    Super+0 { focus-workspace 10; }
 
-    Mod+Ctrl+1 { move-column-to-workspace 1; }
-    Mod+Ctrl+2 { move-column-to-workspace 2; }
-    Mod+Ctrl+3 { move-column-to-workspace 3; }
-    Mod+Ctrl+4 { move-column-to-workspace 4; }
-    Mod+Ctrl+5 { move-column-to-workspace 5; }
-    Mod+Ctrl+6 { move-column-to-workspace 6; }
-    Mod+Ctrl+7 { move-column-to-workspace 7; }
-    Mod+Ctrl+8 { move-column-to-workspace 8; }
-    Mod+Ctrl+9 { move-column-to-workspace 9; }
-    Mod+Ctrl+0 { move-column-to-workspace 10; }
+    Super+Ctrl+1 { move-column-to-workspace 1; }
+    Super+Ctrl+2 { move-column-to-workspace 2; }
+    Super+Ctrl+3 { move-column-to-workspace 3; }
+    Super+Ctrl+4 { move-column-to-workspace 4; }
+    Super+Ctrl+5 { move-column-to-workspace 5; }
+    Super+Ctrl+6 { move-column-to-workspace 6; }
+    Super+Ctrl+7 { move-column-to-workspace 7; }
+    Super+Ctrl+8 { move-column-to-workspace 8; }
+    Super+Ctrl+9 { move-column-to-workspace 9; }
+    Super+Ctrl+0 { move-column-to-workspace 10; }
 
     // Column / window sizing
-    Mod+R { switch-preset-column-width; }
-    Mod+Ctrl+F { expand-column-to-available-width; }
-    Mod+Minus { set-column-width "-10%"; }
-    Mod+Equal { set-column-width "+10%"; }
-    Mod+Shift+Minus { set-window-height "-10%"; }
-    Mod+Shift+Equal { set-window-height "+10%"; }
+    Super+R { switch-preset-column-width; }
+    Super+Ctrl+F { expand-column-to-available-width; }
+    Super+Minus { set-column-width "-10%"; }
+    Super+Equal { set-column-width "+10%"; }
+    Super+Shift+Minus { set-window-height "-10%"; }
+    Super+Shift+Equal { set-window-height "+10%"; }
 
     // Center column
-    Mod+M { center-column; }
+    Super+M { center-column; }
 
     // Media keys
     XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"; }
