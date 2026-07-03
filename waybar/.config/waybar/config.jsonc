@@ -49,14 +49,14 @@
   },
   "group/hardware": {
     "orientation": "vertical",
-    "modules": [ "cpu", "custom/mem", "custom/gpu", "custom/disk" ]
+    "modules": [ "custom/cpu", "custom/mem", "custom/gpu", "custom/disk" ]
   },
-  "cpu": {
-    "format": "󰻠",
+  "custom/cpu": {
+    "exec": "~/.config/waybar/scripts/cpu.sh",
     "interval": 2,
-    "states": { "critical": 99 },
-    "tooltip": true,
-    "tooltip-format": "Total: {usage}%\nCore  0: {usage0}%\nCore  1: {usage1}%\nCore  2: {usage2}%\nCore  3: {usage3}%\nCore  4: {usage4}%\nCore  5: {usage5}%\nCore  6: {usage6}%\nCore  7: {usage7}%\nCore  8: {usage8}%\nCore  9: {usage9}%\nCore 10: {usage10}%\nCore 11: {usage11}%\nCore 12: {usage12}%\nCore 13: {usage13}%\nCore 14: {usage14}%\nCore 15: {usage15}%"
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰻠" }
   },
   "custom/mem": {
     "exec": "~/.config/waybar/scripts/mem.sh",

@@ -111,7 +111,7 @@ menuitem:last-child {
   margin: .5rem 0;
 }
 #bluetooth,
-#cpu,
+ #custom-cpu,
 #custom-gpu,
 #disk,
 #memory {
@@ -121,7 +121,7 @@ menuitem:last-child {
   min-height: 0.4rem;
 }
 /* Red = take action */
-#cpu.critical,
+ #custom-cpu.critical,
 #memory.critical,
 #disk.critical,
 #custom-gpu.critical {
