@@ -45,7 +45,7 @@ layout {
         bottom 12
     }
     focus-ring {
-        on
+        off
         width 1
         active-color "#33ccff"
         inactive-color "#00000000"
