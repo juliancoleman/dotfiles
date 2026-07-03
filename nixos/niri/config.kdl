@@ -37,7 +37,7 @@ environment {
 // ── Appearance ─────────────────────────────────────────────────
 layout {
     background-color "transparent"
-    gaps 8
+    gaps 12
     struts {
         left 12
         right 12
@@ -164,6 +164,7 @@ binds {
 }
 
 // ── Window rules ───────────────────────────────────────────────
+prefer-no-csd
 window-rule {
     geometry-corner-radius 12
     clip-to-geometry true
