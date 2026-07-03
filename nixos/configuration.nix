@@ -97,6 +97,14 @@
         return polkit.Result.YES;
       }
     });
+    polkit.addRule(function(action, subject) {
+      if ((action.id == "org.freedesktop.udisks2.filesystem-mount" ||
+           action.id == "org.freedesktop.udisks2.filesystem-mount-system" ||
+           action.id == "org.freedesktop.udisks2.filesystem-unmount-others") &&
+          subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+      }
+    });
   '';
 
   fonts.packages = with pkgs; [
