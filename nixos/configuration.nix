@@ -66,6 +66,18 @@
   # Lab-only: allow passwordless sudo so the harness can rebuild remotely
   security.sudo.wheelNeedsPassword = false;
   security.pam.services.hyprlock = {};
+  # Allow julian to suspend/reboot/shutdown without interactive auth
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if ((action.id == "org.freedesktop.login1.suspend" ||
+           action.id == "org.freedesktop.login1.reboot" ||
+           action.id == "org.freedesktop.login1.power-off" ||
+           action.id == "org.freedesktop.login1.hibernate") &&
+          subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 
   fonts.packages = with pkgs; [
     pkgs.plemoljp-nf			# IBM Plex Sans Mono Nerd Font with JP

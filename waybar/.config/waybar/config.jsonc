@@ -85,9 +85,11 @@
     "menu": "on-click",
     "menu-file": "$HOME/.config/waybar/custom_modules/power_menu.xml",
     "menu-actions": {
-      "shutdown": "shutdown",
+      "suspend": "systemctl suspend",
+      "shutdown": "shutdown now",
       "reboot": "reboot",
-      "suspend": "systemctl suspend"
+      "lock": "hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf",
+      "logout": "niri msg action quit"
     }
   }
 }
