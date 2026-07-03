@@ -202,4 +202,16 @@
   xdg.configFile."mako/config".source = ./mako/config;
   xdg.configFile."waybar/config.jsonc".source = ../waybar/.config/waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = ../waybar/.config/waybar/style.css;
+  xdg.configFile."waybar/calendar.css".source = ../waybar/.config/waybar/calendar.css;
+  xdg.configFile."waybar/custom_modules/power_menu.xml".source = ../waybar/.config/waybar/custom_modules/power_menu.xml;
+  xdg.configFile."waybar/scripts/bluetooth_picker.sh".source = ../waybar/.config/waybar/scripts/bluetooth_picker.sh;
+  xdg.configFile."waybar/scripts/bluetooth_toggle.sh".source = ../waybar/.config/waybar/scripts/bluetooth_toggle.sh;
+  xdg.configFile."waybar/scripts/calendar.sh".source = ../waybar/.config/waybar/scripts/calendar.sh;
+  xdg.configFile."waybar/scripts/cpu.sh".source = ../waybar/.config/waybar/scripts/cpu.sh;
+  xdg.configFile."waybar/scripts/disk.sh".source = ../waybar/.config/waybar/scripts/disk.sh;
+  xdg.configFile."waybar/scripts/fans.sh".source = ../waybar/.config/waybar/scripts/fans.sh;
+  xdg.configFile."waybar/scripts/gpu.sh".source = ../waybar/.config/waybar/scripts/gpu.sh;
+  xdg.configFile."waybar/scripts/mem.sh".source = ../waybar/.config/waybar/scripts/mem.sh;
+  xdg.configFile."waybar/scripts/sleep.sh".source = ../waybar/.config/waybar/scripts/sleep.sh;
+  xdg.configFile."waybar/scripts/time_jp.sh".source = ../waybar/.config/waybar/scripts/time_jp.sh;
 }
