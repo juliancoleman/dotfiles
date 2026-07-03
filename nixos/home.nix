@@ -132,20 +132,69 @@
   home.sessionPath = [
     "$HOME/.local/bin"
   ];
+  # Hide terminal/system apps from wofi by overriding their .desktop files
+  xdg.dataFile."applications/btop.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=btop
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/vim.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=vim
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/gvim.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=gvim
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/nvim.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=nvim
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/yazi.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=yazi
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/nixos-manual.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=nixos-manual
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/nvidia-settings.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=nvidia-settings
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/org.freedesktop.Xwayland.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=org.freedesktop.Xwayland
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/xdg-desktop-portal-gnome.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=xdg-desktop-portal-gnome
+    NoDisplay=true
+  '';
+  xdg.dataFile."applications/xdg-desktop-portal-gtk.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=xdg-desktop-portal-gtk
+    NoDisplay=true
+  '';
   # ── Niri compositor config ────────────────────────────────────
   # Hide terminal/system apps from app launcher (wofi)
-  xdg.desktopEntries = {
-    btop = { name = "btop"; noDisplay = true; };
-    vim = { name = "vim"; noDisplay = true; };
-    gvim = { name = "gvim"; noDisplay = true; };
-    nvim = { name = "nvim"; noDisplay = true; };
-    yazi = { name = "yazi"; noDisplay = true; };
-    nixos-manual = { name = "nixos-manual"; noDisplay = true; };
-    nvidia-settings = { name = "nvidia-settings"; noDisplay = true; };
-    org-freedesktop-Xwayland = { name = "org.freedesktop.Xwayland"; noDisplay = true; };
-    xdg-desktop-portal-gnome = { name = "xdg-desktop-portal-gnome"; noDisplay = true; };
-    xdg-desktop-portal-gtk = { name = "xdg-desktop-portal-gtk"; noDisplay = true; };
-  };
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ./niri/hyprlock.conf;
 }
