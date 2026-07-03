@@ -116,7 +116,6 @@
   ];
 
   environment.systemPackages = with pkgs; [
-  environment.variables.LD_LIBRARY_PATH = [ "${pkgs.curl.out}/lib" "${pkgs.libglvnd}/lib" ];
     bat					# better than cat
     btop				# better than top/htop
     carapace				# completions on things you didn't know you needed
@@ -176,6 +175,7 @@
     slurp
   ];
   environment.pathsToLink = [ "/share/wayland-sessions" ];
+  environment.variables.LD_LIBRARY_PATH = [ "${pkgs.curl.out}/lib" "${pkgs.libglvnd}/lib" ];
 
   # VTNR-specific configuration
   console = {
