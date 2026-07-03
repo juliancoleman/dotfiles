@@ -91,6 +91,8 @@
     btop				# better than top/htop
     carapace				# completions on things you didn't know you needed
     eza					# better ls with icons!
+    fd                                  # better find
+    bun                                 # JavaScript runtime
     fastfetch				# we all know why you're here
     fzf					# lots of things depend on fzf, plus it's OP on its own
     gh					# API version of git
