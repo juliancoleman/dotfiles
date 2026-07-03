@@ -45,10 +45,13 @@ layout {
         bottom 12
     }
     focus-ring {
-        off
+        on
+        width 1
+        active-color "#33ccff"
+        inactive-color "#00000000"
     }
     border {
-        on
+        off
         width 1
         active-color "#33ccff"
         inactive-color "#00000000"
@@ -167,7 +170,7 @@ binds {
 prefer-no-csd
 window-rule {
     geometry-corner-radius 12
-    clip-to-geometry false
+    clip-to-geometry true
 }
 window-rule {
     match app-id="brave-browser"
