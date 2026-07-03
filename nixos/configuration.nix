@@ -54,6 +54,26 @@
     };
   };
 
+  # XDG Desktop Portal: use GTK + wlr instead of GNOME
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-wlr
+    ];
+    config = {
+      niri = {
+        default = [ "gtk" "wlr" ];
+        "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+      };
+    };
+  };
+
+  # Disable services we don't need
+  networking.wireless.enable = false;  # no WiFi, wpa_supplicant not needed
+  services.gnome.gnome-keyring.enable = false;  # using 1Password
   programs.niri.enable = true;
   programs.xwayland.enable = true;
 
