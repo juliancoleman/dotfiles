@@ -63,7 +63,7 @@
     ];
     config = {
       niri = {
-        default = [ "gtk" "wlr" ];
+        default = lib.mkForce [ "gtk" "wlr" ];
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
         "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
         "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
