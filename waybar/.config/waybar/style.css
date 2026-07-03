@@ -25,6 +25,8 @@ window#waybar {
 window#waybar.hidden { }
 /* Module group styles */
 .modules-left {
+  margin-left: calc(4px + 0.1rem);
+  margin-right: calc(4px + 0.1rem);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 9999px;
   background-color: rgba(0, 0, 0, 0.3);
@@ -62,6 +64,8 @@ window#waybar.hidden { }
   font-size: 0;
 }
 .modules-center {
+  margin-left: calc(4px + 0.1rem);
+  margin-right: calc(4px + 0.1rem);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 9999px;
@@ -74,7 +78,7 @@ window#waybar.hidden { }
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 9999px;
-  padding: 4px;
+  padding: 2px 4px 4px 4px;
 }
 #custom-power {
   color: white;
