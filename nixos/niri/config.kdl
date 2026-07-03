@@ -49,8 +49,8 @@ layout {
     }
     border {
         on
-        width 2
-        active-color "#ffffff40"
+        width 1
+        active-color "#33ccff"
         inactive-color "#00000000"
     }
     center-focused-column "never"
@@ -167,7 +167,7 @@ binds {
 prefer-no-csd
 window-rule {
     geometry-corner-radius 12
-    clip-to-geometry true
+    clip-to-geometry false
 }
 window-rule {
     match app-id="brave-browser"
