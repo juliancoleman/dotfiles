@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
 # Fan speeds from NCT6797D + GPU fan
+# Find the nct6797 hwmon path dynamically (index can change between boots)
+NCT_HWMON=$(grep -l nct6797 /sys/class/hwmon/hwmon*/name 2>/dev/null | head -1)
+NCT_DIR=$(dirname "$NCT_HWMON" 2>/dev/null)
+
 tooltip=""
 
 # Chassis fans from NCT6797D
-for i in 1 2 3 4 5 6; do
-    rpm=$(cat /sys/class/hwmon/hwmon3/fan${i}_input 2>/dev/null)
-    [ -z "$rpm" ] && continue
-    if [ "$rpm" -eq 0 ]; then
-        tooltip="${tooltip}Fan ${i}: --\n"
-    else
-        tooltip="${tooltip}Fan ${i}: ${rpm} RPM\n"
-    fi
-done
+if [ -n "$NCT_DIR" ]; then
+    for i in 1 2 3 4 5 6; do
+        rpm=$(cat "${NCT_DIR}/fan${i}_input" 2>/dev/null)
+        [ -z "$rpm" ] && continue
+        if [ "$rpm" -eq 0 ]; then
+            tooltip="${tooltip}Fan ${i}: --\n"
+        else
+            tooltip="${tooltip}Fan ${i}: ${rpm} RPM\n"
+        fi
+    done
+fi
 
 # GPU fan speed (percentage)
 gpu_fan=$(nvidia-smi --query-gpu=fan.speed --format=csv,noheader,nounits 2>/dev/null)
