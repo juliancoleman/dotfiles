@@ -157,6 +157,7 @@
     whatsie
     bitwarden-desktop
     spotify
+    protonmail-desktop                    # Proton Mail + Calendar
     # ── Productivity ──
     libreoffice
     obsidian
