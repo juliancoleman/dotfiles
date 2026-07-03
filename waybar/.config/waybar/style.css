@@ -82,6 +82,7 @@ window#waybar.hidden { }
   padding: 2px 2px 6px 2px;
 }
 #custom-power {
+  margin-top: 4px;
   color: white;
   font-size: 13px;
 }
