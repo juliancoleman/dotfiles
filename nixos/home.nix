@@ -133,6 +133,19 @@
     "$HOME/.local/bin"
   ];
   # ── Niri compositor config ────────────────────────────────────
+  # Hide terminal/system apps from app launcher (wofi)
+  xdg.desktopEntries = {
+    btop = { name = "btop"; noDisplay = true; };
+    vim = { name = "vim"; noDisplay = true; };
+    gvim = { name = "gvim"; noDisplay = true; };
+    nvim = { name = "nvim"; noDisplay = true; };
+    yazi = { name = "yazi"; noDisplay = true; };
+    nixos-manual = { name = "nixos-manual"; noDisplay = true; };
+    nvidia-settings = { name = "nvidia-settings"; noDisplay = true; };
+    org-freedesktop-Xwayland = { name = "org.freedesktop.Xwayland"; noDisplay = true; };
+    xdg-desktop-portal-gnome = { name = "xdg-desktop-portal-gnome"; noDisplay = true; };
+    xdg-desktop-portal-gtk = { name = "xdg-desktop-portal-gtk"; noDisplay = true; };
+  };
   xdg.configFile."niri/config.kdl".source = ./niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ./niri/hyprlock.conf;
 }
