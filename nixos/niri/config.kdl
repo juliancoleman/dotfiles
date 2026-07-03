@@ -38,12 +38,18 @@ environment {
 layout {
     background-color "transparent"
     gaps 8
+    struts {
+        left 12
+        right 12
+        top 12
+        bottom 12
+    }
     focus-ring {
         off
     }
     border {
         on
-        width 1
+        width 2
         active-color "#33ccff"
         inactive-color "#00000000"
     }
@@ -158,6 +164,10 @@ binds {
 }
 
 // ── Window rules ───────────────────────────────────────────────
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
 window-rule {
     match app-id="brave-browser"
     open-on-workspace "browser"
