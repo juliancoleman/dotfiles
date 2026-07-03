@@ -146,6 +146,8 @@
     vesktop
     element-desktop
     whatsie
+    bitwarden-desktop
+    spotify
     # ── Productivity ──
     libreoffice
     obsidian
