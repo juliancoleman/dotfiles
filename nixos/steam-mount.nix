@@ -4,7 +4,7 @@
   fileSystems."/mnt/steam" = {
     device = "/dev/disk/by-label/steam-library";
     fsType = "ext4";
-    options = [ "defaults" "user" ];
+    options = [ "defaults" ];
   };
 
   # Auto-prune generations: keep only current and previous
