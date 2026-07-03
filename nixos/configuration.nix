@@ -71,9 +71,6 @@
     };
   };
 
-  # Disable services we don't need
-  networking.wireless.enable = false;  # no WiFi, wpa_supplicant not needed
-  services.gnome.gnome-keyring.enable = false;  # using 1Password
   programs.niri.enable = true;
   programs.xwayland.enable = true;
 
