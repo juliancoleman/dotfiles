@@ -151,8 +151,9 @@
     yazi				# because I don't have a GUI file manager
     zoxide				# better cd
     # ── Communication ──
-    signal-desktop-bin
+    signal-desktop
     libglvnd                            # EGL/GL dispatch (needed by signal-desktop-bin)
+    curl                                # libcurl needed by proton-mail
     telegram-desktop
     vesktop
     element-desktop
@@ -184,7 +185,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.permittedInsecurePackages = [ "qtwebengine-5.15.19" ];
+  nixpkgs.config.permittedInsecurePackages = [ "qtwebengine-5.15.19" "pnpm-10.29.2" "electron-39.8.10"];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # This option defines the first version of NixOS you have installed on this particular machine,

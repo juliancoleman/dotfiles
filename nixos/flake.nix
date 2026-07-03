@@ -1,5 +1,5 @@
 {
-  description = "Julian's NixOS build with Hyprland + Waybar";
+  description = "Julian's NixOS build with Niri + Waybar";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
@@ -11,6 +11,7 @@
 
   outputs = { nixpkgs, home-manager, ... }: {
     nixosConfigurations.hyprland-btw = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
       modules = [
         ./configuration.nix
         home-manager.nixosModules.home-manager
