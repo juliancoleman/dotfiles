@@ -1,0 +1,150 @@
+/* Global styles */
+* {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: white;
+  font-family: "PlemolJP Console NF", "JetBrains Mono", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0;
+  margin: 0;
+  min-height: 0;
+  padding: 0;
+  min-width: 0;
+  outline: none;
+  outline-offset: 0;
+  text-shadow: none;
+}
+/* Bar styles */
+window#waybar {
+  background: transparent;
+  border: none;
+}
+window#waybar.hidden { }
+/* Module group styles */
+.modules-left {
+  margin-left: calc(4px + 0.1rem);
+  margin-right: calc(4px + 0.1rem);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 4px 2px 1px 2px;
+}
+#workspaces {
+  padding: .15rem .15rem .05rem .15rem;
+}
+#workspaces button {
+  min-height: 0.4rem;
+  padding: 0.25rem;
+  min-width: 0.4rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin-bottom: calc(4px + 0.1rem);
+  border-radius: 9999px;
+  transition: all 100ms;
+}
+#workspaces button:hover,
+#workspaces button.active:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+#workspaces button:last-child {
+  margin-bottom: 0;
+}
+/* Active workspace = elongated pill, inactive = perfect circles */
+#workspaces button.active {
+  background: rgba(255, 255, 255, 0.5);
+  min-height: 1.2rem;
+}
+#workspaces button.focused {
+  background: rgba(255, 255, 255, 0.7);
+  min-height: 1.2rem;
+}
+#workspaces label {
+  font-size: 0;
+}
+.modules-center {
+  margin-left: calc(4px + 0.1rem);
+  margin-right: calc(4px + 0.1rem);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+  padding: 8px 2px;
+}
+ #custom-clock {
+  font-size: 1rem;
+  font-size: 0.875rem;
+}
+.modules-right {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+  padding: 2px 2px 6px 2px;
+}
+#custom-power {
+  margin-top: 4px;
+  color: white;
+  font-size: 13px;
+}
+/* Menu styles */
+menu {
+  border-radius: 16px;
+  background: rgb(30, 30, 30);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+menuitem {
+  color: white;
+  transition: 150ms background-color;
+  padding: 8px 16px;
+}
+menuitem:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+menuitem:first-child {
+  border-radius: 16px 16px 4px 4px;
+}
+menuitem:last-child {
+  border-radius: 4px 4px 16px 16px;
+}
+/* Hardware modules — dot indicators, color-only severity */
+#hardware,
+#peripherals {
+  margin: .5rem 0;
+}
+#bluetooth,
+ #custom-cpu,
+#custom-gpu,
+#disk,
+#memory {
+  color: white;
+  font-size: 1rem;
+  min-width: 0;
+  min-height: 0.4rem;
+}
+/* Red = take action */
+ #custom-cpu.critical,
+#memory.critical,
+#disk.critical,
+#custom-gpu.critical {
+  color: #ff4444;
+}
+/* Hide the trailing empty unnamed workspace Niri always creates */
+#workspaces button.empty:not(#niri-workspace-browser):not(#niri-workspace-terminal):not(#niri-workspace-scratch-1):not(#niri-workspace-scratch-2) {
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+}
+/* Calendar tooltip styling */
+tooltip {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px;
+}
+tooltip label {
+  font-family: "PlemolJP Console NF", "JetBrains Mono", monospace;
+  font-size: 14px;
+  color: white;
+}

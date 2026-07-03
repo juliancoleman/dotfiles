@@ -1,0 +1,102 @@
+// -*- mode: jsonc -*-
+{
+  "reload_style_on_change": true,
+  "margin-top": 8,
+  "margin-right": 8,
+  "margin-bottom": 8,
+  "margin-left": 3,
+  "position": "right",
+  "layer": "top",
+  "modules-left": [ "niri/workspaces" ],
+  "modules-center": [ "custom/clock" ],
+  "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/fans", "custom/power" ],
+  "niri/workspaces": {
+    "format": "",
+    "on-click": "activate"
+  },
+  "custom/clock": {
+    "exec": "~/.config/waybar/scripts/time_jp.sh",
+    "interval": 1,
+    "return-type": "json",
+    "format": "{text}",
+    "justify": "center"
+  },
+  "privacy": {
+    "icon-spacing": 4,
+    "icon-size": 13,
+    "transition-duration": 150,
+    "modules": [
+      { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 24 },
+      { "type": "audio-out", "tooltip": true, "tooltip-icon-size": 24 },
+      { "type": "audio-in", "tooltip": true, "tooltip-icon-size": 24 }
+    ]
+  },
+  "group/peripherals": {
+    "orientation": "vertical",
+    "modules": [ "bluetooth" ]
+  },
+  "bluetooth": {
+    "format": "󰂯",
+    "format-on": "󰂯",
+    "format-off": "󰂲",
+    "format-no-controller": "",
+    "format-connected": "󰂯",
+    "tooltip-format": "Not connected",
+    "tooltip-format-connected": "{num_connections} connected:\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "  {device_alias}",
+    "on-click": "~/.config/waybar/scripts/bluetooth_toggle.sh",
+    "on-click-right": "~/.config/waybar/scripts/bluetooth_picker.sh"
+  },
+  "group/hardware": {
+    "orientation": "vertical",
+    "modules": [ "custom/cpu", "custom/mem", "custom/gpu", "custom/disk" ]
+  },
+  "custom/cpu": {
+    "exec": "~/.config/waybar/scripts/cpu.sh",
+    "interval": 2,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰻠" }
+  },
+  "custom/mem": {
+    "exec": "~/.config/waybar/scripts/mem.sh",
+    "interval": 2,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰍛" }
+  },
+  "custom/gpu": {
+    "exec": "~/.config/waybar/scripts/gpu.sh",
+    "interval": 2,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰢮" }
+  },
+  "custom/disk": {
+    "exec": "~/.config/waybar/scripts/disk.sh",
+    "interval": 10,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰋊" }
+  },
+  "custom/fans": {
+    "exec": "~/.config/waybar/scripts/fans.sh",
+    "interval": 2,
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": { "default": "󰈐" }
+  },
+  "custom/power": {
+    "format": "󰐦",
+    "justify": "center",
+    "menu": "on-click",
+    "menu-file": "$HOME/.config/waybar/custom_modules/power_menu.xml",
+    "menu-actions": {
+      "suspend": "~/.config/waybar/scripts/sleep.sh",
+      "shutdown": "shutdown now",
+      "reboot": "reboot",
+      "lock": "hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf",
+      "logout": "niri msg action quit"
+    }
+  }
+}
