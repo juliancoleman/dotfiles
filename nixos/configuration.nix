@@ -116,6 +116,7 @@
   ];
 
   environment.systemPackages = with pkgs; [
+  environment.variables.LD_LIBRARY_PATH = [ "${pkgs.curl.out}/lib" "${pkgs.libglvnd}/lib" ];
     bat					# better than cat
     btop				# better than top/htop
     carapace				# completions on things you didn't know you needed
@@ -153,7 +154,7 @@
     # ── Communication ──
     signal-desktop
     libglvnd                            # EGL/GL dispatch (needed by signal-desktop-bin)
-    curl                                # libcurl needed by proton-mail
+
     telegram-desktop
     vesktop
     element-desktop
