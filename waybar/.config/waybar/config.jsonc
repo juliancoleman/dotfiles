@@ -85,7 +85,7 @@
     "menu": "on-click",
     "menu-file": "$HOME/.config/waybar/custom_modules/power_menu.xml",
     "menu-actions": {
-      "suspend": "systemctl suspend",
+      "suspend": "~/.config/waybar/scripts/sleep.sh",
       "shutdown": "shutdown now",
       "reboot": "reboot",
       "lock": "hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf",
