@@ -74,6 +74,7 @@
   programs.niri.enable = true;
   programs.xwayland.enable = true;
   programs.steam.enable = true;
+  services.udisks2.enable = true;
 
   programs.fish.enable = true; # needs to be enabled here even though we use it also in home-manager
   users.users.julian = {
