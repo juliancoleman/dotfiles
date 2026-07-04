@@ -11,17 +11,17 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   # ── Fix Linux 7.0 kernel config for ARM64 ──
-  # Linux 7.0 removed PREEMPT_NONE, PREEMPT_VOLUNTARY and some other options
-  # on ARM64. Force them off to avoid build errors.
+  # Linux 7.0 removed several config options on ARM64.
+  # We need to override them with higher priority than nixpkgs defaults.
   boot.kernelPatches = [{
     name = "linux-7.0-arm64-fix";
     patch = null;
-    structuredExtraConfig = with lib.kernel; {
-      PREEMPT = lib.mkForce yes;
-      PREEMPT_VOLUNTARY = lib.mkForce no;
-      FB_HYPERV = lib.mkForce no;
-      HIPPI = lib.mkForce no;
-      NFS_V4_1 = lib.mkForce no;
+    extraStructuredConfig = {
+      PREEMPT = "y";
+      PREEMPT_VOLUNTARY = null;
+      FB_HYPERV = null;
+      HIPPI = null;
+      NFS_V4_1 = null;
     };
   }];
 
