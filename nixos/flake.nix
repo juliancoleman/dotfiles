@@ -7,9 +7,13 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    apple-silicon = {
+      url = "github:tpwrules/nixos-apple-silicon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, apple-silicon, ... }:
   let
     # Shared home-manager module
     homeManagerModule = {
@@ -36,7 +40,13 @@
     # MacBook Pro — Apple M2 Pro, Asahi Linux
     nixosConfigurations.macbook-pro = mkHost {
       system = "aarch64-linux";
-      modules = [ ./hosts/macbook/configuration.nix ];
+      modules = [
+        ./hosts/macbook/configuration.nix
+        apple-silicon.nixosModules.apple-silicon-support
+        {
+          nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
+        }
+      ];
     };
   };
 }

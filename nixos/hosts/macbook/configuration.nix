@@ -6,29 +6,23 @@
     ../../shared/system.nix
   ];
 
-  # ── Boot (Asahi uses m1n1, not systemd-boot) ──
-  # Asahi-specific bootloader config goes here after install
+  # ── Boot (Asahi uses m1n1 + U-Boot, not GRUB/systemd-boot) ──
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = false;
 
   # ── Networking ──
   networking.hostName = "macbook-pro";
   networking.networkmanager.enable = true;
+  networking.networkmanager.wifi.backend = "iwd";
 
-  # ── Asahi hardware ──
-  # These will be filled in after the Asahi install generates hardware-configuration.nix
-  # hardware.asahi = {
-  #   enable = true;
-  #   withAudio = true;
-  # };
+  # ── Keyboard layout fix ──
+  boot.extraModprobeConfig = ''
+    options hid_apple iso_layout=0
+  '';
 
-  # ── No Steam (Asahi GPU doesn't support gaming) ──
-  # programs.steam.enable = false;  # not enabled in shared config
-
-  # ── No Nvidia-specific packages ──
-  # No LD_LIBRARY_PATH, no nvidia drivers, no fan control
-
-  # ── Battery: charge limit to 80% ──
-  # TODO: Add services.udev.extraRules for battery charge limit
-  # TODO: Add notification when capacity hits 80%
+  # ── Asahi firmware (loads from /boot/asahi by default) ──
+  # Build with --impure to allow reading firmware from /boot/asahi
+  hardware.asahi.useExperimentalGPUDriver = true;
 
   # ── Console ──
   console = {
