@@ -10,6 +10,19 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  # ── Fix Linux 7.0 PREEMPT config change on ARM64 ──
+  boot.kernelPatches = [{
+    name = "preempt-fix";
+    patch = null;
+    structuredExtraConfig = with lib.kernel; {
+      PREEMPT = yes;
+      PREEMPT_VOLUNTARY = no;
+      FB_HYPERV = no;
+      HIPPI = no;
+      NFS_V4_1 = no;
+    };
+  }];
+
   # ── Networking ──
   networking.hostName = "macbook-pro";
   networking.networkmanager.enable = true;
@@ -21,7 +34,6 @@
   '';
 
   # ── Asahi firmware ──
-  # Copy firmware files into the flake to avoid impure /boot/asahi reference
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
   # ── Console ──
