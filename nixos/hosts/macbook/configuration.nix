@@ -20,9 +20,9 @@
     options hid_apple iso_layout=0
   '';
 
-  # ── Asahi firmware (loads from /boot/asahi by default) ──
-  # Build with --impure to allow reading firmware from /boot/asahi
-  hardware.asahi.useExperimentalGPUDriver = true;
+  # ── Asahi firmware ──
+  # Copy firmware files into the flake to avoid impure /boot/asahi reference
+  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
   # ── Console ──
   console = {
