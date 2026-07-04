@@ -41,6 +41,8 @@
   environment.systemPackages = with pkgs; [
     lm_sensors
     pcsx2
+    spotify
+    protonmail-desktop
     xwayland-satellite
   ];
 

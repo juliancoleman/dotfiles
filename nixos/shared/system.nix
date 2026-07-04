@@ -135,8 +135,6 @@
     element-desktop
     whatsie
     bitwarden-desktop
-    spotify
-    protonmail-desktop
     # Productivity
     libreoffice
     obsidian
