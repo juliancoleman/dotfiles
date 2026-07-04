@@ -15,11 +15,7 @@
     name = "preempt-fix";
     patch = null;
     structuredExtraConfig = with lib.kernel; {
-      PREEMPT = yes;
-      PREEMPT_VOLUNTARY = no;
-      FB_HYPERV = no;
-      HIPPI = no;
-      NFS_V4_1 = no;
+      PREEMPT = lib.mkForce yes;
     };
   }];
 
