@@ -10,12 +10,18 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # ── Fix Linux 7.0 PREEMPT config change on ARM64 ──
+  # ── Fix Linux 7.0 kernel config for ARM64 ──
+  # Linux 7.0 removed PREEMPT_NONE, PREEMPT_VOLUNTARY and some other options
+  # on ARM64. Force them off to avoid build errors.
   boot.kernelPatches = [{
-    name = "preempt-fix";
+    name = "linux-7.0-arm64-fix";
     patch = null;
     structuredExtraConfig = with lib.kernel; {
       PREEMPT = lib.mkForce yes;
+      PREEMPT_VOLUNTARY = lib.mkForce no;
+      FB_HYPERV = lib.mkForce no;
+      HIPPI = lib.mkForce no;
+      NFS_V4_1 = lib.mkForce no;
     };
   }];
 
