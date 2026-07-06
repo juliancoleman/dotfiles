@@ -14,6 +14,8 @@ capacity=$(cat "$BAT/capacity" 2>/dev/null || echo "0")
 status=$(cat "$BAT/status" 2>/dev/null || echo "Unknown")
 time_to_empty=$(cat "$BAT/time_to_empty_now" 2>/dev/null || echo "0")
 time_to_full=$(cat "$BAT/time_to_full_now" 2>/dev/null || echo "0")
+ac_online=$(cat /sys/class/power_supply/macsmc-ac/online 2>/dev/null || echo "0")
+charge_limit=$(cat "$BAT/charge_control_end_threshold" 2>/dev/null || echo "0")
 
 # Battery health (max capacity vs design)
 energy_full=$(cat "$BAT/energy_full" 2>/dev/null || echo "0")
@@ -63,20 +65,29 @@ else
     icon="󰁺"
 fi
 
-# Charging icon overlay
+# Determine display state
 if [ "$status" = "Charging" ]; then
     icon="󰂄"
-    tooltip="Charging: ${capacity}% (80% limit)\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
+    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
 elif [ "$status" = "Full" ]; then
     icon="󰁹"
     tooltip="Full: ${capacity}%\nBattery health: ${health}%"
+elif [ "$ac_online" = "1" ] && [ "$charge_limit" -gt 0 ] 2>/dev/null; then
+    # Plugged in but charge limit is holding — SMC inhibits charging,
+    # so the kernel reports Discharging even though AC is connected.
+    icon="󰟊"
+    tooltip="Plugged in: ${capacity}% (charge limited to ${charge_limit}%)\nBattery health: ${health}%"
 else
     tooltip="${capacity}%\nTime remaining: $(format_time "$time_to_empty")\nBattery health: ${health}%"
 fi
 
 # Build JSON
 text="${icon}"
-class=$(echo "$status" | tr '[:upper:]' '[:lower:]')
+if [ "$ac_online" = "1" ] && [ "$charge_limit" -gt 0 ] 2>/dev/null && [ "$status" != "Charging" ] && [ "$status" != "Full" ]; then
+    class="charging"
+else
+    class=$(echo "$status" | tr '[:upper:]' '[:lower:]')
+fi
 
 # Use printf for proper JSON escaping of newlines in tooltip
 printf '{"text":"%s","class":"%s","tooltip":"%s"}' "$text" "$class" "$tooltip"
