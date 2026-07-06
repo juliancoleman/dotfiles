@@ -55,6 +55,12 @@
     '';
   };
 
+  # ── MacBook-only apps (heavy qtwebengine — not in shared) ──
+  environment.systemPackages = with pkgs; [
+    whatsie
+    bambu-studio
+  ];
+
   # ── Console ──
   console = {
     earlySetup = true;
