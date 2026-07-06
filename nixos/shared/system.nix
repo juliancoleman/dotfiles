@@ -12,7 +12,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "sh -c 'sleep 2 && exec niri-session'";
+        command = "sh -c 'sleep 5 && exec niri-session'";
         user = "julian";
       };
     };
