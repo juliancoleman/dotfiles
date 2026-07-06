@@ -14,16 +14,12 @@ if [ -n "$MACSMC_HWMON" ]; then
         [ -e "$f" ] || continue
         rpm=$(cat "$f" 2>/dev/null)
         [ -z "$rpm" ] && continue
+        # Derive label file and keep the name short so the tooltip fits
+        # on screen (bar is on the right edge, tooltip extends left).
         lbl=$(echo "$f" | sed 's/_input$/_label/')
-        name=$(cat "$lbl" 2>/dev/null)
+        name=$(cat "$lbl" 2>/dev/null | sed 's/Fan //')
         [ -z "$name" ] && name=$(basename "$f" _input)
-        # On Apple Silicon 0 RPM is a real reading (fans spin down at idle),
-        # not a missing header — report the actual figure.
-        if [ "$rpm" -eq 0 ]; then
-            tooltip="${tooltip}${name}: 0 RPM (idle)\n"
-        else
-            tooltip="${tooltip}${name}: ${rpm} RPM\n"
-        fi
+        tooltip="${tooltip}${name}: ${rpm}\n"
     done
 fi
 
