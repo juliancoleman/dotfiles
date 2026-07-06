@@ -222,4 +222,5 @@
   xdg.configFile."waybar/scripts/mem.sh".source = ../waybar/scripts/mem.sh;
   xdg.configFile."waybar/scripts/sleep.sh".source = ../waybar/scripts/sleep.sh;
   xdg.configFile."waybar/scripts/time_jp.sh".source = ../waybar/scripts/time_jp.sh;
+  xdg.configFile."waybar/scripts/battery.sh".source = ../waybar/scripts/battery.sh;
 }

@@ -49,7 +49,16 @@
   },
   "group/hardware": {
     "orientation": "vertical",
-    "modules": [ "custom/cpu", "custom/mem", "custom/gpu", "custom/disk" ]
+    "modules": [ "custom/battery", "custom/cpu", "custom/mem", "custom/gpu", "custom/disk" ]
+  },
+  "custom/battery": {
+    "exec": "~/.config/waybar/scripts/battery.sh",
+    "interval": 30,
+    "return-type": "json",
+    "format": "{text}",
+    "tooltip": true,
+    "justify": "center",
+    "class": "hidden"
   },
   "custom/cpu": {
     "exec": "~/.config/waybar/scripts/cpu.sh",
