@@ -31,9 +31,9 @@ if [ -n "$NCT_HWMON" ]; then
         rpm=$(cat "${NCT_DIR}/fan${i}_input" 2>/dev/null)
         [ -z "$rpm" ] && continue
         if [ "$rpm" -eq 0 ]; then
-            tooltip="${tooltip}Fan ${i}: --\n"
+            tooltip="${tooltip}${i}: --\n"
         else
-            tooltip="${tooltip}Fan ${i}: ${rpm} RPM\n"
+            tooltip="${tooltip}${i}: ${rpm}\n"
         fi
     done
 fi
