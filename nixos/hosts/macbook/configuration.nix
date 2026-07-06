@@ -39,7 +39,9 @@
   '';
 
   # ── Asahi firmware ──
-  hardware.asahi.peripheralFirmwareDirectory = ./firmware;
+  # Provided by the `asahi-firmware` flake input (local path outside git,
+  # since these are Apple binary blobs that must not be committed).
+  # See flake.nix: hardware.asahi.peripheralFirmwareDirectory = asahi-firmware;
 
   # ── Battery: limit charge to 80% to preserve lifespan ──
   systemd.services.battery-charge-limit = {

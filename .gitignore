@@ -1,5 +1,3 @@
 fish/.config/fish/fish_variables
 
-# Asahi firmware blobs — local only, never commit (Apple binary firmware)
-nixos/hosts/macbook/firmware/*.tar.gz
-nixos/hosts/macbook/firmware/kernelcache.*
+nixos/result

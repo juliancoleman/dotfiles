@@ -17,6 +17,18 @@
       },
       "parent": []
     },
+    "asahi-firmware": {
+      "locked": {
+        "lastModified": 0,
+        "narHash": "sha256-I9TodWvPEw64VvUmUIl8V0g8oZIlPjrl2yOpEC7d7wQ=",
+        "path": "/home/julian/asahi-firmware",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/julian/asahi-firmware",
+        "type": "path"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -71,6 +83,7 @@
     "root": {
       "inputs": {
         "apple-silicon": "apple-silicon",
+        "asahi-firmware": "asahi-firmware",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs"
       }
