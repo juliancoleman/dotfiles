@@ -149,6 +149,7 @@
     # Utilities
     noto-fonts-color-emoji
     wl-clipboard
+    brightnessctl
     grim
     slurp
   ];
