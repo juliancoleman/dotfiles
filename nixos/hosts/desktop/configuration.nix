@@ -44,6 +44,9 @@
     spotify
     protonmail-desktop
     xwayland-satellite
+    # Desktop-only heavy apps (qtwebengine — too heavy for MacBook)
+    whatsie
+    bambu-studio
   ];
 
   # ── EGL library path for Electron apps on Nvidia ──

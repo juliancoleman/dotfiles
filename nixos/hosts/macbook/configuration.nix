@@ -10,11 +10,11 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # ── Fix Linux 7.0 kernel config for ARM64 ──
-  # Linux 7.0 removed several config options on ARM64.
-  # Use structuredExtraConfig with mkForce to override nixpkgs defaults.
+  # ── Kernel config: asahi 6.17 kernel differs from nixpkgs ARM64 defaults ──
+  # Several options nixpkgs expects don't exist in the asahi kernel.
+  # Use `option` to suppress the config checker error for missing options.
   boot.kernelPatches = [{
-    name = "linux-7.0-arm64-fix";
+    name = "asahi-kernel-config-fix";
     patch = null;
     structuredExtraConfig = with lib.kernel; {
       PREEMPT = lib.mkForce yes;
@@ -22,6 +22,9 @@
       FB_HYPERV = lib.mkForce (option no);
       HIPPI = lib.mkForce (option no);
       NFS_V4_1 = lib.mkForce (option no);
+      NFS_V4_2 = lib.mkForce (option no);
+      NFS_V4_SECURITY_LABEL = lib.mkForce (option no);
+      NOVA_CORE = lib.mkForce (option no);
     };
   }];
 

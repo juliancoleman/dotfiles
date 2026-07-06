@@ -122,7 +122,6 @@
   # ── Packages ───────────────────────────────────────────────────
   home.packages = with pkgs; [
     brave
-    pkgs.catppuccin-cursors.latteLight
   ];
   # ── Session variables & paths ──────────────────────────────────
   home.sessionVariables = {

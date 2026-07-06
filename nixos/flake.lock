@@ -8,20 +8,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1783079127,
-        "narHash": "sha256-mNuifmp/gJ73tsLDAf6Q4iwhuDCSrS88G7BlvAsa42E=",
-        "owner": "tpwrules",
-        "repo": "nixos-apple-silicon",
-        "rev": "8c666069ee3070445b1040f9aa357b78c08eb9ce",
-        "type": "github"
+        "path": "./apple-silicon-support",
+        "type": "path"
       },
       "original": {
-        "owner": "tpwrules",
-        "repo": "nixos-apple-silicon",
-        "type": "github"
-      }
+        "path": "./apple-silicon-support",
+        "type": "path"
+      },
+      "parent": []
     },
     "flake-compat": {
+      "flake": false,
       "locked": {
         "lastModified": 1761640442,
         "narHash": "sha256-AtrEP6Jmdvrqiv4x2xa5mrtaIp3OEe8uBYCDZDS+hu8=",
