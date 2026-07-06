@@ -15,6 +15,15 @@ status=$(cat "$BAT/status" 2>/dev/null || echo "Unknown")
 time_to_empty=$(cat "$BAT/time_to_empty_now" 2>/dev/null || echo "0")
 time_to_full=$(cat "$BAT/time_to_full_now" 2>/dev/null || echo "0")
 
+# Battery health (max capacity vs design)
+energy_full=$(cat "$BAT/energy_full" 2>/dev/null || echo "0")
+energy_design=$(cat "$BAT/energy_full_design" 2>/dev/null || echo "1")
+if [ "$energy_design" -gt 0 ] 2>/dev/null; then
+    health=$((energy_full * 100 / energy_design))
+else
+    health=0
+fi
+
 # Format time estimate
 format_time() {
     seconds=$1
@@ -57,12 +66,12 @@ fi
 # Charging icon overlay
 if [ "$status" = "Charging" ]; then
     icon="󰂄"
-    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")"
+    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
 elif [ "$status" = "Full" ]; then
     icon="󰁹"
-    tooltip="Full: ${capacity}%"
+    tooltip="Full: ${capacity}%\nBattery health: ${health}%"
 else
-    tooltip="${capacity}%\nTime remaining: $(format_time "$time_to_empty")"
+    tooltip="${capacity}%\nTime remaining: $(format_time "$time_to_empty")\nBattery health: ${health}%"
 fi
 
 # Build JSON

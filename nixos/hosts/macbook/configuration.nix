@@ -41,6 +41,20 @@
   # ── Asahi firmware ──
   hardware.asahi.peripheralFirmwareDirectory = ./firmware;
 
+  # ── Battery: limit charge to 80% to preserve lifespan ──
+  systemd.services.battery-charge-limit = {
+    description = "Limit battery charge to 80%";
+    after = [ "sysinit.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      echo 80 > /sys/class/power_supply/macsmc-battery/charge_control_end_threshold
+    '';
+  };
+
   # ── Console ──
   console = {
     earlySetup = true;
