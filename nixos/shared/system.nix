@@ -12,11 +12,14 @@
     enable = true;
     settings = {
       default_session = {
-        command = "niri-session";
-        user = "julian";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
+        user = "greeter";
       };
     };
   };
+
+  # Force niri to use the asahi GPU render node only (skip appledrm display card)
+  environment.sessionVariables.WLR_DRM_DEVICES = "/dev/dri/card2:/dev/dri/renderD128";
 
   # ── SSH ──
   services.openssh = {
