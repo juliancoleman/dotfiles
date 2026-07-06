@@ -18,9 +18,7 @@
     };
   };
 
-  # Force niri to use the asahi GPU render node only (skip appledrm display card)
-  environment.sessionVariables.WLR_DRM_DEVICES = "/dev/dri/card2:/dev/dri/renderD128";
-
+  # (WLR_DRM_DEVICES removed — niri/smithay doesn't read it; using udev rule instead)
   # ── SSH ──
   services.openssh = {
     enable = true;
@@ -50,6 +48,13 @@
   # ── Compositor ──
   programs.niri.enable = true;
   programs.xwayland.enable = true;
+
+  # Hide appledrm display card (card1) from non-root users so niri
+  # always falls back to the asahi GPU (card2) for both display and rendering.
+  # Without this, niri sometimes picks card1 as primary (no GPU render) and fails.
+  services.udev.extraRules = ''
+    KERNEL=="card1", SUBSYSTEM=="drm", DRIVERS=="apple-drm", MODE="0600", OWNER="root"
+  '';
 
   # ── Bluetooth ──
   hardware.bluetooth.enable = true;
