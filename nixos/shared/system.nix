@@ -53,7 +53,7 @@
   # always falls back to the asahi GPU (card2) for both display and rendering.
   # Without this, niri sometimes picks card1 as primary (no GPU render) and fails.
   services.udev.extraRules = ''
-    KERNEL=="card1", SUBSYSTEM=="drm", DRIVERS=="apple-drm", MODE="0600", OWNER="root"
+    KERNEL=="card1", SUBSYSTEM=="drm", ENV{ID_PATH}=="platform-soc:display-subsystem", MODE="0600", OWNER="root", TAG-="systemd"
   '';
 
   # ── Bluetooth ──
