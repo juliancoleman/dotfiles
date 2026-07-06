@@ -12,7 +12,11 @@
     enable = true;
     settings = {
       default_session = {
-        command = "sh -c 'sleep 5 && exec niri-session'";
+        # Asahi GPU driver needs a few seconds after boot before niri can
+        # grab the DRM device; the desktop has no such race.
+        command = if config.networking.hostName == "macbook-pro"
+          then "sh -c 'sleep 5 && exec niri-session'"
+          else "niri-session";
         user = "julian";
       };
     };
