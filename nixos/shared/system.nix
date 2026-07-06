@@ -12,7 +12,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "niri-session";
+        command = "sleep 2 && niri-session";
         user = "julian";
       };
     };
@@ -49,12 +49,6 @@
   programs.niri.enable = true;
   programs.xwayland.enable = true;
 
-  # Hide appledrm display card (card1) from non-root users so niri
-  # always falls back to the asahi GPU (card2) for both display and rendering.
-  # Without this, niri sometimes picks card1 as primary (no GPU render) and fails.
-  services.udev.extraRules = ''
-    KERNEL=="card1", SUBSYSTEM=="drm", ENV{ID_PATH}=="platform-soc:display-subsystem", MODE="0600", OWNER="root", TAG-="systemd"
-  '';
 
   # ── Bluetooth ──
   hardware.bluetooth.enable = true;
