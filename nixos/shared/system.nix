@@ -5,6 +5,9 @@
   time.timeZone = "America/Denver";
 
   # ── Boot login ──
+  # greetd auto-creates julian's session (no password here).
+  # niri starts and immediately spawns hyprlock, which is the sole
+  # authentication gate. Single login, GPU-rendered lock screen.
   services.greetd = {
     enable = true;
     settings = {
@@ -58,11 +61,14 @@
   users.users.julian = {
     shell = pkgs.fish;
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "video" "render" ];
   };
 
   # ── Security ──
   security.sudo.wheelNeedsPassword = false;
+  security.pam.services.greetd.rules.session.systemd.settings = {
+    type = "wayland";
+  };
   security.pam.services.hyprlock = {};
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
@@ -133,13 +139,11 @@
     telegram-desktop
     vesktop
     element-desktop
-    whatsie
     bitwarden-desktop
     # Productivity
     libreoffice
     obsidian
     openscad
-    bambu-studio
     # Utilities
     noto-fonts-color-emoji
     wl-clipboard

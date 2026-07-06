@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     apple-silicon = {
-      url = "github:tpwrules/nixos-apple-silicon";
+      url = "path:./apple-silicon-support";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
