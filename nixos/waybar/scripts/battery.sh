@@ -66,7 +66,7 @@ else
 fi
 
 # Build JSON
-text="${icon} ${capacity}%"
+text="${icon}"
 class=$(echo "$status" | tr '[:upper:]' '[:lower:]')
 
 # Use printf for proper JSON escaping of newlines in tooltip
