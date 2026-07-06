@@ -66,7 +66,7 @@ fi
 # Charging icon overlay
 if [ "$status" = "Charging" ]; then
     icon="󰂄"
-    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
+    tooltip="Charging: ${capacity}% (80% limit)\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
 elif [ "$status" = "Full" ]; then
     icon="󰁹"
     tooltip="Full: ${capacity}%\nBattery health: ${health}%"
