@@ -8,17 +8,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     apple-silicon = {
-      url = "path:./apple-silicon-support";
+      url = "github:nix-community/nixos-apple-silicon";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # Asahi firmware blobs — local-only, outside git (Apple binary firmware).
-    # Present only on the MacBook; the desktop never builds .#macbook-pro.
-    asahi-firmware = {
-      url = "path:/home/julian/asahi-firmware";
     };
   };
 
-  outputs = { nixpkgs, home-manager, apple-silicon, asahi-firmware, ... }:
+  outputs = { nixpkgs, home-manager, apple-silicon, ... }:
   let
     # Shared home-manager module
     homeManagerModule = {
@@ -50,7 +45,6 @@
         apple-silicon.nixosModules.apple-silicon-support
         {
           nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
-          hardware.asahi.peripheralFirmwareDirectory = asahi-firmware;
         }
       ];
     };

@@ -10,23 +10,37 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # ── Kernel config: asahi 6.17 kernel differs from nixpkgs ARM64 defaults ──
-  # Several options nixpkgs expects don't exist in the asahi kernel.
-  # Use `option` to suppress the config checker error for missing options.
-  boot.kernelPatches = [{
-    name = "asahi-kernel-config-fix";
-    patch = null;
-    structuredExtraConfig = with lib.kernel; {
-      PREEMPT = lib.mkForce yes;
-      PREEMPT_VOLUNTARY = lib.mkForce (option no);
-      FB_HYPERV = lib.mkForce (option no);
-      HIPPI = lib.mkForce (option no);
-      NFS_V4_1 = lib.mkForce (option no);
-      NFS_V4_2 = lib.mkForce (option no);
-      NFS_V4_SECURITY_LABEL = lib.mkForce (option no);
-      NOVA_CORE = lib.mkForce (option no);
-    };
-  }];
+  # ── Asahi render patch ──
+  # Remove ioctl::AUTH from asahi DRM ioctls so non-root render clients
+  # (Mesa) can submit without master auth. Upstream keeps AUTH on; this
+  # patch drops it. Flows into the kernel build via the apple-silicon
+  # module's _kernelPatches mechanism.
+  boot.kernelPatches = [
+    {
+      # ── Asahi render patch ──
+      # Remove ioctl::AUTH from asahi DRM ioctls so non-root render clients
+      # (Mesa) can submit without master auth. Upstream keeps AUTH on.
+      name = "asahi-render-no-auth";
+      patch = ./asahi-render-auth.patch;
+    }
+    {
+      # ── Asahi kernel config fix ──
+      # The asahi kernel (7.0) still lacks several options nixpkgs expects.
+      # Use `option` to suppress the config checker error for missing options.
+      name = "asahi-kernel-config-fix";
+      patch = null;
+      structuredExtraConfig = with lib.kernel; {
+        PREEMPT = lib.mkForce yes;
+        PREEMPT_VOLUNTARY = lib.mkForce (option no);
+        FB_HYPERV = lib.mkForce (option no);
+        HIPPI = lib.mkForce (option no);
+        NFS_V4_1 = lib.mkForce (option no);
+        NFS_V4_2 = lib.mkForce (option no);
+        NFS_V4_SECURITY_LABEL = lib.mkForce (option no);
+        NOVA_CORE = lib.mkForce (option no);
+      };
+    }
+  ];
 
   # ── Networking ──
   networking.hostName = "macbook-pro";
@@ -39,9 +53,8 @@
   '';
 
   # ── Asahi firmware ──
-  # Provided by the `asahi-firmware` flake input (local path outside git,
-  # since these are Apple binary blobs that must not be committed).
-  # See flake.nix: hardware.asahi.peripheralFirmwareDirectory = asahi-firmware;
+  # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
+  # (put there by the Asahi installer). No explicit config needed.
 
   # ── Battery: limit charge to 80% to preserve lifespan ──
   systemd.services.battery-charge-limit = {

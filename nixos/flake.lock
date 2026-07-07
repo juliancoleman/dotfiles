@@ -8,29 +8,20 @@
         ]
       },
       "locked": {
-        "path": "./apple-silicon-support",
-        "type": "path"
+        "lastModified": 1783369332,
+        "narHash": "sha256-wj3OfG/8F4f4ZlKe2ljxlmFcrUiCIBdlxq7x9wu0ecQ=",
+        "owner": "nix-community",
+        "repo": "nixos-apple-silicon",
+        "rev": "c71244eb1f242dfe6d504527bb886fd2bb8bb856",
+        "type": "github"
       },
       "original": {
-        "path": "./apple-silicon-support",
-        "type": "path"
-      },
-      "parent": []
-    },
-    "asahi-firmware": {
-      "locked": {
-        "lastModified": 0,
-        "narHash": "sha256-I9TodWvPEw64VvUmUIl8V0g8oZIlPjrl2yOpEC7d7wQ=",
-        "path": "/home/julian/asahi-firmware",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/julian/asahi-firmware",
-        "type": "path"
+        "owner": "nix-community",
+        "repo": "nixos-apple-silicon",
+        "type": "github"
       }
     },
     "flake-compat": {
-      "flake": false,
       "locked": {
         "lastModified": 1761640442,
         "narHash": "sha256-AtrEP6Jmdvrqiv4x2xa5mrtaIp3OEe8uBYCDZDS+hu8=",
@@ -83,7 +74,6 @@
     "root": {
       "inputs": {
         "apple-silicon": "apple-silicon",
-        "asahi-firmware": "asahi-firmware",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs"
       }
