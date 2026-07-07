@@ -104,7 +104,7 @@
       "suspend": "~/.config/waybar/scripts/sleep.sh",
       "shutdown": "shutdown now",
       "reboot": "reboot",
-      "lock": "hyprlock --config /home/julian/dotfiles/nixos/niri/hyprlock.conf",
+      "lock": "hyprlock --config $HOME/dotfiles/nixos/niri/hyprlock.conf",
       "logout": "niri msg action quit"
     }
   }

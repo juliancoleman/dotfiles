@@ -1,4 +1,4 @@
-// Niri compositor config — migrated from Hyprland
+// Niri compositor config
 // Docs: https://niri-wm.github.io/niri/Configuration:-Introduction
 
 input {
@@ -15,10 +15,9 @@ input {
 }
 
 // ── Monitors ───────────────────────────────────────────────────
-// 2560x1440, let Niri pick highest refresh rate
-output "DP-2" {
-    mode "2560x1440@165.000"
-}
+// Let Niri auto-detect outputs and pick the highest refresh rate.
+// (The desktop's DP-2 and the MacBook's eDP are both handled correctly
+// without a hardcoded output block.)
 
 // ── Cursor ─────────────────────────────────────────────────────
 cursor {
@@ -29,7 +28,6 @@ cursor {
 // ── Environment ────────────────────────────────────────────────
 environment {
     QT_QPA_PLATFORM "wayland"
-    WAYLAND_DISPLAY "wayland-1"
     XDG_SESSION_TYPE "wayland"
     NIXOS_OZONE_WL "1"
 }
@@ -64,26 +62,17 @@ layout {
     }
 }
 // ── Named workspaces ────────────────────────────────────────────
-workspace "browser" {
-    open-on-output "DP-2"
-}
-workspace "terminal" {
-    open-on-output "DP-2"
-}
-workspace "scratch-1" {
-    open-on-output "DP-2"
-}
-workspace "scratch-2" {
-    open-on-output "DP-2"
-}
+workspace "browser"
+workspace "terminal"
+workspace "scratch-1"
+workspace "scratch-2"
 
 // ── Spawn at startup ──────────────────────────────────────────
 spawn-at-startup "waybar"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "mako"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
-spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swww.sh"
-spawn-at-startup "/home/julian/dotfiles/nixos/niri/start-swaylock.sh"
+spawn-at-startup "sh" "-c" "$HOME/dotfiles/nixos/niri/start-swww.sh"
 
 xwayland-satellite {
     path "xwayland-satellite"
@@ -98,8 +87,8 @@ binds {
     // Essentials
     Super+Return { spawn "ghostty"; }
     Super+Space { spawn "wofi" "--show" "drun"; }
-    Super+Alt+L { spawn "hyprlock" "--config" "/home/julian/dotfiles/nixos/niri/hyprlock.conf"; }
-    Super+U { spawn "/home/julian/dotfiles/nixos/niri/open-usb.sh"; }
+    Super+Alt+L { spawn-sh "hyprlock --config $HOME/dotfiles/nixos/niri/hyprlock.conf"; }
+    Super+U { spawn-sh "$HOME/dotfiles/nixos/niri/open-usb.sh"; }
     Super+Q { close-window; }
     Super+Shift+E { quit; }
 
@@ -167,8 +156,8 @@ binds {
     XF86AudioPrev  allow-when-locked=true { spawn "playerctl" "previous"; }
 
     // Screenshot
-    Print { spawn "/home/julian/dotfiles/nixos/niri/screenshot.sh"; }
-    Super+Shift+S { spawn "/home/julian/dotfiles/nixos/niri/screenshot-region.sh"; }
+    Print { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot.sh"; }
+    Super+Shift+S { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot-region.sh"; }
 }
 
 // ── Window rules ───────────────────────────────────────────────

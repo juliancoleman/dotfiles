@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -133,77 +133,40 @@
     "$HOME/.local/bin"
   ];
   # Hide terminal/system apps from wofi by overriding their .desktop files
-  xdg.dataFile."applications/btop.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=btop
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/vim.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=vim
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/gvim.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=gvim
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/nvim.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=nvim
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/yazi.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=yazi
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/nixos-manual.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=nixos-manual
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/nvidia-settings.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=nvidia-settings
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/org.freedesktop.Xwayland.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=org.freedesktop.Xwayland
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/xdg-desktop-portal-gnome.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=xdg-desktop-portal-gnome
-    NoDisplay=true
-  '';
-  xdg.dataFile."applications/xdg-desktop-portal-gtk.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=xdg-desktop-portal-gtk
-    NoDisplay=true
-  '';
-  # Proton Mail needs XWayland (native Wayland doesn't work)
-  xdg.dataFile."applications/proton-mail.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=Proton Mail
-    Exec=proton-mail --ozone-platform=x11 --no-sandbox %U
-    Icon=proton-mail
-    Categories=Network;Email;
-  '';
+  xdg.dataFile = lib.mkMerge [
+    (builtins.listToAttrs (map (name: {
+      name = "applications/${name}.desktop";
+      value.text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=${name}
+        NoDisplay=true
+      '';
+    }) [
+      "btop"
+      "vim"
+      "gvim"
+      "nvim"
+      "yazi"
+      "nixos-manual"
+      "nvidia-settings"
+      "org.freedesktop.Xwayland"
+      "xdg-desktop-portal-gnome"
+      "xdg-desktop-portal-gtk"
+    ]))
+    # Proton Mail needs XWayland (native Wayland doesn't work)
+    {
+      "applications/proton-mail.desktop".text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Proton Mail
+        Exec=proton-mail --ozone-platform=x11 --no-sandbox %U
+        Icon=proton-mail
+        Categories=Network;Email;
+      '';
+    }
+  ];
   # ── Niri compositor config ────────────────────────────────────
-  # Hide terminal/system apps from app launcher (wofi)
   xdg.configFile."niri/config.kdl".source = ../niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
   xdg.configFile."wofi/config".source = ../wofi/config;
