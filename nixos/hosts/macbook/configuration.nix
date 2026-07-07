@@ -10,16 +10,13 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # ── Asahi render patch ──
-  # Remove ioctl::AUTH from asahi DRM ioctls so non-root render clients
-  # (Mesa) can submit without master auth. Upstream keeps AUTH on; this
-  # patch drops it. Flows into the kernel build via the apple-silicon
-  # module's _kernelPatches mechanism.
   boot.kernelPatches = [
     {
       # ── Asahi render patch ──
       # Remove ioctl::AUTH from asahi DRM ioctls so non-root render clients
-      # (Mesa) can submit without master auth. Upstream keeps AUTH on.
+      # (Mesa) can submit without master auth. Upstream keeps AUTH on; this
+      # patch drops it. Flows into the kernel build via the apple-silicon
+      # module's _kernelPatches mechanism.
       name = "asahi-render-no-auth";
       patch = ./asahi-render-auth.patch;
     }

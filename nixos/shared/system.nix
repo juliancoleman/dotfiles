@@ -165,5 +165,24 @@
   nixpkgs.config.permittedInsecurePackages = [ "qtwebengine-5.15.19" "pnpm-10.29.2" "electron-39.8.10" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # ── Generation pruning ──
+  # Auto-prune old generations daily: keep current + 1, then GC.
+  # A system-maintenance concern — belongs here, not in a host's steam mount.
+  systemd.services.nixos-prune-generations = {
+    description = "Prune old NixOS generations (keep current + 1)";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.nix}/bin/nix-env --profile /nix/var/nix/profiles/system --delete-generations +2 && ${pkgs.nix}/bin/nix-collect-garbage -d'";
+    };
+  };
+  systemd.timers.nixos-prune-generations = {
+    description = "Daily generation pruning";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+
   system.stateVersion = "25.11";
 }
