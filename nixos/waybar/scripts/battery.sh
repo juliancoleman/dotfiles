@@ -26,6 +26,15 @@ else
     health=0
 fi
 
+# Battery temperature (macsmc_battery hwmon on Asahi)
+bat_temp=$(cat /sys/class/hwmon/hwmon0/temp1_input 2>/dev/null || echo "0")
+if [ "$bat_temp" -gt 0 ] 2>/dev/null; then
+    bat_temp_c=$(awk "BEGIN {printf \"%.1f\", $bat_temp/1000}")
+    bat_temp_line="Battery temp: ${bat_temp_c}C"
+else
+    bat_temp_line=""
+fi
+
 # Format time estimate
 format_time() {
     seconds=$1
@@ -68,17 +77,17 @@ fi
 # Determine display state
 if [ "$status" = "Charging" ]; then
     icon="󰂄"
-    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%"
+    tooltip="Charging: ${capacity}%\nTime to full: $(format_time "$time_to_full")\nBattery health: ${health}%\n${bat_temp_line}"
 elif [ "$status" = "Full" ]; then
     icon="󰁹"
-    tooltip="Full: ${capacity}%\nBattery health: ${health}%"
+    tooltip="Full: ${capacity}%\nBattery health: ${health}%\n${bat_temp_line}"
 elif [ "$ac_online" = "1" ] && [ "$charge_limit" -gt 0 ] 2>/dev/null; then
     # Plugged in but charge limit is holding — SMC inhibits charging,
     # so the kernel reports Discharging even though AC is connected.
     icon="󰟊"
-    tooltip="Plugged in: ${capacity}% (charge limited to ${charge_limit}%)\nBattery health: ${health}%"
+    tooltip="Plugged in: ${capacity}% (charge limited to ${charge_limit}%)\nBattery health: ${health}%\n${bat_temp_line}"
 else
-    tooltip="${capacity}%\nTime remaining: $(format_time "$time_to_empty")\nBattery health: ${health}%"
+    tooltip="${capacity}%\nTime remaining: $(format_time "$time_to_empty")\nBattery health: ${health}%\n${bat_temp_line}"
 fi
 
 # Build JSON
