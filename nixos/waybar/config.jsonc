@@ -9,7 +9,7 @@
   "layer": "top",
   "modules-left": [ "niri/workspaces" ],
   "modules-center": [ "custom/clock" ],
-  "modules-right": [ "privacy", "group/peripherals", "group/hardware", "custom/fans", "custom/power" ],
+  "modules-right": [ "privacy", "group/connectivity", "group/hardware", "group/power" ],
   "niri/workspaces": {
     "format": "",
     "on-click": "activate"
@@ -31,9 +31,9 @@
       { "type": "audio-in", "tooltip": true, "tooltip-icon-size": 24 }
     ]
   },
-  "group/peripherals": {
+  "group/connectivity": {
     "orientation": "vertical",
-    "modules": [ "bluetooth" ]
+    "modules": [ "bluetooth", "custom/wifi-popover", "custom/audio" ]
   },
   "bluetooth": {
     "format": "󰂯",
@@ -44,12 +44,12 @@
     "tooltip-format": "Not connected",
     "tooltip-format-connected": "{num_connections} connected:\n{device_enumerate}",
     "tooltip-format-enumerate-connected": "  {device_alias}",
-    "on-click": "~/.config/waybar/scripts/bluetooth_toggle.sh",
-    "on-click-right": "~/.config/waybar/scripts/bluetooth_picker.sh"
+    "on-click": "popover-shell bluetooth",
+    "on-click-right": "~/.config/waybar/scripts/bluetooth_toggle.sh"
   },
   "group/hardware": {
     "orientation": "vertical",
-    "modules": [ "custom/battery", "custom/cpu", "custom/mem", "custom/gpu", "custom/disk" ]
+    "modules": [ "custom/cpu", "custom/mem", "custom/gpu", "custom/disk", "custom/fans" ]
   },
   "custom/battery": {
     "exec": "~/.config/waybar/scripts/battery.sh",
@@ -64,6 +64,7 @@
     "exec": "~/.config/waybar/scripts/cpu.sh",
     "interval": 2,
     "return-type": "json",
+    "tooltip": true,
     "format": "{icon}",
     "format-icons": { "default": "󰻠" }
   },
@@ -71,6 +72,7 @@
     "exec": "~/.config/waybar/scripts/mem.sh",
     "interval": 2,
     "return-type": "json",
+    "tooltip": true,
     "format": "{icon}",
     "format-icons": { "default": "󰍛" }
   },
@@ -78,6 +80,7 @@
     "exec": "~/.config/waybar/scripts/gpu.sh",
     "interval": 2,
     "return-type": "json",
+    "tooltip": true,
     "format": "{icon}",
     "format-icons": { "default": "󰢮" }
   },
@@ -85,6 +88,7 @@
     "exec": "~/.config/waybar/scripts/disk.sh",
     "interval": 10,
     "return-type": "json",
+    "tooltip": true,
     "format": "{icon}",
     "format-icons": { "default": "󰋊" }
   },
@@ -92,8 +96,27 @@
     "exec": "~/.config/waybar/scripts/fans.sh",
     "interval": 2,
     "return-type": "json",
+    "tooltip": true,
     "format": "{icon}",
     "format-icons": { "default": "󰈐" }
+  },
+  "custom/audio": {
+    "exec": "wpctl status 2>/dev/null | grep -q '\\[MUTED\\]' && echo '{\"text\":\"󰖁\",\"class\":\"muted\"}' || echo '{\"text\":\"󰕾\",\"class\":\"default\"}'",
+    "interval": 1,
+    "return-type": "json",
+    "format": "{text}",
+    "justify": "center",
+    "on-click": "popover-shell audio",
+    "on-click-right": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+    "on-click-middle": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+  },
+  "custom/wifi-popover": {
+    "format": "󰤨",
+    "format-disconnected": "󰀟",
+    "format-off": "󰂲",
+    "tooltip": false,
+    "on-click": "popover-shell wifi",
+    "justify": "center"
   },
   "custom/power": {
     "format": "󰐦",
@@ -107,5 +130,9 @@
       "lock": "hyprlock --config $HOME/dotfiles/nixos/niri/hyprlock.conf",
       "logout": "niri msg action quit"
     }
-  }
+  },
+  "group/power": {
+    "orientation": "vertical",
+    "modules": [ "custom/battery", "custom/power" ]
+  },
 }

@@ -50,9 +50,9 @@
   '';
 
   # ── Asahi firmware ──
-  # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
-  # (put there by the Asahi installer). No explicit config needed.
-
+  # Explicit path is needed because the default uses builtins.pathExists
+  # which can fail under Nix's sandboxed evaluator on newer nixpkgs.
+  hardware.asahi.peripheralFirmwareDirectory = lib.mkDefault /boot/vendorfw;
   # ── Battery: limit charge to 80% to preserve lifespan ──
   systemd.services.battery-charge-limit = {
     description = "Limit battery charge to 80%";

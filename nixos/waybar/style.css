@@ -81,10 +81,30 @@ window#waybar.hidden { }
   border-radius: 9999px;
   padding: 2px 2px 6px 2px;
 }
-#custom-power {
-  margin-top: 4px;
-  color: white;
+/* Gaps between the three logical groups: connectivity → hardware → power */
+#connectivity,
+#hardware {
+  margin-bottom: 8px;
+}
+/* Normalize ALL icon sizes in the right container. Nerdfont glyphs have
+   inconsistent advance widths — a fixed font-size + min-width + center
+   alignment keeps every icon visually balanced regardless of glyph metrics. */
+#custom-fans,
+#custom-power,
+#custom-wifi-popover,
+#custom-audio,
+#custom-battery,
+#bluetooth,
+#custom-cpu,
+#custom-mem,
+#custom-gpu,
+#custom-disk {
   font-size: 13px;
+  min-width: 20px;
+  padding: 0 2px;
+}
+#custom-audio.muted {
+  color: #81a1c1;
 }
 /* Menu styles */
 menu {
@@ -92,39 +112,10 @@ menu {
   background: rgb(30, 30, 30);
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
-menuitem {
-  color: white;
-  transition: 150ms background-color;
-  padding: 8px 16px;
-}
-menuitem:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-menuitem:first-child {
-  border-radius: 16px 16px 4px 4px;
-}
-menuitem:last-child {
-  border-radius: 4px 4px 16px 16px;
-}
-/* Hardware modules — dot indicators, color-only severity */
-#hardware,
-#peripherals {
-  margin: .5rem 0;
-}
-#bluetooth,
- #custom-cpu,
-#custom-gpu,
-#disk,
-#memory {
-  color: white;
-  font-size: 1rem;
-  min-width: 0;
-  min-height: 0.4rem;
-}
-/* Red = take action */
- #custom-cpu.critical,
-#memory.critical,
-#disk.critical,
+/* Color for critical hardware — sizing is handled by the normalization above */
+#custom-cpu.critical,
+#custom-mem.critical,
+#custom-disk.critical,
 #custom-gpu.critical {
   color: #ff4444;
 }

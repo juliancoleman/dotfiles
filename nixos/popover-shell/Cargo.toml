@@ -1,0 +1,33 @@
+[package]
+name = "popover-shell"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[[bin]]
+name = "popover-shell"
+path = "src/main.rs"
+
+[dependencies]
+# layer-shika is pre-1.0; pin to a git rev for API stability. The canonical
+# repo is codeberg; github is a temp mirror. Pin to the rev validated below.
+layer-shika = { git = "https://github.com/waydeerwm/layer-shika.git", rev = "0a68433" }
+# D-Bus for NetworkManager secret agent + wifi scan/connect
+zbus = { version = "5", default-features = false, features = ["tokio"] }
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+# Hot-reload file watching
+notify = "8"
+# Logging
+env_logger = "0.11"
+log = "0.4"
+# Sync locks (no poisoning — guards return directly)
+parking_lot = "0.12"
+# Error handling
+anyhow = "1"
+thiserror = "2"
+# Config parsing (the json-renderer-style declarative widget descriptors)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Secret agent needs async trait support on stable
+async-trait = "0.1"

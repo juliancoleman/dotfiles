@@ -15,7 +15,7 @@
         # Asahi GPU driver needs a few seconds after boot before niri can
         # grab the DRM device; the desktop has no such race.
         command = if config.networking.hostName == "macbook-pro"
-          then "sh -c 'sleep 5 && exec niri-session'"
+          then "sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do if [ -e /dev/dri/card0 ]; then sleep 2 && exec niri-session; fi; sleep 2; done; exec niri-session'"
           else "niri-session";
         user = "julian";
       };

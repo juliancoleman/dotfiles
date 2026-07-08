@@ -1,0 +1,580 @@
+import { LineEdit, ListView, ScrollView, Slider } from "std-widgets.slint";
+
+export struct NetworkEntry {
+    ssid: string,
+    signal: int,
+    security: string,
+    in-use: bool,
+}
+
+export struct BluetoothDevice {
+    name: string,
+    mac: string,
+    paired: bool,
+    connected: bool,
+}
+
+component ActionButton inherits Rectangle {
+    in property <string> label: "";
+    in property <bool> primary: false;
+    callback clicked();
+
+    height: 34px;
+    min-width: 72px;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: root.primary ? #ffffff66 : #ffffff33;
+    background: root.primary ? #ffffff24 : #0000004d;
+
+    Text {
+        text: root.label;
+        color: #f9fafb;
+        font-size: 13px;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+component IconButton inherits Rectangle {
+    in property <string> label: "";
+    callback clicked();
+
+    width: 26px;
+    height: 24px;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: #ffffff33;
+    background: #0000004d;
+
+    Text {
+        text: root.label;
+        color: #e5e7eb;
+        font-size: 13px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+component MiniBadge inherits Rectangle {
+    in property <string> label: "";
+    in property <color> tint: #60a5fa;
+
+    height: 20px;
+    min-width: 54px;
+    border-radius: 999px;
+    background: root.tint.with-alpha(0.18);
+    border-width: 1px;
+    border-color: root.tint.with-alpha(0.42);
+
+    Text {
+        text: root.label;
+        color: root.tint;
+        font-size: 10px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component Separator inherits Rectangle {
+    height: 1px;
+    background: #ffffff18;
+}
+
+component EmptyState inherits Rectangle {
+    in property <string> title: "";
+    in property <string> detail: "";
+
+    border-radius: 14px;
+    background: #0f172a;
+    border-width: 1px;
+    border-color: #ffffff14;
+    min-height: 92px;
+
+    VerticalLayout {
+        spacing: 6px;
+        padding: 16px;
+        alignment: center;
+
+        Text {
+            text: root.title;
+            color: #e5e7eb;
+            font-size: 14px;
+            font-weight: 700;
+            horizontal-alignment: center;
+        }
+        Text {
+            text: root.detail;
+            color: #94a3b8;
+            font-size: 12px;
+            horizontal-alignment: center;
+        }
+    }
+}
+
+export component WifiPicker inherits Window {
+    callback connect-request(int);
+    callback rescan-request();
+    callback close-popup();
+    callback resize-popup(length, length);
+
+    in-out property <[NetworkEntry]> networks;
+    in-out property <bool> scanning: false;
+    property <int> selected-index: -1;
+
+    function signal-icon(sig: int) -> string {
+        return sig >= 75 ? "▂▄▆█" : sig >= 50 ? "▂▄▆ " : sig >= 25 ? "▂▄  " : "▂   ";
+    }
+
+    title: "Wi-Fi";
+    background: #00000000;
+    preferred-width: 360px;
+    preferred-height: 480px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #000000cc;
+        border-radius: 14px;
+        border-width: 1px;
+        border-color: #ffffff4d;
+
+        VerticalLayout {
+            spacing: 10px;
+            padding: 12px;
+
+            HorizontalLayout {
+                spacing: 10px;
+                Text {
+                    text: "Wi-Fi";
+                    color: #f9fafb;
+                    font-size: 16px;
+                    font-weight: 800;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+                IconButton {
+                    label: "×";
+                    clicked => { root.close-popup(); }
+                }
+            }
+
+            Text {
+                text: "Available networks";
+                color: #d1d5db;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            Rectangle {
+                width: 100%;
+                height: 398px;
+                horizontal-stretch: 1;
+                vertical-stretch: 1;
+                background: #00000040;
+                border-width: 1px;
+                border-color: #ffffff22;
+
+                ScrollView {
+                    width: 100%;
+                    height: 100%;
+                    horizontal-stretch: 1;
+                    vertical-stretch: 1;
+                    ListView {
+                        width: 100%;
+                        height: 100%;
+                        for network[i] in root.networks : Rectangle {
+                        width: 100%;
+                        height: 54px;
+                        border-radius: 0px;
+                        background: i == root.selected-index ? #ffffff24 : network.in-use ? #14532d : #0000004d;
+                        border-width: 1px;
+                        border-color: i == root.selected-index ? #ffffff66 : #ffffff22;
+
+                        HorizontalLayout {
+                            spacing: 10px;
+                            padding: 10px;
+
+                            Text {
+                                text: root.signal-icon(network.signal);
+                                color: network.signal >= 50 ? #22c55e : #f59e0b;
+                                font-size: 15px;
+                                width: 38px;
+                                vertical-alignment: center;
+                                horizontal-alignment: center;
+                            }
+
+                            VerticalLayout {
+                                spacing: 2px;
+                                horizontal-stretch: 1;
+                                Text {
+                                    text: network.ssid;
+                                    color: #f8fafc;
+                                    font-size: 14px;
+                                    font-weight: 700;
+                                    vertical-alignment: center;
+                                }
+                                Text {
+                                    text: network.security;
+                                    color: #93c5fd;
+                                    font-size: 11px;
+                                    vertical-alignment: center;
+                                }
+                            }
+
+                            Text {
+                                text: network.in-use ? "Connected" : "";
+                                color: #86efac;
+                                font-size: 11px;
+                                font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        TouchArea {
+                            clicked => {
+                                root.selected-index = i;
+                                root.connect-request(i);
+                            }
+                        }
+                    }
+                }
+            }
+            }
+
+
+        }
+    }
+
+    init-timer := Timer {
+        interval: 1ms;
+        running: true;
+        triggered => {
+            init-timer.running = false;
+            root.resize-popup(root.preferred-width, root.preferred-height);
+        }
+    }
+}
+
+export component AudioPicker inherits Window {
+    callback set-volume(float);
+    callback toggle-mute();
+    callback close-popup();
+    callback resize-popup(length, length);
+
+    in-out property <float> volume: 0;
+    in-out property <bool> muted: false;
+    in-out property <string> sink-name: "Default output";
+
+    title: "Audio";
+    background: #050505;
+    preferred-width: 340px;
+    preferred-height: 220px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        border-radius: 22px;
+        border-width: 1px;
+        border-color: #ffffff24;
+
+        VerticalLayout {
+            spacing: 14px;
+            padding: 16px;
+
+            HorizontalLayout {
+                spacing: 10px;
+                Text {
+                    text: "Audio";
+                    color: #f9fafb;
+                    font-size: 20px;
+                    font-weight: 800;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+                ActionButton { label: "Close"; clicked => { root.close-popup(); } }
+            }
+
+            Text {
+                text: root.sink-name;
+                color: #94a3b8;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            HorizontalLayout {
+                spacing: 12px;
+                Text {
+                    text: root.muted ? "󰖁" : "󰕾";
+                    color: root.muted ? #f87171 : #60a5fa;
+                    font-size: 24px;
+                    width: 32px;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+                volume-slider := Slider {
+                    minimum: 0;
+                    maximum: 100;
+                    value: root.volume;
+                    changed => {
+                        root.volume = volume-slider.value;
+                        root.set-volume(root.volume);
+                    }
+                }
+            }
+
+            Separator {}
+
+            HorizontalLayout {
+                spacing: 10px;
+                Text {
+                    text: root.muted ? "Output muted" : "Output active";
+                    color: root.muted ? #f87171 : #86efac;
+                    font-size: 13px;
+                    font-weight: 700;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+                ActionButton {
+                    label: root.muted ? "Unmute" : "Mute";
+                    primary: root.muted;
+                    clicked => {
+                        root.muted = root.muted ? false : true;
+                        root.toggle-mute();
+                    }
+                }
+            }
+        }
+    }
+
+    init-timer := Timer {
+        interval: 1ms;
+        running: true;
+        triggered => {
+            init-timer.running = false;
+            root.resize-popup(root.preferred-width, root.preferred-height);
+        }
+    }
+}
+
+export component BluetoothPicker inherits Window {
+    callback scan-request() -> [BluetoothDevice];
+    callback toggle-power() -> bool;
+    callback connect-request(int);
+    callback close-popup();
+    callback resize-popup(length, length);
+
+    in-out property <[BluetoothDevice]> devices;
+    in-out property <bool> powered: false;
+    property <bool> scanning: false;
+    property <int> selected-index: -1;
+
+    title: "Bluetooth";
+    background: #050505;
+    preferred-width: 360px;
+    preferred-height: 460px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        border-radius: 22px;
+        border-width: 1px;
+        border-color: #ffffff24;
+
+        VerticalLayout {
+            spacing: 12px;
+            padding: 16px;
+
+            HorizontalLayout {
+                spacing: 10px;
+                Text {
+                    text: "Bluetooth";
+                    color: #f9fafb;
+                    font-size: 20px;
+                    font-weight: 800;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+                MiniBadge {
+                    label: root.powered ? "ON" : "OFF";
+                    tint: root.powered ? #22c55e : #f87171;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+                ActionButton {
+                    label: root.powered ? "Power off" : "Power on";
+                    clicked => { root.powered = root.toggle-power(); }
+                }
+                ActionButton {
+                    label: root.scanning ? "Scanning" : "Scan";
+                    primary: true;
+                    clicked => {
+                        root.scanning = true;
+                        root.devices = root.scan-request();
+                        root.powered = true;
+                        root.scanning = false;
+                    }
+                }
+            }
+
+            Text {
+                text: "Nearby and remembered devices";
+                color: #94a3b8;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            ScrollView {
+                vertical-stretch: 1;
+                ListView {
+                    for device[i] in root.devices : Rectangle {
+                        height: 58px;
+                        border-radius: 14px;
+                        background: device.connected ? #064e3b : i == root.selected-index ? #1d4ed8 : #0f172a;
+                        border-width: 1px;
+                        border-color: device.connected ? #34d399 : i == root.selected-index ? #60a5fa : #ffffff10;
+
+                        HorizontalLayout {
+                            spacing: 10px;
+                            padding: 10px;
+
+                            Text {
+                                text: device.connected ? "󰂱" : "󰂯";
+                                color: device.connected ? #86efac : #60a5fa;
+                                font-size: 20px;
+                                width: 32px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+
+                            VerticalLayout {
+                                spacing: 2px;
+                                horizontal-stretch: 1;
+                                Text {
+                                    text: device.name;
+                                    color: #f8fafc;
+                                    font-size: 14px;
+                                    font-weight: 700;
+                                }
+                                Text {
+                                    text: device.connected ? "Connected" : device.paired ? "Paired" : device.mac;
+                                    color: device.connected ? #86efac : #93c5fd;
+                                    font-size: 11px;
+                                }
+                            }
+                        }
+
+                        TouchArea {
+                            clicked => {
+                                root.selected-index = i;
+                                root.connect-request(i);
+                            }
+                        }
+                    }
+                }
+            }
+
+            EmptyState {
+                visible: root.devices.length == 0;
+                title: root.powered ? "No devices found" : "Bluetooth is off";
+                detail: root.powered ? "Tap Scan to search nearby devices." : "Power on, then scan.";
+            }
+
+            Separator {}
+            ActionButton { label: "Close"; clicked => { root.close-popup(); } }
+        }
+    }
+
+    init-timer := Timer {
+        interval: 1ms;
+        running: true;
+        triggered => {
+            init-timer.running = false;
+            root.resize-popup(root.preferred-width, root.preferred-height);
+        }
+    }
+}
+
+export component PasswordDialog inherits Window {
+    callback submit-password(string);
+    callback cancel();
+    callback close-popup();
+    callback resize-popup(length, length);
+
+    in-out property <string> network-name: "";
+    in-out property <string> error-message: "";
+    property <string> typed-password: "";
+
+    title: "Password";
+    background: #050505;
+    preferred-width: 320px;
+    preferred-height: 190px;
+
+    Rectangle {
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        border-radius: 22px;
+        border-width: 1px;
+        border-color: #ffffff24;
+
+        VerticalLayout {
+            spacing: 12px;
+            padding: 16px;
+
+            Text {
+                text: "Connect to " + root.network-name;
+                color: #f9fafb;
+                font-size: 16px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                horizontal-stretch: 1;
+            }
+
+            LineEdit {
+                placeholder-text: "Password";
+                input-type: password;
+                text: root.typed-password;
+                edited => { root.typed-password = self.text; }
+                accepted => { root.submit-password(self.text); }
+            }
+
+            Text {
+                text: root.error-message;
+                color: #f87171;
+                font-size: 12px;
+                visible: root.error-message == "" ? false : true;
+            }
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: center;
+                ActionButton { label: "Cancel"; clicked => { root.cancel(); } }
+                ActionButton { label: "Connect"; primary: true; clicked => { root.submit-password(root.typed-password); } }
+            }
+        }
+    }
+
+    init-timer := Timer {
+        interval: 1ms;
+        running: true;
+        triggered => {
+            init-timer.running = false;
+            root.resize-popup(root.preferred-width, root.preferred-height);
+        }
+    }
+}

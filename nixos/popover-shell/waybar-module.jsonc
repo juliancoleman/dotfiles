@@ -1,0 +1,14 @@
+// Waybar custom wifi module — launches popover-shell on click.
+// Add this to the "modules-right" array in config.jsonc, e.g.:
+//   "modules-right": [ ..., "custom/wifi-popover", ... ]
+//
+// Waybar's own config stays untouched (per the option #2 plan); this is an
+// additive module that delegates the interactive UX to popover-shell.
+"custom/wifi-popover": {
+  "format": "󰤨",
+  "format-disabled": " aeroplane",
+  "format-off": "󰂲",
+  "tooltip": false,
+  "on-click": "popover-shell",
+  "justify": "center"
+}
