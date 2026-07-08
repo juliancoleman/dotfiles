@@ -166,6 +166,52 @@
       '';
     }
   ];
+  # ── OMP coding agent config ───────────────────────────────────
+  # Mirrors Julian's workstation UI/tooling defaults, but leaves model providers
+  # out of Nix-managed config so each machine can choose its own backends.
+  home.file.".omp/agent/config.yml".text = ''
+    symbolPreset: nerd
+    theme:
+      dark: titanium
+      light: light-one
+    setupVersion: 1
+    defaultThinkingLevel: auto
+    shellPath: /run/current-system/sw/bin/fish
+    statusLine:
+      preset: compact
+      separator: slash
+      sessionAccent: true
+      transparent: true
+      compactThinkingLevel: false
+      showHookStatus: true
+    tui:
+      tight: false
+    display:
+      shimmer: classic
+      showTokenUsage: false
+      cacheMissMarker: true
+    goal:
+      enabled: true
+    hideThinkingBlock: true
+    memory:
+      backend: mnemopi
+    autolearn:
+      enabled: false
+    mnemopi:
+      scoping: per-project
+    edit:
+      mode: hashline
+    github:
+      enabled: true
+    browser:
+      cmux: false
+    task:
+      enableLsp: true
+    collab:
+      relayUrl: wss://my.omp.sh
+      webUrl: ""
+  '';
+
   # ── Niri compositor config ────────────────────────────────────
   xdg.configFile."niri/config.kdl".source = ../niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ../niri/hyprlock.conf;

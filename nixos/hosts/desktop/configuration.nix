@@ -1,5 +1,11 @@
 # Desktop host — Nvidia GTX 1080, B450 Tomahawk Max, dual SSD
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, nixpkgs-ollama, ... }:
+let
+  ollamaPkgs = import nixpkgs-ollama {
+    system = pkgs.stdenv.hostPlatform.system;
+    config.allowUnfree = true;
+  };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -37,9 +43,22 @@
   # ── Steam + gaming ──
   programs.steam.enable = true;
 
+  # ── Local LLM runtime ──
+  # GTX 1080: Nixpkgs CUDA builds target newer SMs; use Vulkan for Pascal GPU offload. Expose on LAN for
+  # laptop clients while keeping the model store on the desktop.
+  services.ollama = {
+    enable = true;
+    package = ollamaPkgs.ollama-vulkan;
+    host = "0.0.0.0";
+    port = 11434;
+    openFirewall = true;
+  };
+
   # ── Desktop-only packages ──
   environment.systemPackages = with pkgs; [
     lm_sensors
+    ollamaPkgs.ollama
+    llama-cpp
     pcsx2
     spotify
     protonmail-desktop

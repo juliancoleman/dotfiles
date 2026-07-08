@@ -2,6 +2,8 @@
   description = "Julian's NixOS build with Niri + Waybar";
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    # Keep the base system pinned while allowing newer Ollama builds for model compatibility.
+    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -22,7 +24,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, home-manager, apple-silicon, niri-flake, popover-shell, ... }:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, niri-flake, popover-shell, ... }:
   let
     # Shared home-manager module
     homeManagerModule = {
@@ -36,6 +38,7 @@
     # Helper to create a host
     mkHost = { system, modules }: nixpkgs.lib.nixosSystem {
       inherit system;
+      specialArgs = { inherit nixpkgs-ollama; };
       modules = modules ++ [ home-manager.nixosModules.home-manager homeManagerModule ];
     };
     # Override niri with the unstable build from niri-flake (fixes Asahi GPU).

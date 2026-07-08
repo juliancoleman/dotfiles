@@ -1,5 +1,30 @@
 # Shared system configuration — common to all hosts
 { config, lib, pkgs, ... }:
+let
+  ompVersion = "16.3.11";
+  ompSources = {
+    x86_64-linux = {
+      url = "https://github.com/can1357/oh-my-pi/releases/download/v${ompVersion}/omp-linux-x64";
+      hash = "sha256-jZXU3jrhds1UtgMP3fM+KEdENzzdt4C4tP7Woa1j840=";
+    };
+    aarch64-linux = {
+      url = "https://github.com/can1357/oh-my-pi/releases/download/v${ompVersion}/omp-linux-arm64";
+      hash = "sha256-Dqq4ldYkM/AJVUTodS4UPfu673c//BaL28fhU1oo4vM=";
+    };
+  };
+  ompSource = ompSources.${pkgs.stdenv.hostPlatform.system};
+  omp = pkgs.stdenvNoCC.mkDerivation {
+    pname = "omp";
+    version = ompVersion;
+    src = pkgs.fetchurl ompSource;
+    nativeBuildInputs = [ pkgs.patchelf ];
+    dontUnpack = true;
+    installPhase = ''
+      install -Dm755 $src $out/bin/omp
+      patchelf --set-interpreter ${pkgs.stdenv.cc.bintools.dynamicLinker} $out/bin/omp
+    '';
+  };
+in
 {
   # ── Time ──
   time.timeZone = "America/Denver";
@@ -128,6 +153,7 @@
     lazygit
     mise
     neovim
+    omp
     pay-respects
     ripgrep
     stow
