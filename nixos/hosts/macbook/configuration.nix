@@ -1,5 +1,11 @@
 # MacBook Pro M2 Pro host — Asahi Linux
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, nixpkgs-ollama, ... }:
+let
+  ollamaPkgs = import nixpkgs-ollama {
+    system = pkgs.stdenv.hostPlatform.system;
+    config.allowUnfree = true;
+  };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -43,6 +49,21 @@
   networking.hostName = "macbook-pro";
   networking.networkmanager.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
+
+  # ── Local LLM runtime ──
+  # Laptop runs Ollama locally for offline chat/coding. Keep it bound to localhost;
+  # the desktop remains the LAN-facing GPU-backed server.
+  services.ollama = {
+    enable = true;
+    package = ollamaPkgs.ollama;
+    host = "127.0.0.1";
+    port = 11434;
+    openFirewall = false;
+  };
+
+  environment.systemPackages = [
+    ollamaPkgs.ollama
+  ];
 
   # ── Keyboard layout fix ──
   boot.extraModprobeConfig = ''
