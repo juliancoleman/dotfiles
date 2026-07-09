@@ -92,6 +92,7 @@ window#waybar.hidden { }
 #custom-fans,
 #custom-power,
 #custom-wifi-popover,
+#custom-ethernet,
 #custom-audio,
 #custom-battery,
 #bluetooth,
@@ -119,9 +120,10 @@ menu {
 #custom-gpu.critical {
   color: #ff4444;
 }
-/* Hide the GPU widget on hosts where the driver exposes no GPU stats
-   (Asahi AGX). The custom/gpu script sets class="hidden" on those. */
-#custom-gpu.hidden {
+/* Hide host/state-dependent modules without leaving blank vertical gaps. */
+#custom-gpu.hidden,
+#custom-wifi-popover.hidden,
+#custom-ethernet.hidden {
   opacity: 0;
   min-width: 0;
   min-height: 0;

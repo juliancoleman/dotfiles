@@ -227,10 +227,12 @@
   xdg.configFile."waybar/scripts/calendar.sh".source = ../waybar/scripts/calendar.sh;
   xdg.configFile."waybar/scripts/cpu.sh".source = ../waybar/scripts/cpu.sh;
   xdg.configFile."waybar/scripts/disk.sh".source = ../waybar/scripts/disk.sh;
+  xdg.configFile."waybar/scripts/ethernet_status.sh".source = ../waybar/scripts/ethernet_status.sh;
   xdg.configFile."waybar/scripts/fans.sh".source = ../waybar/scripts/fans.sh;
   xdg.configFile."waybar/scripts/gpu.sh".source = ../waybar/scripts/gpu.sh;
   xdg.configFile."waybar/scripts/mem.sh".source = ../waybar/scripts/mem.sh;
   xdg.configFile."waybar/scripts/sleep.sh".source = ../waybar/scripts/sleep.sh;
   xdg.configFile."waybar/scripts/time_jp.sh".source = ../waybar/scripts/time_jp.sh;
+  xdg.configFile."waybar/scripts/wifi_status.sh".source = ../waybar/scripts/wifi_status.sh;
   xdg.configFile."waybar/scripts/battery.sh".source = ../waybar/scripts/battery.sh;
 }

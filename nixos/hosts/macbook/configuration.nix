@@ -74,6 +74,22 @@ in
   # Explicit path is needed because the default uses builtins.pathExists
   # which can fail under Nix's sandboxed evaluator on newer nixpkgs.
   hardware.asahi.peripheralFirmwareDirectory = lib.mkDefault /boot/vendorfw;
+
+  # ── Suspend ──
+  # Asahi currently exposes only s2idle (`/sys/power/mem_sleep`). There is no
+  # Linux deep-sleep/S3 backend to select yet, so make the best supported state
+  # explicit and ensure lid close suspends even on AC or when docked.
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "suspend";
+    HandleLidSwitchDocked = "suspend";
+  };
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=yes
+    SuspendState=mem
+    MemorySleepMode=s2idle
+  '';
+
   # ── Battery: limit charge to 80% to preserve lifespan ──
   systemd.services.battery-charge-limit = {
     description = "Limit battery charge to 80%";
