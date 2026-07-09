@@ -65,6 +65,15 @@ in
     ollamaPkgs.ollama
   ];
 
+  # ── Display brightness ──
+  # Niri handles the XF86 brightness keys, but brightnessctl runs as julian.
+  # Asahi's backlight sysfs attributes default to root:root 0644, so grant the
+  # existing video group write access whenever the backlight device appears.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/bl_power", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/bl_power"
+    ACTION=="change", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/bl_power", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/bl_power"
+  '';
+
   # ── Keyboard layout fix ──
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0
