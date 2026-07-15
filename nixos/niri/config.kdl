@@ -15,9 +15,12 @@ input {
 }
 
 // ── Monitors ───────────────────────────────────────────────────
-// Let Niri auto-detect outputs and pick the highest refresh rate.
-// (The desktop's DP-2 and the MacBook's eDP are both handled correctly
-// without a hardcoded output block.)
+// Desktop monitor on DP-2: 2560x1440 @ 165Hz. The panel's preferred
+// mode is 60Hz, so we set it explicitly to persist across reboots.
+output "DP-2" {
+    mode "2560x1440@165.000"
+    focus-at-startup
+}
 
 // ── Cursor ─────────────────────────────────────────────────────
 cursor {
@@ -73,6 +76,7 @@ spawn-at-startup "xwayland-satellite"
 spawn-at-startup "mako"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
 spawn-at-startup "sh" "-c" "$HOME/dotfiles/nixos/niri/start-swww.sh"
+spawn-at-startup "hypridle"
 
 xwayland-satellite {
     path "xwayland-satellite"

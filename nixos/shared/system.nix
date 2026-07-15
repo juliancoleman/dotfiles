@@ -13,6 +13,11 @@ let
     };
   };
   ompSource = ompSources.${pkgs.stdenv.hostPlatform.system};
+  yaziWithDbus = pkgs.writeShellScriptBin "yazi" ''
+    export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path:$XDG_RUNTIME_DIR/bus}"
+    exec ${pkgs.yazi}/bin/yazi "$@"
+  '';
   omp = pkgs.stdenvNoCC.mkDerivation {
     pname = "omp";
     version = ompVersion;
@@ -82,8 +87,9 @@ in
   # ── Bluetooth ──
   hardware.bluetooth.enable = true;
 
-  # ── Disk automount ──
+  # ── Disk / remote filesystem support ──
   services.udisks2.enable = true;
+  services.gvfs.enable = true;
 
   # ── Fish ──
   programs.fish.enable = true;
@@ -93,6 +99,7 @@ in
     shell = pkgs.fish;
     isNormalUser = true;
     extraGroups = [ "wheel" "video" "render" ];
+    linger = true;
   };
 
   # ── Security ──
@@ -142,8 +149,11 @@ in
     gh
     ghostty
     git
+    glib
     swww
     hyprlock
+    hypridle
+    wlopm
     bluetuith
     udiskie
     mako
@@ -163,7 +173,7 @@ in
     waybar
     wget
     wofi
-    yazi
+    yaziWithDbus
     zoxide
     # Communication
     signal-desktop

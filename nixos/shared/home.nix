@@ -1,4 +1,23 @@
 { config, lib, pkgs, ... }:
+let
+  gvfsYazi = pkgs.yaziPlugins.mkYaziPlugin {
+    pname = "gvfs.yazi";
+    version = "0-unstable-2026-03-29";
+    src = pkgs.fetchFromGitHub {
+      owner = "boydaihungst";
+      repo = "gvfs.yazi";
+      rev = "3abc0a258f9d7aeaa453a2d0d6e103c5a305953d";
+      hash = "sha256-UHneVJ+YXyDuPrZS+PZbs9n9h+VN5M2QG36FdprBkJc=";
+    };
+    postPatch = ''
+      substituteInPlace main.lua \
+        --replace-fail 'dbus_session = cha and true or false' 'dbus_session = true' \
+        --replace-fail 'error_msg = string.format(NOTIFY_MSG.HEADLESS_DETECTED)' 'error_msg = "This location cannot be mounted directly; use smb://server/share (for NAS H: smb://192.168.0.1/H)"'
+      substituteInPlace main.lua \
+        --replace-fail $'if selected_idx and selected_idx > 0 then\n\t\treturn selected_idx\n\tend' $'if type(selected_idx) == "number" and selected_idx > 0 then\n\t\treturn selected_idx\n\tend\n\tif type(selected_idx) == "string" then\n\t\tfor idx, key in ipairs(allow_key_array) do\n\t\t\tif selected_idx == tostring(key) then\n\t\t\t\treturn idx\n\t\t\tend\n\t\tend\n\tend'
+    '';
+  };
+in
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -212,9 +231,36 @@
       webUrl: ""
   '';
 
+  # ── Yazi file manager ──────────────────────────────────────────
+  xdg.configFile."yazi/yazi.toml".source = ../../yazi/.config/yazi/yazi.toml;
+  xdg.configFile."yazi/plugins/gvfs.yazi".source = gvfsYazi;
+  xdg.configFile."yazi/init.lua".text = ''
+    require("gvfs"):setup({
+      blacklist_devices = {
+        { uri = "smb://192.168.0.1" },
+        { uri = "smb://192.168.0.1/" },
+      },
+    })
+  '';
+  xdg.configFile."yazi/keymap.toml".text = ''
+    [mgr]
+    prepend_keymap = [
+      { on = [ "M", "H" ], run = [ 'shell --block "gio mount -a smb://192.168.0.1/H || true"', "cd /run/user/1000/gvfs/smb-share:server=192.168.0.1,share=h" ], desc = "Mount and open NAS H" },
+      { on = [ "M", "m" ], run = [ 'shell --block "gio mount -a smb://192.168.0.1/H || true"', "cd /run/user/1000/gvfs/smb-share:server=192.168.0.1,share=h" ], desc = "Mount and open NAS H" },
+      { on = [ "M", "g" ], run = "plugin gvfs -- select-then-mount --jump", desc = "Mount GVFS device or remote and jump" },
+      { on = [ "M", "u" ], run = "plugin gvfs -- select-then-unmount --eject", desc = "Unmount or eject GVFS mount" },
+      { on = [ "M", "a" ], run = "plugin gvfs -- add-mount", desc = "Add GVFS mount URI" },
+      { on = [ "M", "e" ], run = "plugin gvfs -- edit-mount", desc = "Edit GVFS mount URI" },
+      { on = [ "M", "r" ], run = "plugin gvfs -- remove-mount", desc = "Remove GVFS mount URI" },
+      { on = [ "M", "j" ], run = "plugin gvfs -- jump-to-device", desc = "Jump to GVFS mount" },
+      { on = [ "M", "b" ], run = "plugin gvfs -- jump-back-prev-cwd", desc = "Jump back from GVFS mount" },
+    ]
+  '';
+
   # ── Niri compositor config ────────────────────────────────────
   xdg.configFile."niri/config.kdl".source = ../niri/config.kdl;
   xdg.configFile."hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
+  xdg.configFile."hypr/hypridle.conf".source = ../niri/hypridle.conf;
   xdg.configFile."wofi/config".source = ../wofi/config;
   xdg.configFile."wofi/style.css".source = ../wofi/style.css;
   xdg.configFile."mako/config".source = ../mako/config;
