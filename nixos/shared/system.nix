@@ -153,7 +153,6 @@ in
     swww
     hyprlock
     hypridle
-    wlopm
     bluetuith
     udiskie
     mako

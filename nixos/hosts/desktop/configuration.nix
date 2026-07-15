@@ -5,8 +5,13 @@ let
     system = pkgs.stdenv.hostPlatform.system;
     config.allowUnfree = true;
   };
+  # PCSX2 overlay: patches assertion crash (FQC=0 on VIF FIFO READ) and
+  # signal handler robustness (sigaltstack for SIGSEGV during JIT execution).
+  pcsx2Overlay = import ../../overlays/pcsx2.nix;
 in
 {
+  nixpkgs.overlays = [ pcsx2Overlay ];
+
   imports = [
     ./hardware-configuration.nix
     ./steam-mount.nix
@@ -16,6 +21,7 @@ in
   # ── Boot ──
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_6_18;
   boot.kernelModules = [ "nct6775" ];  # fan control
 
   # ── Networking ──
@@ -30,6 +36,7 @@ in
     nvidiaSettings = true;
   };
   hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
   environment.sessionVariables = {
