@@ -11,12 +11,17 @@ input {
         tap
         natural-scroll
     }
-    focus-follows-mouse
+}
+
+gestures {
+    hot-corners {
+        off
+    }
 }
 
 // ── Monitors ───────────────────────────────────────────────────
-// Desktop monitor on DP-2: 2560x1440 @ 165Hz. The panel's preferred
-// mode is 60Hz, so we set it explicitly to persist across reboots.
+// Desktop (DP-2): panel preferred mode is 60Hz — set 165Hz explicitly.
+// Harmless on MacBook where DP-2 is absent.
 output "DP-2" {
     mode "2560x1440@165.000"
     focus-at-startup
@@ -32,7 +37,6 @@ cursor {
 environment {
     QT_QPA_PLATFORM "wayland"
     XDG_SESSION_TYPE "wayland"
-    NIXOS_OZONE_WL "1"
 }
 
 // ── Appearance ─────────────────────────────────────────────────
@@ -48,12 +52,12 @@ layout {
     focus-ring {
         on
         width 1
-        active-color "#33ccff"
+        active-color "#00bcd4"
         inactive-color "#00000000"
     }
     border {
         width 1
-        active-color "#33ccff"
+        active-color "#00bcd4"
         inactive-color "#00000000"
     }
     center-focused-column "never"
@@ -71,11 +75,9 @@ workspace "scratch-1"
 workspace "scratch-2"
 
 // ── Spawn at startup ──────────────────────────────────────────
-spawn-at-startup "waybar"
+// DMS starts via systemd user service (dms.service)
 spawn-at-startup "xwayland-satellite"
-spawn-at-startup "mako"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
-spawn-at-startup "sh" "-c" "$HOME/dotfiles/nixos/niri/start-swww.sh"
 spawn-at-startup "hypridle"
 
 xwayland-satellite {
@@ -90,15 +92,15 @@ hotkey-overlay {
 binds {
     // Essentials
     Super+Return { spawn "ghostty"; }
-    Super+Space { spawn "wofi" "--show" "drun"; }
-    Super+Alt+L { spawn-sh "hyprlock --config $HOME/dotfiles/nixos/niri/hyprlock.conf"; }
+    Super+Space { spawn-sh "$HOME/dotfiles/nixos/niri/launcher.sh"; }
+    Super+Alt+L { spawn-sh "$HOME/dotfiles/nixos/niri/lock.sh"; }
     Super+U { spawn-sh "$HOME/dotfiles/nixos/niri/open-usb.sh"; }
     Super+Q { close-window; }
     Super+Shift+E { quit; }
 
     // Floating / fullscreen
     Super+V { toggle-window-floating; }
-    Super+F { maximize-column; }
+    Super+F { spawn "nautilus"; }
     Super+Shift+F { fullscreen-window; }
 
     // Focus movement
@@ -181,10 +183,21 @@ window-rule {
     open-on-workspace "terminal"
 }
 
-// Layer rules: keep wallpaper stationary
+// Frost some popouts. Do not blur dms:bar or dms:dash: niri applies
+// background-effect to the whole layer bbox (including shadow padding),
+// so frost spills past the visual widgets / rounded card.
 layer-rule {
-    match namespace="^swww-daemon$"
-    place-within-backdrop true
+    match namespace="^dms:popout$"
+    match namespace="^dms:control-center$"
+    match namespace="^dms:notification-center-popout$"
+    match namespace="^dms:osd$"
+    match namespace="^dms:toast$"
+    background-effect {
+        blur true
+        xray false
+        noise 0.02
+        saturation 1.05
+    }
 }
 
 // ── Animations ─────────────────────────────────────────────────

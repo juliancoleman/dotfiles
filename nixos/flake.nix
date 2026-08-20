@@ -1,5 +1,5 @@
 {
-  description = "Julian's NixOS build with Niri + Waybar";
+  description = "Julian's NixOS build with Niri + DankMaterialShell";
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     # Keep the base system pinned while allowing newer Ollama builds for model compatibility.
@@ -18,48 +18,37 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # popover-shell — Wayland layer-shell popovers (wifi picker, etc.)
-    popover-shell = {
-      url = "path:./popover-shell";
+    dank-material-shell = {
+      url = "github:AvengeMedia/DankMaterialShell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, niri-flake, popover-shell, ... }:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, niri-flake, dank-material-shell, ... }:
   let
     # Shared home-manager module
-    homeManagerModule = {
+    mkHomeManagerModule = homeArgs: {
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
-        users.julian = import ./shared/home.nix;
+        users.julian = { pkgs, lib, config, ... }@hmArgs: import ./shared/home.nix (hmArgs // homeArgs);
         backupFileExtension = "backup";
       };
     };
     # Helper to create a host
-    mkHost = { system, modules }: nixpkgs.lib.nixosSystem {
+    mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama; };
-      modules = modules ++ [ home-manager.nixosModules.home-manager homeManagerModule ];
+      specialArgs = { inherit nixpkgs-ollama dank-material-shell; } // specialArgs;
+      modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
     };
     # Override niri with the unstable build from niri-flake (fixes Asahi GPU).
     niriOverride = { config, lib, pkgs, ... }: {
       programs.niri.package = lib.mkForce niri-flake.packages.${pkgs.system}.niri-unstable;
     };
-    # Shared module: popover-shell package + polkit rule for NM wifi control.
-    popoverShellModule = { config, lib, pkgs, ... }: {
-      # Expose popover-shell to the user PATH so Waybar's on-click finds it.
-      environment.systemPackages = [
-        popover-shell.packages.${pkgs.system}.default
-      ];
-      # Polkit rule: let the wheel group control NetworkManager without a
-      # password prompt. Unblocks the popover-shell wifi picker (scan + connect).
-      security.polkit.extraConfig = builtins.readFile ./popover-shell/polkit-nm-wheel.js;
-    };
   in {
     # Desktop — Nvidia GTX 1080, B450 Tomahawk Max
     nixosConfigurations.hyprland-btw = mkHost {
       system = "x86_64-linux";
-      modules = [ ./hosts/desktop/configuration.nix niriOverride popoverShellModule ];
+      modules = [ ./hosts/desktop/configuration.nix niriOverride ];
     };
     # MacBook Pro — Apple M2 Pro, Asahi Linux
     nixosConfigurations.macbook-pro = mkHost {
@@ -71,7 +60,6 @@
           nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
         }
         niriOverride
-        popoverShellModule
       ];
     };
   };

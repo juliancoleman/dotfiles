@@ -1,36 +1,12 @@
 # Shared system configuration — common to all hosts
 { config, lib, pkgs, ... }:
-let
-  ompVersion = "16.3.11";
-  ompSources = {
-    x86_64-linux = {
-      url = "https://github.com/can1357/oh-my-pi/releases/download/v${ompVersion}/omp-linux-x64";
-      hash = "sha256-jZXU3jrhds1UtgMP3fM+KEdENzzdt4C4tP7Woa1j840=";
-    };
-    aarch64-linux = {
-      url = "https://github.com/can1357/oh-my-pi/releases/download/v${ompVersion}/omp-linux-arm64";
-      hash = "sha256-Dqq4ldYkM/AJVUTodS4UPfu673c//BaL28fhU1oo4vM=";
-    };
-  };
-  ompSource = ompSources.${pkgs.stdenv.hostPlatform.system};
-  yaziWithDbus = pkgs.writeShellScriptBin "yazi" ''
-    export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
-    export DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-unix:path:$XDG_RUNTIME_DIR/bus}"
-    exec ${pkgs.yazi}/bin/yazi "$@"
-  '';
-  omp = pkgs.stdenvNoCC.mkDerivation {
-    pname = "omp";
-    version = ompVersion;
-    src = pkgs.fetchurl ompSource;
-    nativeBuildInputs = [ pkgs.patchelf ];
-    dontUnpack = true;
-    installPhase = ''
-      install -Dm755 $src $out/bin/omp
-      patchelf --set-interpreter ${pkgs.stdenv.cc.bintools.dynamicLinker} $out/bin/omp
-    '';
-  };
-in
 {
+  imports = [
+    ./modules/messaging.nix
+    ./modules/files.nix
+    ./modules/dms.nix
+  ];
+
   # ── Time ──
   time.timeZone = "America/Denver";
 
@@ -45,7 +21,7 @@ in
         # Asahi GPU driver needs a few seconds after boot before niri can
         # grab the DRM device; the desktop has no such race.
         command = if config.networking.hostName == "macbook-pro"
-          then "sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do if [ -e /dev/dri/card0 ]; then sleep 2 && exec niri-session; fi; sleep 2; done; exec niri-session'"
+          then "sh -c 'sleep 5 && exec niri-session'"
           else "niri-session";
         user = "julian";
       };
@@ -87,9 +63,8 @@ in
   # ── Bluetooth ──
   hardware.bluetooth.enable = true;
 
-  # ── Disk / remote filesystem support ──
+  # ── Disk automount ──
   services.udisks2.enable = true;
-  services.gvfs.enable = true;
 
   # ── Fish ──
   programs.fish.enable = true;
@@ -99,7 +74,6 @@ in
     shell = pkgs.fish;
     isNormalUser = true;
     extraGroups = [ "wheel" "video" "render" ];
-    linger = true;
   };
 
   # ── Security ──
@@ -122,6 +96,12 @@ in
       if ((action.id == "org.freedesktop.udisks2.filesystem-mount" ||
            action.id == "org.freedesktop.udisks2.filesystem-mount-system" ||
            action.id == "org.freedesktop.udisks2.filesystem-unmount-others") &&
+          subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+      }
+    });
+    polkit.addRule(function(action, subject) {
+      if (action.id.indexOf("org.freedesktop.NetworkManager.") === 0 &&
           subject.isInGroup("wheel")) {
         return polkit.Result.YES;
       }
@@ -149,33 +129,27 @@ in
     gh
     ghostty
     git
-    glib
-    swww
     hyprlock
     hypridle
+    wlopm
     bluetuith
     udiskie
-    mako
     udisks2
     libnotify
     jujutsu
     lazygit
     mise
     neovim
-    omp
     pay-respects
     ripgrep
     stow
     tmux
     uv
     vim
-    waybar
     wget
-    wofi
-    yaziWithDbus
+    yazi
     zoxide
-    # Communication
-    signal-desktop
+    # Communication (signal: official AppImage via home-manager)
     libglvnd
     telegram-desktop
     vesktop

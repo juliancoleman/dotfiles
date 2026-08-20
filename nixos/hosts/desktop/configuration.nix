@@ -71,7 +71,6 @@ in
     protonmail-desktop
     xwayland-satellite
     # Desktop-only heavy apps (qtwebengine — too heavy for MacBook)
-    whatsie
     bambu-studio
   ];
 
@@ -81,6 +80,35 @@ in
     "${pkgs.libglvnd}/lib"
     "${pkgs.linuxPackages.nvidia_x11}/lib"
   ];
+
+  julian.dms.enable = true;
+
+  # WhatsApp via XWayland on Nvidia.
+  home-manager.users.julian = { pkgs, config, ... }: {
+    home.packages = [ pkgs.whatsapp-electron ];
+
+    home.file.".local/bin/whatsapp-launch" = {
+      executable = true;
+      text = ''
+        #!/bin/sh
+        export NIXOS_OZONE_WL=0
+        export DISPLAY="''${DISPLAY:-:0}"
+        exec ${pkgs.whatsapp-electron}/bin/whatsapp-electron --ozone-platform=x11 "$@"
+      '';
+    };
+
+    xdg.dataFile."applications/whatsapp.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=WhatsApp
+      Comment=WhatsApp Desktop
+      Exec=whatsapp-launch %U
+      Icon=${pkgs.whatsapp-electron}/share/pixmaps/whatsapp.png
+      Categories=Network;InstantMessaging;
+      Terminal=false
+      StartupWMClass=com.github.dagmoller.whatsapp-electron
+    '';
+  };
 
   # ── Console ──
   console = {

@@ -1,11 +1,5 @@
 # MacBook Pro M2 Pro host — Asahi Linux
-{ config, lib, pkgs, nixpkgs-ollama, ... }:
-let
-  ollamaPkgs = import nixpkgs-ollama {
-    system = pkgs.stdenv.hostPlatform.system;
-    config.allowUnfree = true;
-  };
-in
+{ config, lib, pkgs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -50,54 +44,14 @@ in
   networking.networkmanager.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
 
-  # ── Local LLM runtime ──
-  # Laptop runs Ollama locally for offline chat/coding. Keep it bound to localhost;
-  # the desktop remains the LAN-facing GPU-backed server.
-  services.ollama = {
-    enable = true;
-    package = ollamaPkgs.ollama;
-    host = "127.0.0.1";
-    port = 11434;
-    openFirewall = false;
-  };
-
-  environment.systemPackages = [
-    ollamaPkgs.ollama
-  ];
-
-  # ── Display brightness ──
-  # Niri handles the XF86 brightness keys, but brightnessctl runs as julian.
-  # Asahi's backlight sysfs attributes default to root:root 0644, so grant the
-  # existing video group write access whenever the backlight device appears.
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/bl_power", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/bl_power"
-    ACTION=="change", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/bl_power", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/bl_power"
-  '';
-
   # ── Keyboard layout fix ──
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0
   '';
 
   # ── Asahi firmware ──
-  # Explicit path is needed because the default uses builtins.pathExists
-  # which can fail under Nix's sandboxed evaluator on newer nixpkgs.
-  hardware.asahi.peripheralFirmwareDirectory = lib.mkDefault /boot/vendorfw;
-
-  # ── Suspend ──
-  # Asahi currently exposes only s2idle (`/sys/power/mem_sleep`). There is no
-  # Linux deep-sleep/S3 backend to select yet, so make the best supported state
-  # explicit and ensure lid close suspends even on AC or when docked.
-  services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
-    HandleLidSwitchExternalPower = "suspend";
-    HandleLidSwitchDocked = "suspend";
-  };
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=yes
-    SuspendState=mem
-    MemorySleepMode=s2idle
-  '';
+  # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
+  # (put there by the Asahi installer). No explicit config needed.
 
   # ── Battery: limit charge to 80% to preserve lifespan ──
   systemd.services.battery-charge-limit = {

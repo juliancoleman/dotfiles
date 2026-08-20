@@ -1,23 +1,4 @@
 { config, lib, pkgs, ... }:
-let
-  gvfsYazi = pkgs.yaziPlugins.mkYaziPlugin {
-    pname = "gvfs.yazi";
-    version = "0-unstable-2026-03-29";
-    src = pkgs.fetchFromGitHub {
-      owner = "boydaihungst";
-      repo = "gvfs.yazi";
-      rev = "3abc0a258f9d7aeaa453a2d0d6e103c5a305953d";
-      hash = "sha256-UHneVJ+YXyDuPrZS+PZbs9n9h+VN5M2QG36FdprBkJc=";
-    };
-    postPatch = ''
-      substituteInPlace main.lua \
-        --replace-fail 'dbus_session = cha and true or false' 'dbus_session = true' \
-        --replace-fail 'error_msg = string.format(NOTIFY_MSG.HEADLESS_DETECTED)' 'error_msg = "This location cannot be mounted directly; use smb://server/share (for NAS H: smb://192.168.0.1/H)"'
-      substituteInPlace main.lua \
-        --replace-fail $'if selected_idx and selected_idx > 0 then\n\t\treturn selected_idx\n\tend' $'if type(selected_idx) == "number" and selected_idx > 0 then\n\t\treturn selected_idx\n\tend\n\tif type(selected_idx) == "string" then\n\t\tfor idx, key in ipairs(allow_key_array) do\n\t\t\tif selected_idx == tostring(key) then\n\t\t\t\treturn idx\n\t\t\tend\n\t\tend\n\tend'
-    '';
-  };
-in
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -151,7 +132,7 @@ in
   home.sessionPath = [
     "$HOME/.local/bin"
   ];
-  # Hide terminal/system apps from wofi by overriding their .desktop files
+  # Hide terminal/system apps from app launchers by overriding their .desktop files
   xdg.dataFile = lib.mkMerge [
     (builtins.listToAttrs (map (name: {
       name = "applications/${name}.desktop";
@@ -184,101 +165,63 @@ in
         Categories=Network;Email;
       '';
     }
+    # Steam's CEF UI must use XWayland; native Ozone Wayland can map a blank window.
+    {
+      "applications/steam.desktop".text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Steam
+        Exec=${pkgs.coreutils}/bin/env NIXOS_OZONE_WL=0 steam -cef-disable-gpu %U
+        Icon=steam
+        Categories=Game;
+        Terminal=false
+        MimeType=x-scheme-handler/steam;
+      '';
+    }
+
+    # Official Signal AppImage — self-updating; avoids stale nixpkgs auth failures.
+    {
+      "applications/signal-desktop.desktop".text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Signal
+        Comment=Private messenger
+        Exec=signal-desktop %U
+        Icon=signal-desktop
+        Categories=Network;InstantMessaging;
+        Terminal=false
+        StartupWMClass=Signal
+      '';
+    }
   ];
-  # ── OMP coding agent config ───────────────────────────────────
-  # Mirrors Julian's workstation UI/tooling defaults, but leaves model providers
-  # out of Nix-managed config so each machine can choose its own backends.
-  home.file.".omp/agent/config.yml".text = ''
-    symbolPreset: nerd
-    theme:
-      dark: titanium
-      light: light-one
-    setupVersion: 1
-    defaultThinkingLevel: auto
-    shellPath: /run/current-system/sw/bin/fish
-    statusLine:
-      preset: compact
-      separator: slash
-      sessionAccent: true
-      transparent: true
-      compactThinkingLevel: false
-      showHookStatus: true
-    tui:
-      tight: false
-    display:
-      shimmer: classic
-      showTokenUsage: false
-      cacheMissMarker: true
-    goal:
-      enabled: true
-    hideThinkingBlock: true
-    memory:
-      backend: mnemopi
-    autolearn:
-      enabled: false
-    mnemopi:
-      scoping: per-project
-    edit:
-      mode: hashline
-    github:
-      enabled: true
-    browser:
-      cmux: false
-    task:
-      enableLsp: true
-    collab:
-      relayUrl: wss://my.omp.sh
-      webUrl: ""
+
+  # Bootstrap official Signal AppImage on first login; Signal updates it in-place.
+  home.activation.installSignalAppImage = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    set -eu
+    mkdir -p "$HOME/.local/opt/signal"
+    APPIMAGE="$HOME/.local/opt/signal/signal-desktop.AppImage"
+    if [ ! -f "$APPIMAGE" ]; then
+      ${pkgs.curl}/bin/curl -fsSL -o "$APPIMAGE" https://updates.signal.org/desktop/signal-desktop.AppImage
+      chmod +x "$APPIMAGE"
+    fi
   '';
 
-  # ── Yazi file manager ──────────────────────────────────────────
-  xdg.configFile."yazi/yazi.toml".source = ../../yazi/.config/yazi/yazi.toml;
-  xdg.configFile."yazi/plugins/gvfs.yazi".source = gvfsYazi;
-  xdg.configFile."yazi/init.lua".text = ''
-    require("gvfs"):setup({
-      blacklist_devices = {
-        { uri = "smb://192.168.0.1" },
-        { uri = "smb://192.168.0.1/" },
-      },
-    })
-  '';
-  xdg.configFile."yazi/keymap.toml".text = ''
-    [mgr]
-    prepend_keymap = [
-      { on = [ "M", "H" ], run = [ 'shell --block "gio mount -a smb://192.168.0.1/H || true"', "cd /run/user/1000/gvfs/smb-share:server=192.168.0.1,share=h" ], desc = "Mount and open NAS H" },
-      { on = [ "M", "m" ], run = [ 'shell --block "gio mount -a smb://192.168.0.1/H || true"', "cd /run/user/1000/gvfs/smb-share:server=192.168.0.1,share=h" ], desc = "Mount and open NAS H" },
-      { on = [ "M", "g" ], run = "plugin gvfs -- select-then-mount --jump", desc = "Mount GVFS device or remote and jump" },
-      { on = [ "M", "u" ], run = "plugin gvfs -- select-then-unmount --eject", desc = "Unmount or eject GVFS mount" },
-      { on = [ "M", "a" ], run = "plugin gvfs -- add-mount", desc = "Add GVFS mount URI" },
-      { on = [ "M", "e" ], run = "plugin gvfs -- edit-mount", desc = "Edit GVFS mount URI" },
-      { on = [ "M", "r" ], run = "plugin gvfs -- remove-mount", desc = "Remove GVFS mount URI" },
-      { on = [ "M", "j" ], run = "plugin gvfs -- jump-to-device", desc = "Jump to GVFS mount" },
-      { on = [ "M", "b" ], run = "plugin gvfs -- jump-back-prev-cwd", desc = "Jump back from GVFS mount" },
-    ]
-  '';
+  home.file.".local/bin/signal-desktop" = {
+    executable = true;
+    text = ''
+      #!/bin/sh
+      exec ${pkgs.appimage-run}/bin/appimage-run         "$HOME/.local/opt/signal/signal-desktop.AppImage"         --password-store=gnome-libsecret         "$@"
+    '';
+  };
 
+
+  # Niri session scripts live in the git checkout at ~/dotfiles/nixos/niri/
+  # (config.kdl spawn-sh paths). Do not home.file them here — that path is
+  # the working tree, and HM would replace git files with store symlinks.
   # ── Niri compositor config ────────────────────────────────────
-  xdg.configFile."niri/config.kdl".source = ../niri/config.kdl;
-  xdg.configFile."hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
-  xdg.configFile."hypr/hypridle.conf".source = ../niri/hypridle.conf;
-  xdg.configFile."wofi/config".source = ../wofi/config;
-  xdg.configFile."wofi/style.css".source = ../wofi/style.css;
-  xdg.configFile."mako/config".source = ../mako/config;
-  xdg.configFile."waybar/config.jsonc".source = ../waybar/config.jsonc;
-  xdg.configFile."waybar/style.css".source = ../waybar/style.css;
-  xdg.configFile."waybar/calendar.css".source = ../waybar/calendar.css;
-  xdg.configFile."waybar/custom_modules/power_menu.xml".source = ../waybar/custom_modules/power_menu.xml;
-  xdg.configFile."waybar/scripts/bluetooth_picker.sh".source = ../waybar/scripts/bluetooth_picker.sh;
-  xdg.configFile."waybar/scripts/bluetooth_toggle.sh".source = ../waybar/scripts/bluetooth_toggle.sh;
-  xdg.configFile."waybar/scripts/calendar.sh".source = ../waybar/scripts/calendar.sh;
-  xdg.configFile."waybar/scripts/cpu.sh".source = ../waybar/scripts/cpu.sh;
-  xdg.configFile."waybar/scripts/disk.sh".source = ../waybar/scripts/disk.sh;
-  xdg.configFile."waybar/scripts/ethernet_status.sh".source = ../waybar/scripts/ethernet_status.sh;
-  xdg.configFile."waybar/scripts/fans.sh".source = ../waybar/scripts/fans.sh;
-  xdg.configFile."waybar/scripts/gpu.sh".source = ../waybar/scripts/gpu.sh;
-  xdg.configFile."waybar/scripts/mem.sh".source = ../waybar/scripts/mem.sh;
-  xdg.configFile."waybar/scripts/sleep.sh".source = ../waybar/scripts/sleep.sh;
-  xdg.configFile."waybar/scripts/time_jp.sh".source = ../waybar/scripts/time_jp.sh;
-  xdg.configFile."waybar/scripts/wifi_status.sh".source = ../waybar/scripts/wifi_status.sh;
-  xdg.configFile."waybar/scripts/battery.sh".source = ../waybar/scripts/battery.sh;
+  xdg.configFile = {
+    "niri/config.kdl".source = ../niri/config.kdl;
+    "hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
+    "hypr/hypridle.conf".source = ../niri/hypridle.conf;
+  };
 }

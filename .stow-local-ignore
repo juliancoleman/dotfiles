@@ -1,0 +1,4 @@
+# Rebuilt from the NixOS flake, not stowed into $HOME.
+nixos
+README.md
+.gitignore
