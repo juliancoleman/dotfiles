@@ -51,7 +51,7 @@
 
   # ── Asahi firmware ──
   hardware.asahi.enable = true;
-  hardware.asahi.peripheralFirmwareDirectory = /boot/vendorfw;
+  hardware.asahi.peripheralFirmwareDirectory = ../../firmware;
 
   # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
   # (put there by the Asahi installer). No explicit config needed.
