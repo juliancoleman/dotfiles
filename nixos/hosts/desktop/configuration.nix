@@ -23,6 +23,11 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_6_18;
   boot.kernelModules = [ "nct6775" ];  # fan control
+  # NCT6797D PWM sysfs group-writable so the control center can set manual/auto
+  # without sudo. Fires when the hwmon device appears at boot.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="hwmon", ATTR{name}=="nct6797", RUN+="${pkgs.bash}/bin/bash -c 'chgrp wheel /sys/class/hwmon/%k/pwm* /sys/class/hwmon/%k/pwm*_enable; chmod g+w /sys/class/hwmon/%k/pwm* /sys/class/hwmon/%k/pwm*_enable'"
+  '';
 
   # ── Networking ──
   networking.hostName = "hyprland-btw";

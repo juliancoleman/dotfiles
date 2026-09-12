@@ -23,6 +23,8 @@ in
 
     nixpkgs.overlays = [ (import ../../overlays/dms-niri-named-workspaces.nix) ];
 
+    environment.systemPackages = [ pkgs.dgop ];
+
     home-manager.users.julian = { pkgs, config, ... }: {
       imports = [ dank-material-shell.homeModules.dank-material-shell ];
 
@@ -46,6 +48,21 @@ in
           showWorkspaceName = false;
           showWorkspaceApps = false;
           showWorkspacePadding = false;
+          soundVolumeChanged = false;
+          fontFamily = "IBM Plex Sans";
+          controlCenterWidgets = [
+            { id = "volumeSlider"; enabled = true; width = 50; }
+            { id = "brightnessSlider"; enabled = true; width = 50; }
+            { id = "wifi"; enabled = true; width = 25; }
+            { id = "bluetooth"; enabled = true; width = 25; }
+            { id = "audioOutput"; enabled = true; width = 50; }
+            { id = "audioInput"; enabled = true; width = 50; }
+            { id = "cpuUsage"; enabled = true; width = 50; }
+            { id = "memUsage"; enabled = true; width = 50; }
+            { id = "gpuUsage"; enabled = true; width = 50; }
+            { id = "diskUsage"; enabled = true; width = 50; instanceId = "root"; mountPath = "/"; }
+            { id = "fanControl"; enabled = true; width = 50; }
+          ];
           barConfigs = [
             {
               id = "default";
@@ -58,9 +75,6 @@ in
               centerWidgets = [ "clock" ];
               rightWidgets = [
                 "bluetooth"
-                "cpuUsage"
-                "memUsage"
-                "diskUsage"
                 "notificationButton"
                 "controlCenterButton"
               ];
