@@ -27,6 +27,12 @@
   networking.networkmanager.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
 
+  # Keep development sessions reachable while unattended. Explicit suspend
+  # and Super+Alt+L locking remain available.
+  services.logind.settings.Login = {
+    IdleAction = "ignore";
+  };
+
   # ── Keyboard layout fix ──
   boot.extraModprobeConfig = ''
     options hid_apple iso_layout=0

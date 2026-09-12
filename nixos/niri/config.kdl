@@ -78,7 +78,9 @@ workspace "scratch-2"
 // DMS starts via systemd user service (dms.service)
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
-spawn-at-startup "hypridle"
+// Keep the MacBook reachable during unattended development. The desktop
+// continues to use hypridle; explicit locking remains bound below.
+spawn-at-startup "sh" "-c" "[ \"$(hostname)\" = macbook-pro ] || exec hypridle"
 
 xwayland-satellite {
     path "xwayland-satellite"
