@@ -20,23 +20,6 @@
       name = "asahi-render-no-auth";
       patch = ./asahi-render-auth.patch;
     }
-    {
-      # ── Asahi kernel config fix ──
-      # The asahi kernel (7.0) still lacks several options nixpkgs expects.
-      # Use `option` to suppress the config checker error for missing options.
-      name = "asahi-kernel-config-fix";
-      patch = null;
-      structuredExtraConfig = with lib.kernel; {
-        PREEMPT = lib.mkForce yes;
-        PREEMPT_VOLUNTARY = lib.mkForce (option no);
-        FB_HYPERV = lib.mkForce (option no);
-        HIPPI = lib.mkForce (option no);
-        NFS_V4_1 = lib.mkForce (option no);
-        NFS_V4_2 = lib.mkForce (option no);
-        NFS_V4_SECURITY_LABEL = lib.mkForce (option no);
-        NOVA_CORE = lib.mkForce (option no);
-      };
-    }
   ];
 
   # ── Networking ──
