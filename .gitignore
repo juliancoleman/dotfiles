@@ -2,3 +2,5 @@ fish/.config/fish/fish_variables
 
 nixos/result
 waybar/.config/waybar/scripts/battery.sh
+
+/nixos/firmware/
