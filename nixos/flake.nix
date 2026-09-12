@@ -59,7 +59,7 @@
         {
           nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
         }
-        niriOverride
+        { programs.niri.package = nixpkgs.legacyPackages.aarch64-linux.niri; }
       ];
     };
   };

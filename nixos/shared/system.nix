@@ -78,9 +78,6 @@
 
   # ── Security ──
   security.sudo.wheelNeedsPassword = false;
-  security.pam.services.greetd.rules.session.systemd.settings = {
-    type = "wayland";
-  };
   security.pam.services.hyprlock = {};
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
