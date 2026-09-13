@@ -22,12 +22,8 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_6_18;
-  boot.kernelModules = [ "nct6775" ];  # fan control
-  # NCT6797D PWM sysfs group-writable so the control center can set manual/auto
-  # without sudo. Fires when the hwmon device appears at boot.
-  services.udev.extraRules = ''
-    SUBSYSTEM=="hwmon", ATTR{name}=="nct6797", RUN+="${pkgs.bash}/bin/bash -c 'chgrp wheel /sys/class/hwmon/%k/pwm* /sys/class/hwmon/%k/pwm*_enable; chmod g+w /sys/class/hwmon/%k/pwm* /sys/class/hwmon/%k/pwm*_enable'"
-  '';
+  # Expose the sensor/controller to QS's privileged, policy-gated fan helper.
+  boot.kernelModules = [ "nct6775" ];
 
   # ── Networking ──
   networking.hostName = "hyprland-btw";
@@ -85,8 +81,6 @@ in
     "${pkgs.libglvnd}/lib"
     "${pkgs.linuxPackages.nvidia_x11}/lib"
   ];
-
-  julian.dms.enable = true;
 
   # WhatsApp via XWayland on Nvidia.
   home-manager.users.julian = { pkgs, config, ... }: {

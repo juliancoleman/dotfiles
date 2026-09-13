@@ -1,5 +1,5 @@
 {
-  description = "Julian's NixOS build with Niri + DankMaterialShell";
+  description = "Julian's NixOS build with Niri + Quickshell";
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     # Keep the base system pinned while allowing newer Ollama builds for model compatibility.
@@ -18,12 +18,12 @@
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    dank-material-shell = {
-      url = "github:AvengeMedia/DankMaterialShell";
+    qs = {
+      url = "path:/home/julian/code/qs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, niri-flake, dank-material-shell, ... }:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, niri-flake, qs, ... }:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
@@ -37,7 +37,7 @@
     # Helper to create a host
     mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama dank-material-shell; } // specialArgs;
+      specialArgs = { inherit nixpkgs-ollama; } // specialArgs;
       modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
     };
     # Override niri with the unstable build from niri-flake (fixes Asahi GPU).
@@ -48,7 +48,24 @@
     # Desktop — Nvidia GTX 1080, B450 Tomahawk Max
     nixosConfigurations.hyprland-btw = mkHost {
       system = "x86_64-linux";
-      modules = [ ./hosts/desktop/configuration.nix niriOverride ];
+      modules = [
+        ./hosts/desktop/configuration.nix
+        niriOverride
+        qs.nixosModules.default
+        {
+          services.qs = {
+            enable = true;
+            wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+          };
+          home-manager.users.julian = {
+            imports = [ qs.homeManagerModules.default ];
+            programs.qs = {
+              enable = true;
+              wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+            };
+          };
+        }
+      ];
     };
     # MacBook Pro — Apple M2 Pro, Asahi Linux
     nixosConfigurations.macbook-pro = mkHost {
@@ -56,6 +73,20 @@
       modules = [
         ./hosts/macbook/configuration.nix
         apple-silicon.nixosModules.apple-silicon-support
+        qs.nixosModules.default
+        {
+          services.qs = {
+            enable = true;
+            wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+          };
+          home-manager.users.julian = {
+            imports = [ qs.homeManagerModules.default ];
+            programs.qs = {
+              enable = true;
+              wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+            };
+          };
+        }
         {
           nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
         }

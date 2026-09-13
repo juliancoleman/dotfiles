@@ -4,7 +4,6 @@
   imports = [
     ./modules/messaging.nix
     ./modules/files.nix
-    ./modules/dms.nix
   ];
 
   # ── Time ──
