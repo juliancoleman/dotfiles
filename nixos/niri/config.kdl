@@ -19,6 +19,14 @@ gestures {
     }
 }
 
+// Shape-aware surfaces opt in through ext-background-effect.
+blur {
+    passes 3
+    offset 3.0
+    noise 0.015
+    saturation 1.12
+}
+
 // ── Monitors ───────────────────────────────────────────────────
 // Desktop (DP-2): panel preferred mode is 60Hz — set 165Hz explicitly.
 // Harmless on MacBook where DP-2 is absent.
@@ -170,17 +178,6 @@ window-rule {
 window-rule {
     match app-id="com.mitchellh.ghostty"
     open-on-workspace "ws2"
-}
-
-// Blur Quickshell panels and popovers without blurring the reserved bar strip.
-layer-rule {
-    match namespace="^qs:panel$"
-    background-effect {
-        blur true
-        xray false
-        noise 0.02
-        saturation 1.05
-    }
 }
 
 // ── Animations ─────────────────────────────────────────────────
