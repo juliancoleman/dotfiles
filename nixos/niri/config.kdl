@@ -101,7 +101,7 @@ hotkey-overlay {
 binds {
     // Essentials
     Super+Return { spawn "ghostty"; }
-    Super+Space { spawn "fuzzel"; }
+    Super+Space { spawn "qs-shell" "ipc" "call" "launcher" "toggle"; }
     Super+Alt+L { spawn-sh "$HOME/dotfiles/nixos/niri/lock.sh"; }
     Super+U { spawn-sh "$HOME/dotfiles/nixos/niri/open-usb.sh"; }
     Super+Q { close-window; }

@@ -152,7 +152,6 @@
     element-desktop
     bitwarden-desktop
     # Productivity
-    libreoffice
     obsidian
     openscad
     # Utilities
