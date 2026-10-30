@@ -154,66 +154,7 @@
       "xdg-desktop-portal-gnome"
       "xdg-desktop-portal-gtk"
     ]))
-    # Proton Mail needs XWayland (native Wayland doesn't work)
-    {
-      "applications/proton-mail.desktop".text = ''
-        [Desktop Entry]
-        Type=Application
-        Name=Proton Mail
-        Exec=proton-mail --ozone-platform=x11 --no-sandbox %U
-        Icon=proton-mail
-        Categories=Network;Email;
-      '';
-    }
-    # Steam's CEF UI must use XWayland; native Ozone Wayland can map a blank window.
-    {
-      "applications/steam.desktop".text = ''
-        [Desktop Entry]
-        Type=Application
-        Name=Steam
-        Exec=${pkgs.coreutils}/bin/env NIXOS_OZONE_WL=0 steam -cef-disable-gpu %U
-        Icon=steam
-        Categories=Game;
-        Terminal=false
-        MimeType=x-scheme-handler/steam;
-      '';
-    }
-
-    # Official Signal AppImage — self-updating; avoids stale nixpkgs auth failures.
-    {
-      "applications/signal-desktop.desktop".text = ''
-        [Desktop Entry]
-        Type=Application
-        Name=Signal
-        Comment=Private messenger
-        Exec=signal-desktop %U
-        Icon=signal-desktop
-        Categories=Network;InstantMessaging;
-        Terminal=false
-        StartupWMClass=Signal
-      '';
-    }
   ];
-
-  # Bootstrap official Signal AppImage on first login; Signal updates it in-place.
-  home.activation.installSignalAppImage = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    set -eu
-    mkdir -p "$HOME/.local/opt/signal"
-    APPIMAGE="$HOME/.local/opt/signal/signal-desktop.AppImage"
-    if [ ! -f "$APPIMAGE" ]; then
-      ${pkgs.curl}/bin/curl -fsSL -o "$APPIMAGE" https://updates.signal.org/desktop/signal-desktop.AppImage
-      chmod +x "$APPIMAGE"
-    fi
-  '';
-
-  home.file.".local/bin/signal-desktop" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      exec ${pkgs.appimage-run}/bin/appimage-run         "$HOME/.local/opt/signal/signal-desktop.AppImage"         --password-store=gnome-libsecret         "$@"
-    '';
-  };
-
 
   # Niri session scripts live in the git checkout at ~/dotfiles/nixos/niri/
   # (config.kdl spawn-sh paths). Do not home.file them here — that path is

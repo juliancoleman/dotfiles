@@ -63,6 +63,33 @@
     '';
   };
 
+  # Signal's AppImage is x86_64-only, so this host uses the nixpkgs build. Signal
+  # refuses clients that fall too far behind, so keep nixpkgs current.
+  home-manager.users.julian = { pkgs, config, ... }: {
+    home.packages = [ pkgs.signal-desktop ];
+
+    home.file.".local/bin/signal-desktop" = {
+      executable = true;
+      text = ''
+        #!/bin/sh
+        exec ${pkgs.signal-desktop}/bin/signal-desktop --password-store=gnome-libsecret "$@"
+      '';
+    };
+
+    xdg.dataFile."applications/signal.desktop".text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Signal
+      Comment=Private messenger
+      Exec=${config.home.homeDirectory}/.local/bin/signal-desktop %U
+      Icon=signal-desktop
+      Categories=Network;InstantMessaging;
+      Terminal=false
+      StartupWMClass=signal
+      MimeType=x-scheme-handler/sgnl;x-scheme-handler/signalcaptcha;
+    '';
+  };
+
   # ── Console ──
   console = {
     earlySetup = true;
