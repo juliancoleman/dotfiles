@@ -127,7 +127,8 @@ in
       '';
     };
 
-    xdg.dataFile."applications/whatsapp.desktop".text = ''
+    # Same file name as the package's own entry, so this replaces it instead of listing WhatsApp twice.
+    xdg.dataFile."applications/com.github.dagmoller.whatsapp-electron.desktop".text = ''
       [Desktop Entry]
       Type=Application
       Name=WhatsApp

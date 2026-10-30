@@ -66,7 +66,7 @@
   # Signal's AppImage is x86_64-only, so this host uses the nixpkgs build. Signal
   # refuses clients that fall too far behind, so keep nixpkgs current.
   home-manager.users.julian = { pkgs, config, ... }: {
-    home.packages = [ pkgs.signal-desktop ];
+    home.packages = [ pkgs.signal-desktop pkgs.whatsapp-electron ];
 
     home.file.".local/bin/signal-desktop" = {
       executable = true;
