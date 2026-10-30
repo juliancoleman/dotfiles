@@ -25,7 +25,11 @@
   # ── Networking ──
   networking.hostName = "macbook-pro";
   networking.networkmanager.enable = true;
-  networking.networkmanager.wifi.backend = "iwd";
+  # wpa_supplicant scans reliably on brcmfmac here; iwd scans time out before
+  # reaching later channels. WPA3-only networks may not join with it.
+  networking.networkmanager.wifi.backend = "wpa_supplicant";
+  # Prevent the USB Ethernet dongle from being autosuspended during s2idle.
+  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
 
   # Keep development sessions reachable while unattended. Explicit suspend
   # and Super+Alt+L locking remain available.
