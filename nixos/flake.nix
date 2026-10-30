@@ -76,6 +76,7 @@
         qs.nixosModules.default
         {
           services.qs = {
+            locationServices.enable = true;
             enable = true;
             wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
           };
