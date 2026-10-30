@@ -1,0 +1,62 @@
+import QtQuick
+import "../Common"
+import "../Status"
+
+Item {
+    id: button
+
+    property real opened: 1
+    property string icon: "settings"
+    property string label: qsTr("Settings")
+    property bool toggle: false
+    property bool on: false
+    signal activated()
+
+    readonly property color fill: on ? Theme.today
+        : hit.containsMouse || activeFocus ? Theme.track : Theme.surface
+
+    implicitWidth: 24
+    implicitHeight: 24
+    opacity: Math.max(opened, activeFocus ? 1 : 0)
+    activeFocusOnTab: opened > 0.85
+    Accessible.role: Accessible.Button
+    Accessible.name: label
+    Accessible.checkable: toggle
+    Accessible.checked: on
+    Accessible.onPressAction: activated()
+    Keys.onReturnPressed: activated()
+    Keys.onEnterPressed: activated()
+    Keys.onSpacePressed: activated()
+
+    Rectangle {
+        anchors.fill: parent
+        radius: width / 2
+        color: button.fill
+        border.width: button.activeFocus ? 1 : 0
+        border.color: button.on ? Theme.textPrimary : Theme.today
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 140
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
+
+    StatusGlyph {
+        anchors.centerIn: parent
+        width: 16
+        height: 16
+        icon: button.icon
+        ink: button.on ? Theme.todayInk : Theme.textPrimary
+    }
+
+    MouseArea {
+        id: hit
+        anchors.fill: parent
+        enabled: button.opened > 0.45
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: button.activated()
+    }
+}

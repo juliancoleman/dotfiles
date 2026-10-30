@@ -1,0 +1,18 @@
+[package]
+name = "qs-secure-helper"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "askpass and pinentry front ends that route secrets through the QS secure prompt"
+
+[[bin]]
+name = "qs-secret"
+path = "src/main.rs"
+
+[dependencies]
+libc = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+panic = "abort"

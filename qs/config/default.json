@@ -1,0 +1,28 @@
+{
+  "bar": {
+    "placement": "right",
+    "shadow": true
+  },
+  "clock": {
+    "hourCycle": 24,
+    "meridiem": "shown",
+    "locale": "en",
+    "motion": "spring",
+    "presentation": "pill",
+    "duration": 250,
+    "springOvershoot": 2
+  },
+  "status": {
+    "batteryPercentage": "low"
+  },
+  "notifications": {
+    "doNotDisturb": false
+  },
+  "weather": {
+    "enabled": true,
+    "units": "imperial",
+    "locationMode": "exact",
+    "location": null,
+    "alerts": true
+  }
+}

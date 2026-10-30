@@ -1,0 +1,5 @@
+module Shell
+singleton ClockConfig 1.0 ClockConfig.qml
+singleton LocationServices 1.0 LocationServices.qml
+ClockBar 1.0 ClockBar.qml
+SettingsWindow 1.0 SettingsWindow.qml

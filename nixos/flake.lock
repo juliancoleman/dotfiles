@@ -93,15 +93,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1793399426,
-        "narHash": "sha256-8d5vrFBqThy+/CHOFZbYrudA7vYbSdGQxEr6DGKsCwk=",
-        "path": "/home/julian/code/qs",
+        "path": "../qs",
         "type": "path"
       },
       "original": {
-        "path": "/home/julian/code/qs",
+        "path": "../qs",
         "type": "path"
-      }
+      },
+      "parent": []
     },
     "root": {
       "inputs": {

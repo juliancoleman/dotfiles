@@ -1,0 +1,10 @@
+module Status
+singleton Brightness 1.0 Brightness.qml
+singleton Media 1.0 Media.qml
+StatusIndicator 1.0 StatusIndicator.qml
+StatusArc 1.0 StatusArc.qml
+StatusGlyph 1.0 StatusGlyph.qml
+AudioSource 1.0 AudioSource.qml
+BatterySource 1.0 BatterySource.qml
+BluetoothSource 1.0 BluetoothSource.qml
+NetworkSource 1.0 NetworkSource.qml

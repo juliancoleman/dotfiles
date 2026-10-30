@@ -1,0 +1,8 @@
+.DS_Store
+.direnv/
+.envrc.local
+result
+result-*
+.qmlcache/
+fan-helper/target/
+secure-helper/target/

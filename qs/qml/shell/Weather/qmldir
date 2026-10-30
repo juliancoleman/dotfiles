@@ -1,0 +1,6 @@
+module Weather
+singleton WeatherService 1.0 WeatherService.qml
+singleton WeatherAlerts 1.0 WeatherAlerts.qml
+WeatherCircle 1.0 WeatherCircle.qml
+WeatherPanel 1.0 WeatherPanel.qml
+LocationPicker 1.0 LocationPicker.qml

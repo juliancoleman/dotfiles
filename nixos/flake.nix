@@ -13,7 +13,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     qs = {
-      url = "path:/home/julian/code/qs";
+      url = "path:../qs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
