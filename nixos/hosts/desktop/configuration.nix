@@ -40,6 +40,9 @@ in
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # X11 apps (Steam, WhatsApp, Proton Mail) run through niri's xwayland-satellite integration.
+  programs.xwayland.enable = true;
+
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";

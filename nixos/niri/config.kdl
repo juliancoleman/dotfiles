@@ -83,7 +83,6 @@ workspace "ws3"
 workspace "ws4"
 
 // Quickshell and swaybg start as supervised systemd user services.
-spawn-at-startup "xwayland-satellite"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
 // Keep the MacBook reachable during unattended development. The desktop
 // continues to use hypridle; explicit locking remains bound below.

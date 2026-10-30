@@ -1,4 +1,4 @@
-# Desk communication: official Signal AppImage + Electron wrappers.
+# Desk communication: the keyring Signal stores its key in, and tools for the desktop's Signal AppImage.
 { config, lib, pkgs, ... }:
 {
   services.gnome.gnome-keyring.enable = lib.mkDefault true;

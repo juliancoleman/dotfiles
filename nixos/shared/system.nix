@@ -56,7 +56,6 @@
 
   # ── Compositor ──
   programs.niri.enable = true;
-  programs.xwayland.enable = true;
 
 
   # ── Bluetooth ──
@@ -145,8 +144,7 @@
     wget
     yazi
     zoxide
-    # Communication (signal: official AppImage via home-manager)
-    libglvnd
+    # Communication (Signal and WhatsApp are set per host)
     telegram-desktop
     vesktop
     element-desktop
@@ -166,7 +164,6 @@
 
   # ── Nix settings ──
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.permittedInsecurePackages = [ "qtwebengine-5.15.19" "pnpm-10.29.2" "electron-39.8.10" ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # ── Generation pruning ──
