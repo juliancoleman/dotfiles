@@ -17,7 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     omp-binary = {
-      url = "https://github.com";
+      url = "github:can1357/oh-my-pi";
       flake = false; # raw file, not source
     };
   };
