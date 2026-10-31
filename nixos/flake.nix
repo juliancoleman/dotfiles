@@ -35,7 +35,7 @@
     # Helper to create a host
     mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama; } // specialArgs;
+      specialArgs = { inherit nixpkgs-ollama; inherit inputs; } // specialArgs;
       modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
     };
   in {
