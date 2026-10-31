@@ -2,7 +2,7 @@
 let
   omp-pkg = pkgs.stdenv.mkDerivation {
     pname = "omp";
-    version = "18.14.2";
+    version = "18.14.0";
     src = inputs.omp-binary;
     dontUnpack = true;
     nativeBuildInputs = [ pkgs.autoPatchelfHook ];

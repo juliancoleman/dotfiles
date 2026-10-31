@@ -89,13 +89,17 @@
     "omp-binary": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-SxSDRdpapIywHb+858aIXtjtXZn9wNjL7C6juH++pVI=",
-        "type": "file",
-        "url": "https://github.com"
+        "lastModified": 1793476779,
+        "narHash": "sha256-3OUQAy+hECTZLkvoIZLIryfkiScSUBy+xTDu0F8T1EA=",
+        "owner": "can1357",
+        "repo": "oh-my-pi",
+        "rev": "62f4f7cccfd38adde9a2ae203d69b27bc187a84f",
+        "type": "github"
       },
       "original": {
-        "type": "file",
-        "url": "https://github.com"
+        "owner": "can1357",
+        "repo": "oh-my-pi",
+        "type": "github"
       }
     },
     "qs": {
