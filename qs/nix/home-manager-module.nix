@@ -127,7 +127,6 @@ in
         ExecStart = "${cfg.package}/bin/qs-shell";
         Environment = [ "QS_CONFIG_FILE=${cfg.paths.configFile}" ];
       };
-      Install.WantedBy = [ "graphical-session.target" ];
     };
 
     systemd.user.services.qs-wallpaper = mkIf (cfg.wallpaper != null) {
