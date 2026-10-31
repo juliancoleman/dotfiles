@@ -87,7 +87,7 @@ spawn-at-startup "udiskie" "--notify" "--auto-mount"
 // Keep the MacBook reachable during unattended development. The desktop
 // continues to use hypridle; explicit locking remains bound below.
 spawn-at-startup "sh" "-c" "[ \"$(hostname)\" = macbook-pro ] || exec hypridle"
-spawn-at-startup "sh" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_RUNTIME_DIR && systemctl --user reset-failed qs-shell.service && systemctl --user restart qs-shell.service"
+spawn-at-startup "qs-shell"
 
 xwayland-satellite {
     path "xwayland-satellite"
