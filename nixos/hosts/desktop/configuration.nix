@@ -33,7 +33,7 @@ in
   hardware.nvidia = {
     modesetting.enable = true;
     open = false;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
     nvidiaSettings = true;
   };
   hardware.graphics.enable = true;
@@ -80,7 +80,7 @@ in
   environment.variables.LD_LIBRARY_PATH = [
     "${pkgs.curl.out}/lib"
     "${pkgs.libglvnd}/lib"
-    "${pkgs.linuxPackages.nvidia_x11}/lib"
+    "${pkgs.hardware.nvidia.package}/lib"
   ];
 
   # WhatsApp via XWayland on Nvidia.
