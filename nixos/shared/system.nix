@@ -1,9 +1,10 @@
 # Shared system configuration — common to all hosts
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   imports = [
     ./modules/messaging.nix
     ./modules/files.nix
+    inputs.omp.nixosModules.default
   ];
 
   # ── Time ──
