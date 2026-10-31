@@ -1,4 +1,19 @@
-{ config, lib, pkgs, ... }@inputs:
+{ config, lib, pkgs, inputs, ... }:
+let
+  omp-pkg = pkgs.stdenv.mkDerivation {
+    pname = "omp";
+    version = "latest";
+    src = inputs.omp-binary;
+    dontUnpack = true;
+    nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+    buildInputs = [ pkgs.stdenv.cc.cc.lib ];
+    installPhase = ''
+      mkdir -p $out/bin
+      cp $src $out/bin/omp
+      chmod +x $out/bin/omp
+    '';
+  };
+in
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -123,6 +138,7 @@
   home.packages = with pkgs; [
     brave
     pkgs.catppuccin-cursors.latteLight
+    omp-pkg
   ];
   # ── Session variables & paths ──────────────────────────────────
   home.sessionVariables = {
@@ -165,8 +181,4 @@
     "hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
     "hypr/hypridle.conf".source = ../niri/hypridle.conf;
   };
-
-  # -- OMP --
-  imports = [ inputs.omp.homeManagerModules.default ];
-  programs.omp.enable = true;
 }

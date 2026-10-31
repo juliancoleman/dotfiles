@@ -16,12 +16,12 @@
       url = "path:../qs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp = {
-      url = "github:can1357/oh-my-pi";
-      inputs.nixpkgs.follows = "nixpkgs";
+    omp-binary = {
+      url = "https://github.com";
+      flake = false; # raw file, not source
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, ... }:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp-binary, ... }@inputs:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
@@ -30,6 +30,7 @@
         useUserPackages = true;
         users.julian = { pkgs, lib, config, ... }@hmArgs: import ./shared/home.nix (hmArgs // homeArgs);
         backupFileExtension = "backup";
+	extraSpecialArgs = { inherit inputs; };
       };
     };
     # Helper to create a host
