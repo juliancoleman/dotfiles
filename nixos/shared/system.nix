@@ -1,8 +1,9 @@
 # Shared system configuration — common to all hosts
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   imports = [
     ./modules/messaging.nix
+    inputs.omp.nixosModules.default
     ./modules/files.nix
   ];
 
@@ -66,6 +67,9 @@
 
   # ── Fish ──
   programs.fish.enable = true;
+
+  # -- OMP --
+  programs.omp.enable = true;
 
   # ── User ──
   users.users.julian = {

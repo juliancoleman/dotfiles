@@ -21,7 +21,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, ... }:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, inputs, omp, ... }:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
