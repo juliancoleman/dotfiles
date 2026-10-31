@@ -124,7 +124,7 @@
     gh
     ghostty
     git
-    omp
+    oh-my-pi
     hyprlock
     hypridle
     wlopm
