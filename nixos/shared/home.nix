@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -165,4 +165,8 @@
     "hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
     "hypr/hypridle.conf".source = ../niri/hypridle.conf;
   };
+
+  # -- OMP --
+  imports = [ inputs.omp.homeManagerModules.default ];
+  programs.omp.enable = true;
 }

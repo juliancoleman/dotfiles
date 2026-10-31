@@ -67,9 +67,6 @@
   # ── Fish ──
   programs.fish.enable = true;
 
-  # -- OMP --
-  programs.omp.enable = true;
-
   # ── User ──
   users.users.julian = {
     shell = pkgs.fish;

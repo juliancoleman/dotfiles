@@ -21,7 +21,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, ... }:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
@@ -35,7 +35,7 @@
     # Helper to create a host
     mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama; inherit inputs; } // specialArgs;
+      specialArgs = { inherit nixpkgs-ollama; } // specialArgs;
       modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
     };
   in {
