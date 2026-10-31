@@ -2,15 +2,17 @@
 let
   omp-pkg = pkgs.stdenv.mkDerivation {
     pname = "omp";
-    version = "18.13.3";
-    src = inputs.omp-binary;
+    version = "18.14.0";
+    src = pkgs.fetchurl {
+      url = "https://github.com/can1357/oh-my-pi/releases/download/v18.14.0/omp-linux-arm64";
+      sha256 = "dba8d170499709bc87359e02e677821aa76a6ef998ca0254578fe4ea07aff5bc";
+    };
     dontUnpack = true;
     nativeBuildInputs = [ pkgs.autoPatchelfHook ];
     buildInputs = [ pkgs.stdenv.cc.cc.lib ];
     installPhase = ''
       mkdir -p $out/bin
-      cp $src $out/bin/omp
-      chmod +x $out/bin/omp
+      install -m755 $src $out/bin/omp
     '';
   };
 in
