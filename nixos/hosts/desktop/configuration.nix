@@ -80,7 +80,7 @@ in
   environment.variables.LD_LIBRARY_PATH = [
     "${pkgs.curl.out}/lib"
     "${pkgs.libglvnd}/lib"
-    "${pkgs.hardware.nvidia.package}/lib"
+    "${config.hardware.nvidia.package}/lib"
   ];
 
   # WhatsApp via XWayland on Nvidia.
