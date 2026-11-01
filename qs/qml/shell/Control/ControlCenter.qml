@@ -258,10 +258,25 @@ Item {
                     shown: root.page === ""
                     anchors.fill: parent
 
-                    Row {
+                    SettingsButton {
+                        id: closeButton
+                        opened: root.openP
+                        icon: "close"
+                        label: qsTr("Close")
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: root.circleRight ? parent.right : undefined
-                        anchors.left: root.circleRight ? undefined : parent.left
+                        // Center the close mark over the status circle, like the weather panel:
+                        // the circle's center sits 17px from the body edge, the header 12px, so +5.
+                        x: root.circleRight ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4)) : 0
+                        onActivated: root.close()
+                    }
+
+                    Row {
+                        id: batteryRow
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: root.circleRight ? closeButton.left : undefined
+                        anchors.left: root.circleRight ? undefined : closeButton.right
+                        anchors.rightMargin: 6
+                        anchors.leftMargin: 6
                         layoutDirection: root.circleRight ? Qt.RightToLeft : Qt.LeftToRight
                         spacing: 6
                         visible: root.status.battery.available
@@ -615,6 +630,7 @@ Item {
 
             MouseArea {
                 id: circleHit
+                enabled: !root.opened
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
