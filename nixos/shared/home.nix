@@ -8,7 +8,7 @@
   programs.omp = {
     enable = true;
     settings.startup.quiet = true;
-  }
+  };
   # ── Shell ──────────────────────────────────────────────────────
   programs.fish = {
     enable = true;
