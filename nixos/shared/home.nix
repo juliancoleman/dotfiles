@@ -1,25 +1,14 @@
 { config, lib, pkgs, inputs, ... }:
-let
-  omp-pkg = pkgs.stdenv.mkDerivation {
-    pname = "omp";
-    version = "18.14.0";
-    src = pkgs.fetchurl {
-      url = "https://github.com/can1357/oh-my-pi/releases/download/v18.14.0/omp-linux-arm64";
-      sha256 = "dba8d170499709bc87359e02e677821aa76a6ef998ca0254578fe4ea07aff5bc";
-    };
-    dontUnpack = true;
-    nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-    buildInputs = [ pkgs.stdenv.cc.cc.lib ];
-    installPhase = ''
-      mkdir -p $out/bin
-      install -m755 $src $out/bin/omp
-    '';
-  };
-in
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
   home.stateVersion = "25.11";
+  # -- OMP --------------------------------------------------------
+  imports = [ inputs.omp.homeManagerModules.default ];
+  programs.omp = {
+    enable = true;
+    settings.startup.quiet = true;
+  }
   # ── Shell ──────────────────────────────────────────────────────
   programs.fish = {
     enable = true;
@@ -140,7 +129,6 @@ in
   home.packages = with pkgs; [
     brave
     pkgs.catppuccin-cursors.latteLight
-    omp-pkg
   ];
   # ── Session variables & paths ──────────────────────────────────
   home.sessionVariables = {

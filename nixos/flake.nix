@@ -16,12 +16,12 @@
       url = "path:../qs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    omp-binary = {
+    omp = {
       url = "github:can1357/oh-my-pi";
-      flake = false; # raw file, not source
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp-binary, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, ... }@inputs:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
