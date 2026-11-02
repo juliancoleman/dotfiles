@@ -1,5 +1,9 @@
 # Shared system configuration — common to all hosts
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
+let
+  system = pkgs.stdenv.hostPlatform.system;
+  codexPkgs = inputs.codex-desktop.packages or {};
+in
 {
   imports = [
     ./modules/messaging.nix
@@ -56,6 +60,10 @@
 
   # ── Compositor ──
   programs.niri.enable = true;
+  # Codex desktop needs Wayland ozone platform since session runs on Niri (Wayland)
+  environment.sessionVariables = {
+    CODEX_OZONE_PLATFORM = "wayland";
+  };
 
 
   # ── Bluetooth ──
@@ -113,6 +121,7 @@
 
   # ── Shared packages (work on all hosts) ──
   environment.systemPackages = with pkgs; [
+    inputs.claude-desktop.packages.${system}.default
     bat
     btop
     carapace
@@ -158,7 +167,7 @@
     brightnessctl
     grim
     slurp
-  ];
+  ] ++ lib.optional (codexPkgs ? ${system}) codexPkgs.${system}.default;
 
   environment.pathsToLink = [ "/share/wayland-sessions" ];
 

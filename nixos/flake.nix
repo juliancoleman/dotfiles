@@ -20,16 +20,15 @@
       url = "github:can1357/oh-my-pi";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    codex-cli = {
-      url = "github:sadjow/codex-cli-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+    codex-desktop = {
+      url = "github:ilysenko/codex-desktop-linux";
     };
-    claude-code = {
-      url = "github:sadjow/claude-code-nix";
+    claude-desktop = {
+      url = "github:poeck/claude-desktop-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, omp, codex-cli, claude-code, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, ... }@inputs:
   let
     # Shared home-manager module
     mkHomeManagerModule = homeArgs: {
@@ -44,7 +43,7 @@
     # Helper to create a host
     mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama; } // specialArgs // { nixpkgs.overlays = [ codex-cli.overlays.default claude-code.overlays.default ]; };
+      specialArgs = { inherit nixpkgs-ollama; inherit inputs; } // specialArgs;
       modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
     };
   in {
@@ -91,7 +90,7 @@
           };
         }
         {
-        nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay codex-cli.overlays.default claude-code.overlays.default ];
+        nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
         }
         { programs.niri.package = nixpkgs.legacyPackages.aarch64-linux.niri; }
       ];
