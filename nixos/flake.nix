@@ -20,9 +20,6 @@
       url = "github:can1357/oh-my-pi";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    codex-desktop = {
-      url = "github:ilysenko/codex-desktop-linux";
-    };
     claude-desktop = {
       url = "github:poeck/claude-desktop-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";

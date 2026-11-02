@@ -2,14 +2,12 @@
 { config, lib, pkgs, inputs, ... }:
 let
   system = pkgs.stdenv.hostPlatform.system;
-  codexPkgs = inputs.codex-desktop.packages or {};
 in
 {
   imports = [
     ./modules/messaging.nix
     ./modules/files.nix
   ];
-
   # ── Time ──
   time.timeZone = "America/Denver";
 
@@ -60,11 +58,6 @@ in
 
   # ── Compositor ──
   programs.niri.enable = true;
-  # Codex desktop needs Wayland ozone platform since session runs on Niri (Wayland)
-  environment.sessionVariables = {
-    CODEX_OZONE_PLATFORM = "wayland";
-  };
-
 
   # ── Bluetooth ──
   hardware.bluetooth.enable = true;
@@ -167,7 +160,7 @@ in
     brightnessctl
     grim
     slurp
-  ] ++ lib.optional (codexPkgs ? ${system}) codexPkgs.${system}.default;
+  ];
 
   environment.pathsToLink = [ "/share/wayland-sessions" ];
 
