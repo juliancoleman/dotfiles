@@ -230,17 +230,47 @@ PanelWindow {
 
     // Floats over the desktop: one shadow from everything's combined outline, drawn beneath the real
     // scene so the fused circles cast a single shape and the text keeps its own rendering.
+    // The effect blurs an offscreen copy of its source, so the copy covers only what is drawn, not the
+    // whole strip the bar reserves for its panels.
+    readonly property rect shadowRect: {
+        const pad = 40
+        let left = clock.x + clock.housingItem.x
+        let top = clock.y + clock.housingItem.y
+        let right = left + clock.housingItem.width
+        let bottom = top + clock.housingItem.height
+        for (const item of [notes, weather, controls, secure, launcher]) {
+            left = Math.min(left, item.x)
+            top = Math.min(top, item.y)
+            right = Math.max(right, item.x + item.width)
+            bottom = Math.max(bottom, item.y + item.height)
+        }
+        return Qt.rect(left - pad, top - pad, right - left + pad * 2, bottom - top + pad * 2)
+    }
+
     Loader {
         active: ClockConfig.shadow
-        anchors.fill: scene
-        sourceComponent: MultiEffect {
-            source: scene
-            shadowEnabled: true
-            shadowColor: "black"
-            shadowOpacity: 0.45
-            shadowBlur: 0.8
-            blurMax: 32
-            shadowVerticalOffset: 4
+        x: root.shadowRect.x
+        y: root.shadowRect.y
+        width: root.shadowRect.width
+        height: root.shadowRect.height
+        sourceComponent: Item {
+            ShaderEffectSource {
+                id: copy
+                anchors.fill: parent
+                visible: false
+                sourceItem: scene
+                sourceRect: root.shadowRect
+            }
+            MultiEffect {
+                anchors.fill: parent
+                source: copy
+                shadowEnabled: true
+                shadowColor: "black"
+                shadowOpacity: 0.45
+                shadowBlur: 0.8
+                blurMax: 32
+                shadowVerticalOffset: 4
+            }
         }
     }
 
