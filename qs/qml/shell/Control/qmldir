@@ -1,8 +1,8 @@
 ControlCenter 1.0 ControlCenter.qml
 ToggleTile 1.0 ToggleTile.qml
 SliderTile 1.0 SliderTile.qml
-FanSource 1.0 FanSource.qml
-SystemSource 1.0 SystemSource.qml
+singleton FanSource 1.0 FanSource.qml
+singleton SystemSource 1.0 SystemSource.qml
 UsageTile 1.0 UsageTile.qml
 ListRow 1.0 ListRow.qml
 WifiPage 1.0 WifiPage.qml
@@ -10,7 +10,7 @@ BluetoothPage 1.0 BluetoothPage.qml
 AudioPage 1.0 AudioPage.qml
 FansPage 1.0 FansPage.qml
 PowerPage 1.0 PowerPage.qml
-FanControl 1.0 FanControl.qml
+singleton FanControl 1.0 FanControl.qml
 FanTile 1.0 FanTile.qml
 MomentumFlickable 1.0 MomentumFlickable.qml
-WiredSource 1.0 WiredSource.qml
+singleton WiredSource 1.0 WiredSource.qml

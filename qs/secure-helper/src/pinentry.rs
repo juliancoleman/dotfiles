@@ -2,7 +2,6 @@
 //! everything else is acknowledged or declined.
 
 use crate::broker::{self, Outcome, Request};
-use crate::lineage;
 use std::io::{BufRead, Write};
 use std::process::ExitCode;
 
@@ -51,15 +50,13 @@ fn encode(text: &str) -> String {
 }
 
 fn get_pin(state: &mut State) -> Vec<String> {
-    let pid = std::os::unix::process::parent_id();
     let request = Request {
         source: "pinentry",
         prompt: std::mem::take(&mut state.prompt),
         description: state.description.clone(),
         title: state.title.clone(),
         error: std::mem::take(&mut state.error),
-        pid,
-        lineage: lineage::describe(pid),
+        pid: std::os::unix::process::parent_id(),
     };
     match broker::ask(&request) {
         Outcome::Secret(secret) => vec![format!("D {}", encode(&secret)), "OK".into()],

@@ -1,11 +1,14 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
-Scope {
+Singleton {
     id: root
 
-    property bool active: false
+    property int watchers: 0
+    readonly property bool active: watchers > 0
     property real cpu: 0
     property real memory: 0
     property real disk: 0

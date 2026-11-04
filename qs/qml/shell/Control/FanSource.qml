@@ -1,13 +1,17 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../Common"
 
-Scope {
+// Fan speeds straight from sysfs. One read at startup gates the tile; afterwards it only polls
+// while a panel on some screen is open and the helper isn't already reporting the same fans.
+Singleton {
     id: root
 
-    // Poll only while something is showing fan speeds; one read at startup gates the tile.
-    property bool active: false
+    property int watchers: 0
+    readonly property bool active: watchers > 0
     property var fans: []
     readonly property bool available: fans.length > 0
     readonly property int fastest: {
@@ -20,8 +24,6 @@ Scope {
     function rpmText(rpm) {
         return rpm > 0 ? I18n.tr("%1 rpm").arg(rpm.toLocaleString(Qt.locale(I18n.qtLocale), "f", 0)) : I18n.tr("Idle")
     }
-
-    readonly property string summary: I18n.tr("Auto") + " · " + rpmText(fastest)
 
     function parse(text) {
         const next = []
@@ -58,7 +60,7 @@ Scope {
     Timer {
         interval: 2000
         repeat: true
-        running: root.active
+        running: root.active && !FanControl.ready
         triggeredOnStart: true
         onTriggered: if (!reader.running) reader.running = true
     }

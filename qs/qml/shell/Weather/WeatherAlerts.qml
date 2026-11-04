@@ -3,8 +3,10 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Notifications
 import ".."
 import "../Common"
+import "../Notifications"
 
 // Turns weather data into a few shell notifications: one when an official alert is issued or rain/snow
 // is forecast to start soon, and one reminder just before it begins. Sent keys persist so a restart
@@ -18,6 +20,8 @@ Singleton {
     readonly property int minimumChance: 40
 
     property var sent: ({})
+    // Keys sent before the store has been read stay in memory until it has, so merging can't lose either side.
+    property bool storeLoaded: false
     // The next forecast dry-to-wet change, kept so tick() can remind as it approaches.
     property var upcoming: null
 
@@ -26,8 +30,8 @@ Singleton {
     }
 
     function timeText(ms) {
-        const when = new Date(ms)
-        return I18n.timeOfDay(when.getHours(), when.getMinutes(), ClockConfig.use24Hour, true)
+        const when = WeatherService.wallClock(ms, WeatherService.offsetAt(ms))
+        return I18n.timeOfDay(when.getUTCHours(), when.getUTCMinutes(), ClockConfig.use24Hour, true)
     }
 
     function once(key, summary, body, critical) {
@@ -36,12 +40,10 @@ Singleton {
         const next = Object.assign({}, sent)
         next[key] = Date.now()
         sent = next
-        store.setText(JSON.stringify(sent))
-        const proc = sender.createObject(root, {
-            command: ["notify-send", "-a", I18n.tr("Weather"), "-u", critical ? "critical" : "normal", summary, body]
-        })
-        proc.exited.connect(function () { proc.destroy() })
-        proc.running = true
+        if (storeLoaded)
+            persist()
+        NotificationService.postLocal(I18n.tr("Weather"), summary, body,
+                                      critical ? NotificationUrgency.Critical : NotificationUrgency.Normal)
     }
 
     function review() {
@@ -98,28 +100,36 @@ Singleton {
         }
     }
 
+    // The read is still FileView's live operation while onLoaded runs, so the write-back waits a turn.
+    function persist() {
+        store.setText(JSON.stringify(sent))
+    }
+
     FileView {
         id: store
         path: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/qs-weather-alerts.json"
         printErrors: false
+        atomicWrites: true
         onLoaded: {
+            let kept = {}
             try {
                 const parsed = JSON.parse(text())
                 const cutoff = Date.now() - 3 * 24 * 60 * 60 * 1000
-                const kept = {}
                 for (const key in parsed) {
                     if (parsed[key] > cutoff)
                         kept[key] = parsed[key]
                 }
-                root.sent = kept
             } catch (problem) {
-                root.sent = {}
+                kept = {}
             }
+            root.sent = Object.assign(kept, root.sent)
+            root.storeLoaded = true
+            Qt.callLater(root.persist)
         }
-    }
-
-    Component {
-        id: sender
-        Process {}
+        onLoadFailed: {
+            root.storeLoaded = true
+            if (Object.keys(root.sent).length > 0)
+                Qt.callLater(root.persist)
+        }
     }
 }

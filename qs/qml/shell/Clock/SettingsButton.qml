@@ -11,6 +11,7 @@ Item {
     property bool toggle: false
     property bool on: false
     signal activated()
+    property string motion: "spring"
 
     readonly property color fill: on ? Theme.today
         : hit.containsMouse || activeFocus ? Theme.track : Theme.surface
@@ -37,7 +38,7 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: 140
+                duration: Theme.durationFor(button.motion) * 0.56
                 easing.type: Easing.OutCubic
             }
         }

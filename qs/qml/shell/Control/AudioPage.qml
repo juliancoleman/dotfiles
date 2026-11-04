@@ -69,6 +69,7 @@ Item {
                     ListRow {
                         required property var modelData
                         width: list.width
+                        motion: page.motion
                         icon: page.input ? "microphone" : "volume"
                         title: page.label(modelData)
                         current: modelData === page.current

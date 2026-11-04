@@ -89,10 +89,10 @@ Item {
 
     SequentialAnimation {
         id: shakeAnim
-        NumberAnimation { target: root; property: "shake"; to: -8; duration: 45; easing.type: Easing.OutQuad }
-        NumberAnimation { target: root; property: "shake"; to: 7; duration: 70; easing.type: Easing.InOutQuad }
-        NumberAnimation { target: root; property: "shake"; to: -4; duration: 60; easing.type: Easing.InOutQuad }
-        NumberAnimation { target: root; property: "shake"; to: 0; duration: 55; easing.type: Easing.OutQuad }
+        NumberAnimation { target: root; property: "shake"; to: -8; duration: Theme.durationFor(root.motion) * 0.18; easing.type: Easing.OutQuad }
+        NumberAnimation { target: root; property: "shake"; to: 7; duration: Theme.durationFor(root.motion) * 0.28; easing.type: Easing.InOutQuad }
+        NumberAnimation { target: root; property: "shake"; to: -4; duration: Theme.durationFor(root.motion) * 0.24; easing.type: Easing.InOutQuad }
+        NumberAnimation { target: root; property: "shake"; to: 0; duration: Theme.durationFor(root.motion) * 0.22; easing.type: Easing.OutQuad }
     }
 
     Rectangle {

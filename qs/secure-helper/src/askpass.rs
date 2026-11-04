@@ -1,7 +1,7 @@
 //! The askpass contract shared by sudo, ssh, and git: prompt in argv, secret on stdout, non-zero exit to cancel.
 
 use crate::broker::{self, Outcome, Request};
-use crate::{lineage, tty};
+use crate::tty;
 use std::io::Write;
 use std::process::ExitCode;
 
@@ -18,12 +18,10 @@ pub fn run(args: &[String]) -> ExitCode {
         _ => {}
     }
 
-    let pid = std::os::unix::process::parent_id();
     let request = Request {
         source: "askpass",
         prompt: prompt.clone(),
-        pid,
-        lineage: lineage::describe(pid),
+        pid: std::os::unix::process::parent_id(),
         ..Request::default()
     };
     let secret = match broker::ask(&request) {

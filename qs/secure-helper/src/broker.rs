@@ -13,7 +13,6 @@ pub struct Request {
     pub title: String,
     pub error: String,
     pub pid: u32,
-    pub lineage: String,
 }
 
 #[derive(Deserialize)]

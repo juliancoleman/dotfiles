@@ -365,63 +365,48 @@ PanelWindow {
         }
 
         // Holds the weather circle to whatever follows it, the notification circle or the clock.
-        Rectangle {
-            readonly property real drop: {
-                const t = Math.max(0, Math.min(1, (root.weatherP - 0.5) / 0.5))
-                return 1 - t * t * (3 - 2 * t)
-            }
-            readonly property real fuse: Math.max(0, (root.join - 0.6) / 0.4)
-            readonly property real cross: root.diameter * Math.max(drop, fuse)
-            readonly property real start: root.weatherAlong + weather.body / 2
-            readonly property real span: (root.notesP > 0.001 ? root.notesAlong + root.diameter / 2 : root.clockStart) - start
+        Neck {
+            vertical: root.vertical
+            diameter: root.diameter
+            release: root.weatherP
+            join: root.join
+            start: root.weatherAlong + weather.body / 2
+            span: (root.notesP > 0.001 ? root.notesAlong + root.diameter / 2 : root.clockStart) - start
+            lane: root.notesCross
             // Beneath the circles, so while it widens into the notch it never covers their contents.
             z: -1
             visible: root.weatherP > 0.001 && !root.docked && cross > 0.5
-            color: Theme.surface
             opacity: root.coverFade
-            x: root.vertical ? root.notesCross + (root.diameter - cross) / 2 : start
-            y: root.vertical ? start : root.notesCross + (root.diameter - cross) / 2
-            width: root.vertical ? cross : span
-            height: root.vertical ? span : cross
         }
 
         // The water drop: a neck holds the separating circle to the clock, thinning until it lets go. While
         // fusing into the notch it widens again, like the status circle's.
-        Rectangle {
-            readonly property real drop: {
-                const t = Math.max(0, Math.min(1, (root.notesP - 0.5) / 0.5))
-                return 1 - t * t * (3 - 2 * t)
-            }
-            readonly property real fuse: Math.max(0, (root.join - 0.6) / 0.4)
-            readonly property real cross: root.diameter * Math.max(drop, fuse)
-            readonly property real start: root.notesAlong + root.diameter / 2
-            readonly property real span: root.clockStart - root.notesAlong
+        Neck {
+            vertical: root.vertical
+            diameter: root.diameter
+            release: root.notesP
+            join: root.join
+            start: root.notesAlong + root.diameter / 2
+            span: root.clockStart - root.notesAlong
+            lane: root.notesCross
             z: -1
             visible: root.notesP > 0.001 && !root.docked && cross > 0.5
-            color: Theme.surface
             opacity: root.coverFade
-            x: root.vertical ? root.notesCross + (root.diameter - cross) / 2 : start
-            y: root.vertical ? start : root.notesCross + (root.diameter - cross) / 2
-            width: root.vertical ? cross : span
-            height: root.vertical ? span : cross
         }
 
         // Fuses the status circle into the notch: the gap closes and this neck widens with the pill-to-notch motion.
-        Rectangle {
+        Neck {
             readonly property Item housing: clock.housingItem
-            // Forms only once the gap is nearly closed, so it never stretches into a hairline across it.
-            readonly property real cross: root.diameter * Math.max(0, (root.join - 0.6) / 0.4)
             readonly property real housingEnd: root.vertical
                 ? clock.y + housing.y + housing.height
                 : clock.x + housing.x + housing.width
-            readonly property real start: housingEnd - root.diameter / 2
-            readonly property real span: (root.vertical ? root.circleY : root.circleX) + root.diameter / 2 - start
+            vertical: root.vertical
+            diameter: root.diameter
+            join: root.join
+            start: housingEnd - root.diameter / 2
+            span: (root.vertical ? root.circleY : root.circleX) + root.diameter / 2 - start
+            lane: root.vertical ? root.circleX : root.circleY
             visible: root.join > 0.001 && !root.docked
-            color: Theme.surface
-            x: root.vertical ? root.circleX + (root.diameter - cross) / 2 : start
-            y: root.vertical ? start : root.circleY + (root.diameter - cross) / 2
-            width: root.vertical ? cross : span
-            height: root.vertical ? span : cross
         }
 
         ClockWidget {

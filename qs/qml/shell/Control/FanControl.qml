@@ -1,13 +1,17 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
 // Client for qs-fan-helper. Holding the socket open is the lease: if the shell
 // exits or stops renewing, the helper returns every fan to firmware control.
-Scope {
+// A single lease serves every screen's panel; each open panel counts as a watcher.
+Singleton {
     id: root
 
-    property bool active: false
+    property int watchers: 0
+    readonly property bool active: watchers > 0
     property string path: "/run/qs-fan-helper.sock"
 
     readonly property bool connected: socket.connected
@@ -27,6 +31,12 @@ Scope {
             if (fans[i].mode === "manual")
                 ++count
         return count
+    }
+    readonly property int fastest: {
+        let best = 0
+        for (let i = 0; i < fans.length; ++i)
+            best = Math.max(best, fans[i].rpm || 0)
+        return best
     }
 
     property var pending: ({})

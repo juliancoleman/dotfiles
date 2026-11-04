@@ -3,7 +3,6 @@
 
 mod askpass;
 mod broker;
-mod lineage;
 mod pinentry;
 mod tty;
 

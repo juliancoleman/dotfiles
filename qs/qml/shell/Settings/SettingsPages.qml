@@ -53,6 +53,7 @@ Item {
                     ListRow {
                         required property var modelData
                         width: list.width
+                        motion: root.motion
                         icon: modelData.icon
                         title: I18n.tr(modelData.title)
                         trailing: "chevron-right"
@@ -91,6 +92,7 @@ Item {
                             required property var modelData
                             control: modelData
                             width: controls.width
+                            motion: root.motion
                         }
                     }
                 }

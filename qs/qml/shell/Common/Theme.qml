@@ -21,6 +21,13 @@ QtObject {
     property color charging: greenBlackLight
     property color statusTrack: Qt.rgba(0.95, 0.94, 0.92, 0.2)
     property color statusDim: Qt.rgba(0.95, 0.94, 0.92, 0.3)
+    // US AQI bands, good through hazardous, toned to the palette rather than the EPA's saturated chart.
+    property color aqiGood: greenBlackLight
+    property color aqiModerate: "#C9B76A"
+    property color aqiSensitive: "#C98E5A"
+    property color aqiUnhealthy: "#B0565A"
+    property color aqiVeryUnhealthy: "#8E6AA8"
+    property color aqiHazardous: "#7A3346"
 
     readonly property var palette: [
         { name: "Black", color: surface },

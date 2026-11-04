@@ -20,7 +20,8 @@ Singleton {
     // The last socket requester we answered; asking again soon means the secret was rejected.
     property var answered: ({ pid: 0, at: 0 })
     property string polkitError: ""
-    property var lineage: ({ program: "", requester: "", apps: [] })
+    // Who is behind the current run0 request, read from /proc once the flow names its pid.
+    property var polkitLineage: SecureRequest.parseLineage("")
     // Bumped on every rejected secret so the prompt can shake.
     property int rejections: 0
     // Bumped whenever a different request takes the prompt, so typed text never carries over.
@@ -41,7 +42,7 @@ Singleton {
     }
 
     // Bindings can see a cleared flow before polkitActive updates.
-    readonly property var request: polkitActive && flow ? SecureCopy.polkit(flow, lineage) : local || ({})
+    readonly property var request: polkitActive && flow ? SecureRequest.polkit(flow, polkitLineage) : local || ({})
     readonly property string glyph: request.icon || "lock"
     readonly property string image: request.image || ""
     readonly property string title: request.title || ""
@@ -119,24 +120,40 @@ Singleton {
         client.flush()
     }
 
+    // Requesters only name themselves by pid; what the prompt shows about them comes from /proc,
+    // never from text they sent. A missing or bogus pid leaves lineage empty and the title generic.
+    function readLineage(pid, done) {
+        if (!Number.isInteger(pid) || pid <= 0) {
+            done(SecureRequest.parseLineage(""))
+            return
+        }
+        lineageProbe.createObject(root, { pid: String(pid), done: done })
+    }
+
     function receive(client, line) {
         let message
         try {
             message = JSON.parse(line)
         } catch (error) {
+            console.warn("SecureInput: rejecting unparsable request:", error.message)
+            reply(client, { error: "bad request" })
             client.connected = false
             return
         }
-        const request = SecureCopy.socket(message, SecureCopy.parseLineage(message.lineage || ""))
-        request.owner = client
-        request.submit = secret => {
-            answered = { pid: message.pid || 0, at: Date.now() }
-            reply(client, { secret: secret })
-            finish(client)
-        }
-        request.cancel = () => reply(client, { cancelled: true })
-        const retried = message.pid && message.pid === answered.pid && Date.now() - answered.at < 15000
-        enqueue(request, SecureCopy.socketError(message.error) || (retried ? I18n.tr("Wrong password") : ""))
+        readLineage(message.pid, lineage => {
+            if (!client.connected)
+                return
+            const request = SecureRequest.socket(message, lineage)
+            request.owner = client
+            request.submit = secret => {
+                answered = { pid: message.pid || 0, at: Date.now() }
+                reply(client, { secret: secret })
+                finish(client)
+            }
+            request.cancel = () => reply(client, { cancelled: true })
+            const retried = message.pid && message.pid === answered.pid && Date.now() - answered.at < 15000
+            enqueue(request, SecureRequest.socketError(message.error) || (retried ? I18n.tr("Wrong password") : ""))
+        })
     }
 
     SocketServer {
@@ -169,22 +186,38 @@ Singleton {
 
     onFlowChanged: {
         polkitError = ""
-        lineage = SecureCopy.parseLineage("")
+        polkitLineage = SecureRequest.parseLineage("")
         ++serial
-        const pid = flow ? SecureCopy.run0Pid(flow.message || "") : ""
+        const current = flow
+        const pid = current ? SecureRequest.run0Pid(current.message || "") : ""
         if (pid === "")
             return
-        lineageReader.command = ["sh", "-c",
-            "p=$1; tr '\\0' ' ' < /proc/$p/cmdline; echo; "
-            + "while [ \"$p\" -gt 1 ] 2>/dev/null; do cat /proc/$p/comm; p=$(cut -d' ' -f4 /proc/$p/stat); done",
-            "sh", pid]
-        lineageReader.running = true
+        readLineage(Number(pid), lineage => {
+            if (flow === current)
+                polkitLineage = lineage
+        })
     }
 
-    Process {
-        id: lineageReader
-        stdout: StdioCollector {
-            onStreamFinished: root.lineage = SecureCopy.parseLineage(text)
+    // One short-lived reader per request: the requester's command line, then each process name up to init.
+    Component {
+        id: lineageProbe
+        Process {
+            id: probe
+            required property string pid
+            required property var done
+            running: true
+            // comm may contain spaces and parentheses, so the ppid is the second field after the last ')'.
+            command: ["sh", "-c",
+                "p=$1; tr '\\0' ' ' < /proc/$p/cmdline; echo; n=0; "
+                + "while [ \"$p\" -gt 1 ] 2>/dev/null && [ $n -lt 32 ]; do cat /proc/$p/comm; "
+                + "p=$(sed 's/.*) //' /proc/$p/stat | cut -d' ' -f2); n=$((n + 1)); done",
+                "sh", pid]
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    probe.done(SecureRequest.parseLineage(text))
+                    probe.destroy()
+                }
+            }
         }
     }
 }

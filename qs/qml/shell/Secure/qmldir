@@ -1,4 +1,4 @@
 module Secure
-singleton SecureCopy 1.0 SecureCopy.qml
+singleton SecureRequest 1.0 SecureRequest.qml
 singleton SecureInput 1.0 SecureInput.qml
 SecurePrompt 1.0 SecurePrompt.qml

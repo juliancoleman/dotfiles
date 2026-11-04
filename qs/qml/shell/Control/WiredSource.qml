@@ -1,13 +1,16 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
 // NetworkManager's global networking switch and the route this machine reaches the internet by.
 // Quickshell's Networking exposes neither, so they come from nmcli and ip.
-Scope {
+Singleton {
     id: root
 
-    property bool active: false
+    property int watchers: 0
+    readonly property bool active: watchers > 0
     // How often the panel re-reads while open, so a cable pulled or a lease renewed shows up.
     readonly property int refreshInterval: 3000
     // Any public address works: `ip route get` only asks which route would carry it.

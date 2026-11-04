@@ -4,21 +4,17 @@ import "../Common"
 Item {
     id: page
 
-    property var source: null
-    property var control: null
     property string motion: "easeOut"
 
-    readonly property bool controllable: control !== null && control.ready && !control.busy
+    readonly property bool controllable: FanControl.ready && !FanControl.busy
     readonly property string note: {
-        if (!control)
-            return ""
-        if (control.busy)
+        if (FanControl.busy)
             return I18n.tr("Another session is controlling the fans.")
-        if (control.error !== "")
-            return control.error
-        if (control.connected && !control.available)
-            return control.reason
-        if (!control.ready)
+        if (FanControl.error !== "")
+            return FanControl.error
+        if (FanControl.connected && !FanControl.available)
+            return FanControl.reason
+        if (!FanControl.ready)
             return I18n.tr("Manual control isn't enabled on this machine.")
         return ""
     }
@@ -31,7 +27,7 @@ Item {
         spacing: 6
 
         Repeater {
-            model: page.control && page.control.ready ? page.control.fans : []
+            model: FanControl.ready ? FanControl.fans : []
 
             FanTile {
                 required property var modelData
@@ -39,17 +35,17 @@ Item {
                 motion: page.motion
                 controllable: page.controllable
                 title: modelData.label
-                rpmText: page.source.rpmText(modelData.rpm)
+                rpmText: FanSource.rpmText(modelData.rpm)
                 manual: modelData.mode === "manual"
                 percent: modelData.percent
                 minimum: modelData.minimumPercent
-                onAutoRequested: page.control.setAuto(modelData.id)
-                onPercentRequested: next => page.control.setPercent(modelData.id, next)
+                onAutoRequested: FanControl.setAuto(modelData.id)
+                onPercentRequested: next => FanControl.setPercent(modelData.id, next)
             }
         }
 
         Repeater {
-            model: page.control && page.control.ready ? [] : (page.source ? page.source.fans : [])
+            model: FanControl.ready ? [] : FanSource.fans
 
             ToggleTile {
                 required property var modelData
@@ -59,7 +55,7 @@ Item {
                 toggleable: false
                 icon: "fan"
                 title: modelData.label
-                subtitle: I18n.tr("Auto") + " · " + page.source.rpmText(modelData.rpm)
+                subtitle: I18n.tr("Auto") + " · " + FanSource.rpmText(modelData.rpm)
             }
         }
 

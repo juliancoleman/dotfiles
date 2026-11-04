@@ -79,7 +79,7 @@ Item {
         if (opened || !present)
             return
         opened = true
-        run(openEase, "openProgress", 1)
+        openEase.aim(1)
         if (Date.now() - WeatherService.updatedAt > 5 * 60 * 1000)
             WeatherService.refresh()
     }
@@ -88,7 +88,7 @@ Item {
         if (!opened)
             return
         opened = false
-        run(openEase, "openProgress", 0)
+        openEase.aim(0)
     }
 
     function toggle() {
@@ -96,17 +96,6 @@ Item {
             close()
         else
             open()
-    }
-
-    function run(ease, property, next) {
-        ease.stop()
-        if (motion === "none") {
-            root[property] = next
-            return
-        }
-        ease.from = root[property]
-        ease.to = next
-        ease.start()
     }
 
     // A new condition (another place, or the sky changing) cross-fades in over the old one.
@@ -130,7 +119,7 @@ Item {
     }
 
     onPresentChanged: {
-        run(ease, "presence", present ? 1 : 0)
+        presenceEase.aim(present ? 1 : 0)
         if (!present)
             close()
     }
@@ -145,22 +134,19 @@ Item {
         easing.type: Easing.InOutQuad
     }
 
-    NumberAnimation {
-        id: ease
+    Tween {
+        id: presenceEase
         target: root
         property: "presence"
+        motion: root.motion
         duration: Theme.durationFor(root.motion) * 1.4
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
     }
 
-    NumberAnimation {
+    Tween {
         id: openEase
         target: root
         property: "openProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
     Rectangle {
@@ -209,6 +195,7 @@ Item {
             WeatherPanel {
                 id: panel
                 width: parent.width
+                motion: root.motion
                 rowHeight: root.diameter
                 pad: root.pad
                 faceRoom: !root.lent && !root.circleBottom ? root.restWidth : 0

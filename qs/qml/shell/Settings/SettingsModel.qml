@@ -8,8 +8,10 @@ import "../Common"
 // Every setting, for both the control center's settings pages and the launcher's ">" search: what each
 // control is, when it applies, and how it reads and writes ClockConfig. A control is a row of choices unless
 // its `kind` says otherwise. A control shows its section's `icon` in the launcher unless it names its own.
-// Titles and labels stay English sources that the views pass through I18n.tr, so search can match either
-// language and a locale switch doesn't rebuild every page.
+// Each control carries its own `get`/`set` (and `shown` when it doesn't always apply), so a key is defined
+// in exactly one place; `set` writes a preference that the model then saves, unless the control is a
+// `system` switch that lives outside the config file. Titles and labels stay English sources that the views
+// pass through I18n.tr, so search can match either language and a locale switch doesn't rebuild every page.
 Singleton {
     id: root
 
@@ -31,7 +33,9 @@ Singleton {
                     choices: [
                         { label: "English", value: "en" },
                         { label: "日本語", value: "jp" }
-                    ]
+                    ],
+                    get: () => ClockConfig.locale,
+                    set: next => ClockConfig.locale = next
                 },
                 {
                     key: "presentation",
@@ -39,7 +43,9 @@ Singleton {
                     choices: [
                         { label: "Pill", value: "pill" },
                         { label: "Notch", value: "notch" }
-                    ]
+                    ],
+                    get: () => ClockConfig.presentation,
+                    set: next => ClockConfig.presentation = next
                 },
                 {
                     key: "placement",
@@ -49,13 +55,17 @@ Singleton {
                         { label: "Right", value: "right" },
                         { label: "Bottom", value: "bottom" },
                         { label: "Left", value: "left" }
-                    ]
+                    ],
+                    get: () => ClockConfig.placement,
+                    set: next => ClockConfig.placement = next
                 },
                 {
                     key: "shadow",
                     title: "Shadow",
                     keywords: "drop shadow float floating depth elevation",
-                    choices: onOff
+                    choices: onOff,
+                    get: () => ClockConfig.shadow ? "on" : "off",
+                    set: next => ClockConfig.shadow = next === "on"
                 },
                 {
                     key: "palette",
@@ -79,7 +89,9 @@ Singleton {
                         { label: "Ease in", value: "easeIn" },
                         { label: "Linear", value: "linear" },
                         { label: "None", value: "none" }
-                    ]
+                    ],
+                    get: () => ClockConfig.motion,
+                    set: next => ClockConfig.motion = next
                 },
                 {
                     key: "duration",
@@ -90,7 +102,9 @@ Singleton {
                     maximum: 1000,
                     step: 25,
                     decimals: 0,
-                    suffix: " ms"
+                    suffix: " ms",
+                    get: () => ClockConfig.duration,
+                    set: next => ClockConfig.duration = next
                 },
                 {
                     key: "spring",
@@ -101,7 +115,9 @@ Singleton {
                     maximum: 4,
                     step: 0.1,
                     decimals: 1,
-                    suffix: ""
+                    suffix: "",
+                    get: () => ClockConfig.springOvershoot,
+                    set: next => ClockConfig.springOvershoot = next
                 }
             ]
         },
@@ -116,7 +132,9 @@ Singleton {
                     choices: [
                         { label: "12 hour", value: "12" },
                         { label: "24 hour", value: "24" }
-                    ]
+                    ],
+                    get: () => ClockConfig.use24Hour ? "24" : "12",
+                    set: next => ClockConfig.use24Hour = next === "24"
                 },
                 {
                     key: "meridiem",
@@ -125,7 +143,10 @@ Singleton {
                     choices: [
                         { label: "Show", value: "shown" },
                         { label: "Hide", value: "hidden" }
-                    ]
+                    ],
+                    shown: () => !ClockConfig.use24Hour,
+                    get: () => ClockConfig.showPeriod ? "shown" : "hidden",
+                    set: next => ClockConfig.showPeriod = next === "shown"
                 }
             ]
         },
@@ -141,7 +162,9 @@ Singleton {
                     choices: [
                         { label: "Always", value: "always" },
                         { label: "20% and below", value: "low" }
-                    ]
+                    ],
+                    get: () => ClockConfig.batteryPercentage,
+                    set: next => ClockConfig.batteryPercentage = next
                 }
             ]
         },
@@ -158,7 +181,9 @@ Singleton {
                         { label: "List", value: "list" },
                         { label: "Large icons", value: "large" },
                         { label: "Small icons", value: "small" }
-                    ]
+                    ],
+                    get: () => ClockConfig.launcherView,
+                    set: next => ClockConfig.launcherView = next
                 }
             ]
         },
@@ -171,7 +196,9 @@ Singleton {
                     key: "weatherEnabled",
                     title: "Show weather",
                     keywords: "show hide forecast temperature",
-                    choices: onOff
+                    choices: onOff,
+                    get: () => ClockConfig.weatherEnabled ? "on" : "off",
+                    set: next => ClockConfig.weatherEnabled = next === "on"
                 },
                 {
                     key: "weatherUnits",
@@ -180,14 +207,20 @@ Singleton {
                     choices: [
                         { label: "°F", value: "imperial" },
                         { label: "°C", value: "metric" }
-                    ]
+                    ],
+                    shown: () => ClockConfig.weatherEnabled,
+                    get: () => ClockConfig.weatherUnits,
+                    set: next => ClockConfig.weatherUnits = next
                 },
                 {
                     key: "weatherAlerts",
                     icon: "alert",
                     title: "Alerts",
                     keywords: "notify notification warning rain snow storm wind tornado",
-                    choices: onOff
+                    choices: onOff,
+                    shown: () => ClockConfig.weatherEnabled,
+                    get: () => ClockConfig.weatherAlerts ? "on" : "off",
+                    set: next => ClockConfig.weatherAlerts = next === "on"
                 },
                 {
                     key: "weatherLocationMode",
@@ -197,10 +230,13 @@ Singleton {
                     choices: [
                         { label: "Exact", value: "exact" },
                         { label: "Automatic", value: "automatic" }
-                    ]
+                    ],
+                    shown: () => ClockConfig.weatherEnabled,
+                    get: () => ClockConfig.weatherLocationMode,
+                    set: next => ClockConfig.weatherLocationMode = next
                 },
                 // The place itself, found by name; searching finds it through Location above.
-                { key: "weatherLocation", kind: "location" }
+                { key: "weatherLocation", kind: "location", shown: () => ClockConfig.weatherEnabled }
             ]
         },
         {
@@ -213,13 +249,26 @@ Singleton {
                     icon: "navigation",
                     title: "Location services",
                     keywords: "location gps geoclue where privacy time zone",
-                    choices: onOff
+                    choices: onOff,
+                    system: true,
+                    shown: () => LocationServices.installed,
+                    get: () => LocationServices.enabled ? "on" : "off",
+                    set: next => LocationServices.setEnabled(next === "on")
                 },
                 // What the switch means, or why it's missing.
                 { key: "locationNote", kind: "note" }
             ]
         }
     ]
+
+    readonly property var controls: {
+        const byKey = {}
+        for (let s = 0; s < sections.length; ++s) {
+            for (let i = 0; i < sections[s].controls.length; ++i)
+                byKey[sections[s].controls[i].key] = sections[s].controls[i]
+        }
+        return byKey
+    }
 
     function kindOf(control) {
         return control.kind || "choice"
@@ -235,115 +284,22 @@ Singleton {
 
     // Whether a control applies right now; one that doesn't is neither drawn nor found.
     function shown(key) {
-        switch (key) {
-        case "meridiem":
-            return !ClockConfig.use24Hour
-        case "weatherUnits":
-        case "weatherAlerts":
-        case "weatherLocationMode":
-        case "weatherLocation":
-            return ClockConfig.weatherEnabled
-        case "locationServices":
-            return LocationServices.installed
-        default:
-            return true
-        }
+        const control = controls[key]
+        return !control || !control.shown || control.shown()
     }
 
     function value(key) {
-        switch (key) {
-        case "locale":
-            return ClockConfig.locale
-        case "presentation":
-            return ClockConfig.presentation
-        case "placement":
-            return ClockConfig.placement
-        case "shadow":
-            return ClockConfig.shadow ? "on" : "off"
-        case "motion":
-            return ClockConfig.motion
-        case "duration":
-            return ClockConfig.duration
-        case "spring":
-            return ClockConfig.springOvershoot
-        case "hourCycle":
-            return ClockConfig.use24Hour ? "24" : "12"
-        case "meridiem":
-            return ClockConfig.showPeriod ? "shown" : "hidden"
-        case "batteryPercentage":
-            return ClockConfig.batteryPercentage
-        case "launcherView":
-            return ClockConfig.launcherView
-        case "weatherEnabled":
-            return ClockConfig.weatherEnabled ? "on" : "off"
-        case "weatherUnits":
-            return ClockConfig.weatherUnits
-        case "weatherAlerts":
-            return ClockConfig.weatherAlerts ? "on" : "off"
-        case "weatherLocationMode":
-            return ClockConfig.weatherLocationMode
-        case "locationServices":
-            return LocationServices.enabled ? "on" : "off"
-        default:
-            return ""
-        }
+        const control = controls[key]
+        return control && control.get ? control.get() : ""
     }
 
     function apply(key, next) {
-        switch (key) {
-        case "locale":
-            ClockConfig.locale = next
-            break
-        case "presentation":
-            ClockConfig.presentation = next
-            break
-        case "placement":
-            ClockConfig.placement = next
-            break
-        case "shadow":
-            ClockConfig.shadow = next === "on"
-            break
-        case "motion":
-            ClockConfig.motion = next
-            break
-        case "duration":
-            ClockConfig.duration = next
-            break
-        case "spring":
-            ClockConfig.springOvershoot = next
-            break
-        case "hourCycle":
-            ClockConfig.use24Hour = next === "24"
-            break
-        case "meridiem":
-            ClockConfig.showPeriod = next === "shown"
-            break
-        case "batteryPercentage":
-            ClockConfig.batteryPercentage = next
-            break
-        case "launcherView":
-            ClockConfig.launcherView = next
-            break
-        case "weatherEnabled":
-            ClockConfig.weatherEnabled = next === "on"
-            break
-        case "weatherUnits":
-            ClockConfig.weatherUnits = next
-            break
-        case "weatherAlerts":
-            ClockConfig.weatherAlerts = next === "on"
-            break
-        case "weatherLocationMode":
-            ClockConfig.weatherLocationMode = next
-            break
-        // A system switch rather than a preference: it lives outside the config file.
-        case "locationServices":
-            LocationServices.setEnabled(next === "on")
+        const control = controls[key]
+        if (!control || !control.set)
             return
-        default:
-            return
-        }
-        ClockConfig.save()
+        control.set(next)
+        if (!control.system)
+            ClockConfig.save()
     }
 
     // A note's text: here, what the location switch means, or why it's missing.

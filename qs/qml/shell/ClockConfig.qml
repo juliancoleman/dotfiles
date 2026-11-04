@@ -37,40 +37,66 @@ Singleton {
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
     onLocaleChanged: I18n.locale = locale
 
+    function oneOf(...allowed) {
+        return raw => allowed.indexOf(raw) >= 0
+    }
+
+    function within(low, high) {
+        return raw => typeof raw === "number" && raw >= low && raw <= high
+    }
+
+    // One value from the file: the default when it's absent, the value itself when the shell understands
+    // it, and otherwise the value already in memory, with a warning, so a hand-edited typo is neither
+    // silently swapped for a default nor rewritten into the file by the next save.
+    function pick(key, raw, valid, fallback, current) {
+        if (raw === undefined)
+            return fallback
+        if (valid(raw))
+            return raw
+        console.warn("qs config: invalid " + key + " '" + raw + "', keeping " + current)
+        return current
+    }
+
     function apply(parsed) {
         const bar = parsed && parsed.bar ? parsed.bar : {}
         const clock = parsed && parsed.clock ? parsed.clock : {}
         const status = parsed && parsed.status ? parsed.status : {}
         const notifications = parsed && parsed.notifications ? parsed.notifications : {}
-        document = parsed || {}
-        doNotDisturb = notifications.doNotDisturb === true
-        const weather = parsed && parsed.weather ? parsed.weather : {}
-        weatherEnabled = weather.enabled !== false
-        weatherUnits = weather.units === "metric" ? "metric" : "imperial"
-        weatherLocationMode = weather.locationMode === "automatic" ? "automatic" : "exact"
-        const spot = weather.location
-        const valid = !!spot && isFinite(spot.latitude) && isFinite(spot.longitude)
-        const same = valid && !!weatherLocation && weatherLocation.latitude === spot.latitude
-            && weatherLocation.longitude === spot.longitude && weatherLocation.name === spot.name
-        if (!same)
-            weatherLocation = valid ? { name: String(spot.name || ""), region: String(spot.region || ""),
-                                        latitude: Number(spot.latitude), longitude: Number(spot.longitude) } : null
-        weatherAlerts = weather.alerts !== false
-        batteryPercentage = status.batteryPercentage === "always" ? "always" : "low"
-        placement = ["top", "right", "bottom", "left"].indexOf(bar.placement) >= 0
-            ? bar.placement : "right"
-        shadow = bar.shadow !== false
         const launcher = parsed && parsed.launcher ? parsed.launcher : {}
-        launcherView = ["list", "large", "small"].indexOf(launcher.view) >= 0 ? launcher.view : "large"
-        use24Hour = clock.hourCycle !== 12
-        showPeriod = clock.meridiem !== "hidden"
-        locale = clock.locale === "jp" || clock.locale === "ja" ? "jp" : "en"
-        motion = Theme.normalizeMotion(clock.motion)
-        presentation = clock.presentation === "notch" ? "notch" : "pill"
-        const ms = Number(clock.duration)
-        duration = ms >= 50 && ms <= 2000 ? Math.round(ms) : 250
-        const factor = Number(clock.springOvershoot)
-        springOvershoot = factor >= 0 && factor <= 4 ? Math.round(factor * 10) / 10 : 2
+        const weather = parsed && parsed.weather ? parsed.weather : {}
+        const flag = oneOf(true, false)
+        document = parsed || {}
+        doNotDisturb = pick("notifications.doNotDisturb", notifications.doNotDisturb, flag, false, doNotDisturb)
+        weatherEnabled = pick("weather.enabled", weather.enabled, flag, true, weatherEnabled)
+        weatherUnits = pick("weather.units", weather.units, oneOf("imperial", "metric"), "imperial", weatherUnits)
+        weatherLocationMode = pick("weather.locationMode", weather.locationMode, oneOf("exact", "automatic"),
+                                   "exact", weatherLocationMode)
+        const spot = weather.location
+        if (spot === undefined || spot === null) {
+            weatherLocation = null
+        } else if (!isFinite(spot.latitude) || !isFinite(spot.longitude)) {
+            console.warn("qs config: invalid weather.location '" + JSON.stringify(spot) + "', keeping "
+                         + (weatherLocation ? weatherLocation.name : "none"))
+        } else if (!weatherLocation || weatherLocation.latitude !== spot.latitude
+                   || weatherLocation.longitude !== spot.longitude || weatherLocation.name !== spot.name) {
+            weatherLocation = { name: String(spot.name || ""), region: String(spot.region || ""),
+                                latitude: Number(spot.latitude), longitude: Number(spot.longitude) }
+        }
+        weatherAlerts = pick("weather.alerts", weather.alerts, flag, true, weatherAlerts)
+        batteryPercentage = pick("status.batteryPercentage", status.batteryPercentage, oneOf("always", "low"),
+                                 "low", batteryPercentage)
+        placement = pick("bar.placement", bar.placement, oneOf("top", "right", "bottom", "left"), "right", placement)
+        shadow = pick("bar.shadow", bar.shadow, flag, true, shadow)
+        launcherView = pick("launcher.view", launcher.view, oneOf("list", "large", "small"), "large", launcherView)
+        use24Hour = pick("clock.hourCycle", clock.hourCycle, oneOf(12, 24), 24, use24Hour ? 24 : 12) === 24
+        showPeriod = pick("clock.meridiem", clock.meridiem, oneOf("shown", "hidden"), "shown",
+                          showPeriod ? "shown" : "hidden") === "shown"
+        locale = pick("clock.locale", clock.locale, oneOf("en", "jp", "ja"), "en", locale) === "en" ? "en" : "jp"
+        motion = pick("clock.motion", clock.motion, name => Theme.normalizeMotion(name) === name, "spring", motion)
+        presentation = pick("clock.presentation", clock.presentation, oneOf("pill", "notch"), "pill", presentation)
+        duration = Math.round(pick("clock.duration", clock.duration, within(50, 2000), 250, duration))
+        springOvershoot = Math.round(pick("clock.springOvershoot", clock.springOvershoot, within(0, 4), 2,
+                                          springOvershoot) * 10) / 10
     }
 
     function save() {

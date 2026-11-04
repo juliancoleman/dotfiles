@@ -9,6 +9,7 @@ Item {
     property string value: ""
     property var choices: []
     signal picked(string next)
+    property string motion: "spring"
 
     implicitHeight: 58
     activeFocusOnTab: visible
@@ -75,7 +76,7 @@ Item {
 
             Behavior on x {
                 NumberAnimation {
-                    duration: 220
+                    duration: Theme.durationFor(options.motion) * 0.88
                     easing.type: Easing.OutCubic
                 }
             }

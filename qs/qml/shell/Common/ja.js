@@ -194,6 +194,7 @@ var strings = {
     "Wind %1%2": "風%2 %1",
     ", gusts %1": "、突風 %1",
     "Air Quality": "大気質",
+    "Not updated": "未更新",
     "Good": "良好",
     "Moderate": "普通",
     "Unhealthy for Sensitive Groups": "敏感な人には有害",

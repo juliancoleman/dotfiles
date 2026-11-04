@@ -14,6 +14,9 @@ Singleton {
 
     readonly property string userAgent: "qs-desktop-shell/1.0 (personal weather widget)"
     readonly property int refreshInterval: 15 * 60 * 1000
+    // After a failed load the next try comes after retryFloor, doubling per miss back up to refreshInterval.
+    readonly property int retryFloor: 60 * 1000
+    property int retryDelay: refreshInterval
     readonly property int staleAfter: 30 * 60 * 1000
     // Polling checks wall-clock time on this beat, so a refresh missed while suspended runs soon after waking.
     readonly property int tickInterval: 30 * 1000
@@ -25,7 +28,7 @@ Singleton {
     readonly property bool automatic: ClockConfig.weatherLocationMode === "automatic"
     readonly property bool locating: ClockConfig.weatherEnabled && automatic && LocationServices.enabled
     property var automaticFix: null
-    // Like `error`, an English source the views pass through I18n.tr, so it follows a locale switch.
+    // Like `error`, the English source; it reaches views through errorText.
     property string automaticError: ""
     readonly property var location: !ClockConfig.weatherEnabled ? null
         : automatic ? (LocationServices.enabled ? automaticFix : null) : ClockConfig.weatherLocation
@@ -42,6 +45,11 @@ Singleton {
     property var sunTimes: []
     property int outlookOffset: 0
     property var airQuality: null
+    // A round that couldn't refresh a best-effort source leaves its last data showing; the panel marks it.
+    property bool outlookMissed: false
+    property bool airQualityMissed: false
+    readonly property bool outlookStale: outlookMissed && daily.length > 0
+    readonly property bool airQualityStale: airQualityMissed && !!airQuality
     property var wind: null
     // Wind only matters to the panel when the NWS is warning about it.
     readonly property var windEvents: ["Red Flag Warning", "High Wind Warning", "High Wind Watch",
@@ -49,8 +57,9 @@ Singleton {
     readonly property bool windWarned: alerts.some(a => windEvents.indexOf(a.event) >= 0)
     property double updatedAt: 0
     property double now: Date.now()
-    // An English source the views pass through I18n.tr, so it follows a locale switch.
+    // The English source, kept so a locale switch retranslates it; views show errorText.
     property string error: ""
+    readonly property string errorText: I18n.tr(error)
     property bool loading: false
     property double loadStartedAt: 0
     // When the poller last tried, even if there was no place to load yet.
@@ -156,12 +165,20 @@ Singleton {
         return new Date(epoch + offset * 1000)
     }
 
-    // The place's offset at a moment, taken from the hourly forecast that covers it.
+    // The place's offset at a moment, taken from the hourly forecast that covers it. The hours are in
+    // order, so the first one ending after the moment is found by bisection.
     function offsetAt(epoch) {
-        for (let i = 0; i < hourly.length; ++i) {
-            if (epoch < hourly[i].end)
-                return hourly[i].offset
+        let low = 0
+        let high = hourly.length
+        while (low < high) {
+            const mid = (low + high) >> 1
+            if (hourly[mid].end <= epoch)
+                low = mid + 1
+            else
+                high = mid
         }
+        if (low < hourly.length)
+            return hourly[low].offset
         return hourly.length > 0 ? hourly[hourly.length - 1].offset : outlookOffset
     }
 
@@ -253,6 +270,7 @@ Singleton {
         }
     }
 
+    // `done` gets the parsed body, or null when the request or its JSON failed.
     function fetch(url, done) {
         const asked = generation
         const request = curl.createObject(root, { url: url })
@@ -260,15 +278,15 @@ Singleton {
             request.destroy()
             if (asked !== generation)
                 return
-            if (!ok) {
-                done(null)
-                return
+            let parsed = null
+            if (ok) {
+                try {
+                    parsed = JSON.parse(body)
+                } catch (problem) {
+                    parsed = null
+                }
             }
-            try {
-                done(JSON.parse(body))
-            } catch (problem) {
-                done(null)
-            }
+            done(parsed)
         })
         request.running = true
     }
@@ -300,7 +318,11 @@ Singleton {
             return
         }
         fetch("https://api.weather.gov/points/" + key, function (body) {
-            const props = body && body.properties
+            if (body === null) {
+                fail("Couldn't reach the National Weather Service")
+                return
+            }
+            const props = body.properties
             if (!props || !props.forecastHourly) {
                 fail("Weather is only available for US locations")
                 return
@@ -326,14 +348,20 @@ Singleton {
         })
     }
 
+    // Every request is launched here and the round settles when the last one answers, so loading ends
+    // and updatedAt moves exactly once. The station reading and hourly forecast make a round; the rest
+    // keep whatever they last had.
     function update(spot) {
-        let pending = 3
+        let pending = 0
         let observed = null
         let periods = null
+        let forecastMissed = false
+        let outlookMissedNow = false
+        let airMissedNow = false
         const settle = function () {
-            if (--pending > 0)
-                return
             loading = false
+            outlookMissed = outlookMissedNow || forecastMissed
+            airQualityMissed = airMissedNow
             if (!periods && !observed) {
                 if (current && current.key !== spot.key)
                     current = null
@@ -345,12 +373,21 @@ Singleton {
             const reading = observed || fromForecast(hourly[0])
             current = reading ? Object.assign({ key: spot.key }, reading) : null
             updatedAt = Date.now()
+            retryDelay = refreshInterval
             error = ""
             WeatherAlerts.review()
         }
+        const launch = function (url, onReply) {
+            ++pending
+            fetch(url, function (body) {
+                onReply(body)
+                if (--pending === 0)
+                    settle()
+            })
+        }
 
         if (spot.station) {
-            fetch("https://api.weather.gov/stations/" + spot.station + "/observations/latest", function (body) {
+            launch("https://api.weather.gov/stations/" + spot.station + "/observations/latest", function (body) {
                 const props = body && body.properties
                 const fresh = props && Date.now() - Date.parse(props.timestamp) < 2 * 60 * 60 * 1000
                 if (fresh && props.temperature && props.temperature.value !== null)
@@ -361,13 +398,10 @@ Singleton {
                     gustKmh: props.windGust ? props.windGust.value : null,
                     from: props.windDirection && props.windDirection.value !== null ? cardinal(props.windDirection.value) : ""
                 }
-                settle()
             })
-        } else {
-            settle()
         }
 
-        fetch(spot.hourlyUrl, function (body) {
+        launch(spot.hourlyUrl, function (body) {
             const list = body && body.properties && body.properties.periods
             if (list) {
                 periods = list.slice(0, 24).map(p => {
@@ -386,24 +420,27 @@ Singleton {
                     }
                 })
             }
-            settle()
         })
 
         if (spot.forecastUrl) {
-            fetch(spot.forecastUrl, function (body) {
+            launch(spot.forecastUrl, function (body) {
                 const list = body && body.properties && body.properties.periods
                 if (list)
                     forecastDays = foldPeriods(list)
+                else
+                    forecastMissed = true
             })
         }
 
         const coords = "latitude=" + spot.key.split(",")[0] + "&longitude=" + spot.key.split(",")[1]
-        fetch("https://api.open-meteo.com/v1/forecast?" + coords
-              + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
-              + "&timezone=auto&timeformat=unixtime&forecast_days=11", function (body) {
+        launch("https://api.open-meteo.com/v1/forecast?" + coords
+               + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
+               + "&timezone=auto&timeformat=unixtime&forecast_days=11", function (body) {
             const days = body && body.daily
-            if (!days || !days.time)
+            if (!days || !days.time) {
+                outlookMissedNow = true
                 return
+            }
             outlookOffset = body.utc_offset_seconds || 0
             const outlook = []
             const sun = []
@@ -427,14 +464,18 @@ Singleton {
             sunTimes = sun
         })
 
-        fetch("https://air-quality-api.open-meteo.com/v1/air-quality?" + coords + "&current=us_aqi&timeformat=unixtime",
-              function (body) {
-            const reading = body && body.current
+        launch("https://air-quality-api.open-meteo.com/v1/air-quality?" + coords + "&current=us_aqi&timeformat=unixtime",
+               function (body) {
+            if (body === null) {
+                airMissedNow = true
+                return
+            }
+            const reading = body.current
             airQuality = reading && reading.us_aqi !== null && reading.us_aqi !== undefined
                 ? { aqi: Math.round(reading.us_aqi) } : null
         })
 
-        fetch("https://api.weather.gov/alerts/active?point=" + spot.key, function (body) {
+        launch("https://api.weather.gov/alerts/active?point=" + spot.key, function (body) {
             if (body && body.features) {
                 alerts = body.features.map(f => ({
                     id: f.properties.id,
@@ -445,7 +486,6 @@ Singleton {
                     ends: Date.parse(f.properties.ends || f.properties.expires)
                 }))
             }
-            settle()
         })
     }
 
@@ -485,6 +525,7 @@ Singleton {
     function fail(message) {
         loading = false
         error = message
+        retryDelay = Math.min(refreshInterval, retryDelay >= refreshInterval ? retryFloor : retryDelay * 2)
         if (!point) {
             current = null
             updatedAt = 0
@@ -504,6 +545,8 @@ Singleton {
         sunTimes = []
         airQuality = null
         wind = null
+        outlookMissed = false
+        airQualityMissed = false
         if (!location) {
             current = null
             updatedAt = 0
@@ -538,7 +581,7 @@ Singleton {
         onTriggered: {
             root.now = Date.now()
             WeatherAlerts.tick()
-            if (root.now - Math.max(root.polledAt, root.loadStartedAt) < root.refreshInterval)
+            if (root.now - Math.max(root.polledAt, root.loadStartedAt) < root.retryDelay)
                 return
             root.polledAt = root.now
             if (root.automatic && !LocationServices.enabled)

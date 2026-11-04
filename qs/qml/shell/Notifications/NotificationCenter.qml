@@ -105,7 +105,7 @@ Item {
     height: implicitHeight
 
     onPresentChanged: {
-        run(presenceEase, "presence", present ? 1 : 0)
+        presenceEase.aim(present ? 1 : 0)
         if (!present)
             close()
     }
@@ -119,7 +119,7 @@ Item {
             return
         opened = true
         peeking = false
-        run(openEase, "openProgress", 1)
+        openEase.aim(1)
         aimHover(false)
     }
 
@@ -128,7 +128,7 @@ Item {
             return
         opened = false
         peeking = false
-        run(openEase, "openProgress", 0)
+        openEase.aim(0)
         aimHover(circleHit.containsMouse)
     }
 
@@ -138,7 +138,7 @@ Item {
         peekId = newest.id
         peeking = true
         peekTimer.restart()
-        run(openEase, "openProgress", 1)
+        openEase.aim(1)
         aimHover(false)
     }
 
@@ -147,7 +147,7 @@ Item {
             return
         peeking = false
         if (!opened) {
-            run(openEase, "openProgress", 0)
+            openEase.aim(0)
             aimHover(circleHit.containsMouse)
         }
     }
@@ -166,21 +166,7 @@ Item {
     }
 
     function aimHover(next) {
-        run(hoverEase, "hoverProgress", next && !showing ? 1 : 0)
-    }
-
-    function run(ease, property, next) {
-        if (motion === "none") {
-            ease.stop()
-            root[property] = next
-            return
-        }
-        if (!ease.running && Math.abs(root[property] - next) < 0.001)
-            return
-        ease.stop()
-        ease.from = root[property]
-        ease.to = next
-        ease.start()
+        hoverEase.aim(next && !showing ? 1 : 0)
     }
 
     // Corners on the screen edge, and those facing the clock, square off as the circle fuses into the notch.
@@ -189,31 +175,26 @@ Item {
         return outer || facingClock ? radius * (1 - Math.max(0, Math.min(1, attach))) : radius
     }
 
-    NumberAnimation {
+    Tween {
         id: openEase
         target: root
         property: "openProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
-    NumberAnimation {
+    Tween {
         id: hoverEase
         target: root
         property: "hoverProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
-    NumberAnimation {
+    Tween {
         id: presenceEase
         target: root
         property: "presence"
+        motion: root.motion
         duration: Theme.durationFor(root.motion) * 1.4
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
     }
 
     // The newest notification's media shows first; after the dwell the circle settles on the count.
@@ -361,6 +342,7 @@ Item {
                 SettingsButton {
                     id: closeButton
                     opened: root.openP
+                    motion: root.motion
                     visible: !root.closeActionInBadge
                     icon: "close"
                     label: I18n.tr("Close notifications")
@@ -465,7 +447,7 @@ Item {
                     anchors.fill: parent
                     opacity: root.closeActionInBadge ? 0 : root.showMedia ? 1 : 0
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
 
                     Image {
                         id: picture
@@ -493,7 +475,7 @@ Item {
                     height: 14
                     opacity: root.closeActionInBadge ? 0 : root.showMedia ? 0 : 1
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
                     icon: ClockConfig.doNotDisturb ? "moon" : "bell"
                 }
                 CloseMark {
@@ -513,7 +495,7 @@ Item {
                 color: Theme.today
                 opacity: root.closeActionInBadge || ClockConfig.doNotDisturb ? 0 : 1
                 visible: opacity > 0.01
-                Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
 
                 Text {
                     id: count

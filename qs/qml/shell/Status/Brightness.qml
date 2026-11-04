@@ -16,6 +16,9 @@ Singleton {
     readonly property int stepSize: Math.max(1, Math.round(maximum * 0.05))
     readonly property int floor: Math.max(1, Math.round(maximum * 0.01))
 
+    // Open panels showing the slider; the poll tightens while any exist.
+    property int watchers: 0
+
     signal adjusted()
 
     function take(text) {
@@ -83,9 +86,10 @@ Singleton {
         onSaveFailed: error => console.log("qs brightness: write failed", FileViewError.toString(error))
     }
 
-    // sysfs attributes never raise inotify events, so poll the live value.
+    // sysfs attributes never raise inotify events, so poll the live value. A slow poll is enough to
+    // notice external writes for the indicator; the slider needs the fast one to track them smoothly.
     Timer {
-        interval: 200
+        interval: root.watchers > 0 ? 200 : 2000
         repeat: true
         running: root.device !== ""
         onTriggered: current.reload()

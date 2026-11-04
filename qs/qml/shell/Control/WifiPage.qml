@@ -125,6 +125,7 @@ Item {
                         id: entry
                         required property var modelData
                         width: list.width
+                        motion: page.motion
                         icon: "wifi"
                         wifiBars: page.bars(modelData)
                         title: modelData.name

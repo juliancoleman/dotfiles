@@ -24,6 +24,8 @@ Singleton {
     property int normalTimeout: 12000
     property bool panelOpen: false
     property double lastTick: 0
+    // Local notifications count down from -2: D-Bus ids are positive, and -1 is the pop-up's "no row" id.
+    property int nextLocalId: -2
 
     // A genuinely new notification arrived, or an existing one was replaced in place.
     signal arrived()
@@ -37,6 +39,34 @@ Singleton {
         bodyHyperlinksSupported: false
         bodyImagesSupported: false
         onNotification: notification => root.accept(notification)
+    }
+
+    // The shell's own notices (weather alerts, say) take the same row shape as D-Bus ones: the fields the
+    // rows read, the change signals accept() listens for, and close methods that end in `closed`.
+    Component {
+        id: local
+
+        QtObject {
+            property int id
+            property bool tracked: false
+            property string appName
+            property string summary
+            property string body
+            property int urgency
+            property double time
+            readonly property var actions: []
+            readonly property string image: ""
+            readonly property string appIcon: ""
+            readonly property int expireTimeout: -1
+            signal closed()
+            function dismiss() { closed(); destroy() }
+            function expire() { closed(); destroy() }
+        }
+    }
+
+    function postLocal(appName, summary, body, urgency) {
+        accept(local.createObject(root, { id: nextLocalId--, appName: appName, summary: summary, body: body,
+                                          urgency: urgency, time: Date.now() }))
     }
 
     Timer {

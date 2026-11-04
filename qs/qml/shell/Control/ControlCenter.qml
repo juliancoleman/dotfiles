@@ -170,25 +170,11 @@ Item {
     }
 
     function aimOpen(next) {
-        run(openEase, "openProgress", next ? 1 : 0)
+        openEase.aim(next ? 1 : 0)
     }
 
     function aimHover(next) {
-        run(hoverEase, "hoverProgress", next && !opened ? 1 : 0)
-    }
-
-    function run(ease, property, next) {
-        if (motion === "none") {
-            ease.stop()
-            root[property] = next
-            return
-        }
-        if (!ease.running && Math.abs(root[property] - next) < 0.001)
-            return
-        ease.stop()
-        ease.from = root[property]
-        ease.to = next
-        ease.start()
+        hoverEase.aim(next && !opened ? 1 : 0)
     }
 
     // Corners on the screen edge, and those facing the clock, square off as the circle fuses into the notch.
@@ -237,13 +223,11 @@ Item {
         return next
     }
 
-    NumberAnimation {
+    Tween {
         id: openEase
         target: root
         property: "openProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
         // The next open starts from the grid; reset once the panel has folded away unseen.
         onStopped: if (!root.opened) {
             root.page = ""
@@ -251,34 +235,31 @@ Item {
         }
     }
 
-    NumberAnimation {
+    Tween {
         id: hoverEase
         target: root
         property: "hoverProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
-    FanSource {
-        id: fans
-        active: root.opened
+    // The sources are shared by every screen's panel; each one counts open panels and polls
+    // while any of them is watching. Wired only matters on machines without Wi-Fi.
+    readonly property bool wiredWatched: opened && !wifiDevice
+    onOpenedChanged: root.watch(opened)
+    onWiredWatchedChanged: WiredSource.watchers += wiredWatched ? 1 : -1
+    Component.onDestruction: {
+        if (opened)
+            root.watch(false)
+        if (wiredWatched)
+            WiredSource.watchers -= 1
     }
 
-    FanControl {
-        id: fanControl
-        active: root.opened
-    }
-
-    // Only machines without Wi-Fi read it, for the wired tile in Wi-Fi's place.
-    WiredSource {
-        id: wired
-        active: root.opened && !root.wifiDevice
-    }
-
-    SystemSource {
-        id: usage
-        active: root.opened
+    function watch(on) {
+        const delta = on ? 1 : -1
+        FanSource.watchers += delta
+        FanControl.watchers += delta
+        SystemSource.watchers += delta
+        Brightness.watchers += delta
     }
 
     Rectangle {
@@ -326,6 +307,7 @@ Item {
                     SettingsButton {
                         id: closeButton
                         opened: root.openP
+                        motion: root.motion
                         icon: "close"
                         label: I18n.tr("Close control center")
                         anchors.verticalCenter: parent.verticalCenter
@@ -369,6 +351,7 @@ Item {
                     SettingsButton {
                         id: settings
                         opened: root.openP
+                        motion: root.motion
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? 0 : parent.width - width
                         onActivated: root.page = "settings"
@@ -377,6 +360,7 @@ Item {
                     SettingsButton {
                         id: power
                         opened: root.openP
+                        motion: root.motion
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? settings.x + settings.width + 6 : settings.x - width - 6
                         icon: "power-off"
@@ -386,6 +370,7 @@ Item {
 
                     SettingsButton {
                         opened: root.openP
+                        motion: root.motion
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? power.x + power.width + 6 : power.x - width - 6
                         icon: "moon"
@@ -495,8 +480,6 @@ Item {
                 FansPage {
                     id: fansPage
                     width: parent.width
-                    source: fans
-                    control: fanControl
                     motion: root.motion
                 }
             }
@@ -573,14 +556,14 @@ Item {
                         motion: root.motion
                         visible: !root.wifiDevice
                         opens: false
-                        icon: wired.on && wired.address !== "" ? "ethernet" : "ethernet-off"
-                        on: wired.on
-                        title: wired.on && wired.address !== "" ? wired.address : I18n.tr("Ethernet")
-                        subtitle: !wired.on ? I18n.tr("Off")
-                            : wired.address === "" ? I18n.tr("Not connected")
-                            : wired.gateway !== "" ? I18n.tr("Router %1").arg(wired.gateway)
+                        icon: WiredSource.on && WiredSource.address !== "" ? "ethernet" : "ethernet-off"
+                        on: WiredSource.on
+                        title: WiredSource.on && WiredSource.address !== "" ? WiredSource.address : I18n.tr("Ethernet")
+                        subtitle: !WiredSource.on ? I18n.tr("Off")
+                            : WiredSource.address === "" ? I18n.tr("Not connected")
+                            : WiredSource.gateway !== "" ? I18n.tr("Router %1").arg(WiredSource.gateway)
                             : ""
-                        onToggled: wired.toggle()
+                        onToggled: WiredSource.toggle()
                     }
 
                     ToggleTile {
@@ -648,23 +631,23 @@ Item {
                     UsageTile {
                         width: root.gridWidth
                         readings: [
-                            { icon: "memory", name: I18n.tr("Memory"), value: usage.memory },
-                            { icon: "cpu", name: I18n.tr("CPU"), value: usage.cpu },
-                            { icon: "disk", name: I18n.tr("Disk"), value: usage.disk }
+                            { icon: "memory", name: I18n.tr("Memory"), value: SystemSource.memory },
+                            { icon: "cpu", name: I18n.tr("CPU"), value: SystemSource.cpu },
+                            { icon: "disk", name: I18n.tr("Disk"), value: SystemSource.disk }
                         ]
                     }
 
                     ToggleTile {
                         width: root.gridWidth
                         motion: root.motion
-                        visible: fans.available || fanControl.ready
+                        visible: FanSource.available || FanControl.ready
                         icon: "fan"
                         toggleable: false
-                        on: fanControl.manualCount > 0
+                        on: FanControl.manualCount > 0
                         title: I18n.tr("Fans")
-                        subtitle: fanControl.manualCount > 0
-                            ? I18n.tr("Manual") + " · " + fans.rpmText(fans.fastest)
-                            : fans.summary
+                        // The sysfs poller rests while the helper reports, so take speeds from whichever is live.
+                        subtitle: (FanControl.manualCount > 0 ? I18n.tr("Manual") : I18n.tr("Auto")) + " · "
+                            + FanSource.rpmText(FanControl.ready ? FanControl.fastest : FanSource.fastest)
                         onOpened: root.page = "fans"
                     }
                 }

@@ -2,3 +2,4 @@ module Shell
 singleton ClockConfig 1.0 ClockConfig.qml
 singleton LocationServices 1.0 LocationServices.qml
 ClockBar 1.0 ClockBar.qml
+Neck 1.0 Neck.qml

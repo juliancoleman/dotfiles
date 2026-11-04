@@ -49,7 +49,7 @@ Column {
             if (!root.exact) {
                 const fix = WeatherService.automaticFix
                 return fix ? I18n.tr("Near %1").arg(WeatherService.place || fix.latitude.toFixed(2) + ", " + fix.longitude.toFixed(2))
-                           : I18n.tr(WeatherService.error || "Finding your location…")
+                           : WeatherService.errorText || I18n.tr("Finding your location…")
             }
             const spot = ClockConfig.weatherLocation
             return spot ? root.describe(spot) : I18n.tr("Search for a city to show its weather")
@@ -63,7 +63,7 @@ Column {
     Text {
         width: parent.width
         visible: text.length > 0
-        text: root.exact || WeatherService.automaticFix ? I18n.tr(WeatherService.error) : ""
+        text: root.exact || WeatherService.automaticFix ? WeatherService.errorText : ""
         color: Theme.textSecondary
         font.family: Theme.fontFamily
         font.pixelSize: 11

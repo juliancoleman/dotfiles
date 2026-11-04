@@ -111,6 +111,7 @@ Item {
                         id: entry
                         required property var modelData
                         width: list.width
+                        motion: page.motion
                         icon: "bluetooth"
                         title: modelData.name
                         subtitle: page.status(modelData)

@@ -45,7 +45,7 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: 140
+            duration: Theme.durationFor(row.motion) * 0.56
             easing.type: Easing.OutCubic
         }
     }

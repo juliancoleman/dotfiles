@@ -9,6 +9,7 @@ Loader {
 
     required property var control
     readonly property string key: control.key
+    property string motion: "easeOut"
 
     visible: SettingsModel.shown(key)
     sourceComponent: {
@@ -32,6 +33,7 @@ Loader {
         Options {
             title: I18n.tr(row.control.title)
             choices: row.control.choices.map(choice => ({ label: I18n.tr(choice.label), value: choice.value }))
+            motion: row.motion
             value: SettingsModel.value(row.key)
             onPicked: next => SettingsModel.apply(row.key, next)
         }

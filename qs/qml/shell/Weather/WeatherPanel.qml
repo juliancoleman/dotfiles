@@ -22,6 +22,7 @@ Item {
     property real maxHeight: Infinity
     // The notched weather trigger becomes the close action while this panel is open.
     property bool closeActionInFace: false
+    property string motion: "easeOut"
 
     property real pad: Theme.panelPad
     readonly property real innerWidth: width - pad * 2
@@ -34,8 +35,9 @@ Item {
         return celsius === null || celsius === undefined || isNaN(celsius) ? "–" : WeatherService.toUnits(celsius) + "°"
     }
 
-    function timeLabel(epoch, minutes) {
-        const local = WeatherService.wallClock(epoch, WeatherService.offsetAt(epoch))
+    // Hourly entries carry their own offset; anything else (sun, alert ends) looks its offset up.
+    function timeLabel(epoch, minutes, offset) {
+        const local = WeatherService.wallClock(epoch, offset === undefined ? WeatherService.offsetAt(epoch) : offset)
         return I18n.timeOfDay(local.getUTCHours(), local.getUTCMinutes(), clock24, minutes)
     }
 
@@ -43,22 +45,23 @@ Item {
         return WeatherService.imperial ? Math.round(kmh / 1.609344) + " mph" : Math.round(kmh) + " km/h"
     }
 
-    // The hours ahead, with sunrise and sunset slotted in where they fall.
+    // The hours ahead, with sunrise and sunset slotted in where they fall. Rebuilt when the data behind it
+    // changes, not on the clock; a sun event that passes between refreshes stays until the next one.
     readonly property var hours: {
         const list = WeatherService.hourly
         if (list.length === 0)
             return []
         const out = list.map((h, i) => ({
             time: h.start,
-            label: i === 0 ? I18n.tr("Now") : timeLabel(h.start, false),
+            label: i === 0 ? I18n.tr("Now") : timeLabel(h.start, false, h.offset),
             icon: h.icon,
             reading: i === 0 && !isNaN(WeatherService.degrees) ? WeatherService.temperature : degrees(h.celsius),
             chance: h.chance
         }))
-        const first = list[0].start
+        const first = Math.max(list[0].start, Date.now())
         const last = list[list.length - 1].end
         for (const sun of WeatherService.sunTimes) {
-            if (sun.time <= Math.max(first, WeatherService.now) || sun.time >= last)
+            if (sun.time <= first || sun.time >= last)
                 continue
             out.push({
                 time: sun.time,
@@ -80,8 +83,17 @@ Item {
     }
 
     // The ten days share one scale so each bar reads against the whole stretch.
-    readonly property real rangeLow: Math.min.apply(null, WeatherService.daily.map(d => WeatherService.toUnits(d.low)))
-    readonly property real rangeHigh: Math.max.apply(null, WeatherService.daily.map(d => WeatherService.toUnits(d.high)))
+    readonly property var range: {
+        let low = Infinity
+        let high = -Infinity
+        for (const d of WeatherService.daily) {
+            low = Math.min(low, WeatherService.toUnits(d.low))
+            high = Math.max(high, WeatherService.toUnits(d.high))
+        }
+        return { low: low, high: high }
+    }
+    readonly property real rangeLow: range.low
+    readonly property real rangeHigh: range.high
 
     component Divider: Rectangle {
         width: root.innerWidth
@@ -130,6 +142,7 @@ Item {
             visible: !root.closeActionInFace
             icon: "close"
             label: I18n.tr("Close weather")
+            motion: root.motion
             anchors.verticalCenter: parent.verticalCenter
             x: root.faceRoom > 0 ? parent.width + root.pad - (root.faceRoom + width) / 2 : parent.width - width
             onActivated: root.closeRequested()
@@ -358,6 +371,16 @@ Item {
                     }
 
                     Label {
+                        anchors.left: aqiTitle.right
+                        anchors.leftMargin: 6
+                        anchors.baseline: aqiTitle.baseline
+                        visible: WeatherService.airQualityStale
+                        text: I18n.tr("Not updated")
+                        font.pixelSize: 11
+                        color: Theme.textSecondary
+                    }
+
+                    Label {
                         anchors.right: parent.right
                         text: WeatherService.airQuality ? WeatherService.airQuality.aqi + " · "
                             + WeatherService.airCategory(WeatherService.airQuality.aqi) : ""
@@ -373,13 +396,13 @@ Item {
                     radius: 2
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: "#7E9C88" }
-                        GradientStop { position: 0.17; color: "#7E9C88" }
-                        GradientStop { position: 0.33; color: "#C9B76A" }
-                        GradientStop { position: 0.5; color: "#C98E5A" }
-                        GradientStop { position: 0.67; color: "#B0565A" }
-                        GradientStop { position: 0.85; color: "#8E6AA8" }
-                        GradientStop { position: 1.0; color: "#7A3346" }
+                        GradientStop { position: 0.0; color: Theme.aqiGood }
+                        GradientStop { position: 0.17; color: Theme.aqiGood }
+                        GradientStop { position: 0.33; color: Theme.aqiModerate }
+                        GradientStop { position: 0.5; color: Theme.aqiSensitive }
+                        GradientStop { position: 0.67; color: Theme.aqiUnhealthy }
+                        GradientStop { position: 0.85; color: Theme.aqiVeryUnhealthy }
+                        GradientStop { position: 1.0; color: Theme.aqiHazardous }
                     }
 
                     Rectangle {
@@ -403,6 +426,14 @@ Item {
             Column {
                 width: parent.width
                 visible: WeatherService.daily.length > 0
+
+                Label {
+                    anchors.right: parent.right
+                    visible: WeatherService.outlookStale
+                    text: I18n.tr("Not updated")
+                    font.pixelSize: 11
+                    color: Theme.textSecondary
+                }
 
                 Repeater {
                     model: WeatherService.daily
