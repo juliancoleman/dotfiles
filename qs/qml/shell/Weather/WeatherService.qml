@@ -14,6 +14,11 @@ Singleton {
     readonly property string userAgent: "qs-desktop-shell/1.0 (personal weather widget)"
     readonly property int refreshInterval: 15 * 60 * 1000
     readonly property int staleAfter: 30 * 60 * 1000
+    // Polling checks wall-clock time on this beat, so a refresh missed while suspended runs soon after waking.
+    readonly property int tickInterval: 30 * 1000
+    readonly property int requestTimeout: 20
+    // The longest a load can take: points, then stations, then the readings, each up to requestTimeout.
+    readonly property int loadDeadline: 3 * requestTimeout * 1000
 
     readonly property bool imperial: ClockConfig.weatherUnits !== "metric"
     readonly property bool automatic: ClockConfig.weatherLocationMode === "automatic"
@@ -44,7 +49,10 @@ Singleton {
     property double now: Date.now()
     property string error: ""
     property bool loading: false
-    // Bumped when the location changes so replies for the old place are dropped.
+    property double loadStartedAt: 0
+    // When the poller last tried, even if there was no place to load yet.
+    property double polledAt: 0
+    // Bumped when the location changes, or a load is abandoned, so late replies are dropped.
     property int generation: 0
 
     readonly property bool stale: updatedAt > 0 && now - updatedAt > staleAfter
@@ -53,7 +61,7 @@ Singleton {
     readonly property string condition: current ? current.text : ""
     readonly property real degrees: current && current.celsius !== null ? Math.round(imperial ? current.celsius * 9 / 5 + 32 : current.celsius) : NaN
     readonly property string temperature: isNaN(degrees) ? "–" : degrees + "°"
-    readonly property string place: point ? point.city : ""
+    readonly property string place: !point ? "" : point.state ? point.city + ", " + point.state : point.city
 
     // NWS icon URLs name the condition (…/land/day/rain_showers,40?size=medium); map them to bundled glyphs.
     function glyphFor(url) {
@@ -246,9 +254,13 @@ Singleton {
                 error = automaticError || qsTr("Finding your location…")
             return
         }
-        if (loading)
+        if (loading && Date.now() - loadStartedAt < loadDeadline)
             return
+        // A load past its deadline never finished (a request that couldn't start, say); drop it and go again.
+        if (loading)
+            generation += 1
         loading = true
+        loadStartedAt = Date.now()
         const key = spot.latitude.toFixed(4) + "," + spot.longitude.toFixed(4)
         if (point && point.key === key) {
             update(point)
@@ -268,6 +280,8 @@ Singleton {
                 stationsUrl: props.observationStations,
                 station: "",
                 city: spot.name || (near ? near.city : ""),
+                // The point's two-letter state, the same whether the place was chosen or found.
+                state: near ? near.state || "" : "",
                 timeZone: props.timeZone
             }
             fetch(next.stationsUrl, function (stations) {
@@ -482,24 +496,21 @@ Singleton {
         Qt.callLater(refresh)
     }
 
+    // Qt timers stop counting while the machine sleeps, so compare wall-clock time on a short beat instead
+    // of waiting out one long interval.
     Timer {
-        interval: root.refreshInterval
-        running: true
-        repeat: true
-        onTriggered: {
-            if (root.automatic && !LocationServices.enabled)
-                LocationServices.check()
-            root.refresh()
-        }
-    }
-
-    Timer {
-        interval: 30 * 1000
+        interval: root.tickInterval
         running: true
         repeat: true
         onTriggered: {
             root.now = Date.now()
             WeatherAlerts.tick()
+            if (root.now - Math.max(root.polledAt, root.loadStartedAt) < root.refreshInterval)
+                return
+            root.polledAt = root.now
+            if (root.automatic && !LocationServices.enabled)
+                LocationServices.check()
+            root.refresh()
         }
     }
 
@@ -545,7 +556,7 @@ Singleton {
             id: request
             property string url: ""
             signal finished(bool ok, string body)
-            command: ["curl", "-sfL", "--max-time", "20", "-A", root.userAgent,
+            command: ["curl", "-sfL", "--max-time", String(root.requestTimeout), "-A", root.userAgent,
                       "-H", "Accept: application/geo+json", url]
             // curl -f prints nothing on failure, so an empty body is the failure signal.
             stdout: StdioCollector {
