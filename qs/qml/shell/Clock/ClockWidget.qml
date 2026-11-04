@@ -58,7 +58,8 @@ Item {
     readonly property real leadEndPad: (verticalEdge ? Theme.padY : Theme.padX + 3)
         + (leading > 0 ? (leadingPad - (verticalEdge ? Theme.padY : Theme.padX + 3)) * leadReveal : 0)
 
-    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, expanded)) * (openZoom - 1)
+    // Hover keeps hoverP at 1 while the calendar or an accessory is open, so the zoom holds and the row stays put.
+    readonly property real zoom: 1 + hoverP * (openZoom - 1)
     property string dateText: ""
     property string sideWeek: ""
     property string sideDay: ""
@@ -680,7 +681,8 @@ Item {
             readonly property real timeBox: glyphHeight
                 + Math.max(0, notchLineHeight - glyphHeight) * root.notchAmount
             readonly property real timeLead: (timeBox - glyphHeight) / 2
-                + (housing.padBottom - housing.padTop) / 2
+                // The open housing's breath is padding around the panel, not the row: leave it out so the row holds still.
+                + (housing.padBottom - housing.padTop + (root.edge === "bottom" ? housing.breath : -housing.breath)) / 2
             readonly property real headerY: root.dateAboveTime ? 0 : timeLead + glyphHeight + dateGap
             readonly property real gridY: headerShown + gridGap + (root.dateAboveTime ? 0 : timeLead + glyphHeight + dateGap)
             // The housing's end pad is short by the circle's own inset; content wider than the row gets it back
