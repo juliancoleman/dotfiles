@@ -201,6 +201,14 @@ Item {
         Qt.callLater(function () { root.forceActiveFocus() })
     }
 
+    // Whether a point (in `from`'s coordinates) lands on the time digits, with a finger's slack around them.
+    function onTime(from, x, y) {
+        const face = verticalEdge ? vFace.timeItem : hFace.timeItem
+        const p = face.mapFromItem(from, x, y)
+        const slack = Theme.px(6)
+        return p.x >= -slack && p.y >= -slack && p.x <= face.width + slack && p.y <= face.height + slack
+    }
+
     function shiftMonth(delta) {
         const next = new Date(viewYear, viewMonth + delta, 1)
         viewYear = next.getFullYear()
@@ -375,7 +383,13 @@ Item {
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.PointingHandCursor
-            onPressed: root.toggleCalendar()
+            // With a panel docked in the housing, only the time itself opens the calendar; presses on the
+            // panel's gutter would otherwise swap it for the calendar.
+            onPressed: mouse => {
+                if (root.accessoryOpen && !root.onTime(hover, mouse.x, mouse.y))
+                    return
+                root.toggleCalendar()
+            }
             onReleased: root.aimHover(root.pointerInside)
         }
 

@@ -60,6 +60,7 @@ Item {
     readonly property bool onSettings: page === "settings" || page.startsWith(settingsPrefix)
     readonly property string settingsSection: page.startsWith(settingsPrefix) ? page.slice(settingsPrefix.length) : ""
     readonly property real pageContent: page === "wifi" ? wifiPage.implicitHeight
+        : page === "ethernet" ? ethernetPage.implicitHeight
         : page === "bluetooth" ? bluetoothPage.implicitHeight
         : page === "fans" ? fansPage.implicitHeight
         : page === "output" ? outputPage.implicitHeight
@@ -81,6 +82,8 @@ Item {
         switch (page) {
         case "wifi":
             return I18n.tr("Wi-Fi")
+        case "ethernet":
+            return I18n.tr("Ethernet")
         case "bluetooth":
             return I18n.tr("Bluetooth")
         case "fans":
@@ -422,6 +425,22 @@ Item {
 
             PageLayer {
                 motion: root.motion
+                shown: root.page === "ethernet"
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: ethernetPage.implicitHeight
+
+                EthernetPage {
+                    id: ethernetPage
+                    width: parent.width
+                    active: root.opened && root.page === "ethernet"
+                    motion: root.motion
+                }
+            }
+
+            PageLayer {
+                motion: root.motion
                 shown: root.page === "bluetooth"
                 x: root.pad
                 y: body.contentY
@@ -551,20 +570,20 @@ Item {
                         onOpened: root.page = "wifi"
                     }
 
-                    // Without a Wi-Fi card, the same place holds a kill switch for all networking.
+                    // Without a Wi-Fi card, the same place holds the wired link: the knob is the kill switch
+                    // for all networking, the row opens the link's details and throughput.
                     ToggleTile {
                         width: root.column * 2 + root.gap
                         motion: root.motion
                         visible: !root.wifiDevice
-                        opens: false
                         icon: WiredSource.on && WiredSource.address !== "" ? "ethernet" : "ethernet-off"
                         on: WiredSource.on
-                        title: WiredSource.on && WiredSource.address !== "" ? WiredSource.address : I18n.tr("Ethernet")
+                        title: I18n.tr("Ethernet")
                         subtitle: !WiredSource.on ? I18n.tr("Off")
                             : WiredSource.address === "" ? I18n.tr("Not connected")
-                            : WiredSource.gateway !== "" ? I18n.tr("Router %1").arg(WiredSource.gateway)
-                            : ""
+                            : WiredSource.address
                         onToggled: WiredSource.toggle()
+                        onOpened: root.page = "ethernet"
                     }
 
                     ToggleTile {

@@ -20,6 +20,7 @@ Item {
     readonly property Item leadSlot: leadSlotItem
     readonly property Item accessorySlot: accessorySlotItem
     readonly property Item gridSlot: gridSlotItem
+    readonly property Item timeItem: time
 
     visible: clock.verticalEdge
     width: timeColumn + clock.sideGap + clock.panelWidth

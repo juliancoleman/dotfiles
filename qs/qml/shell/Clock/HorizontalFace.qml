@@ -43,6 +43,8 @@ Item {
     readonly property Item leadSlot: leadSlotItem
     readonly property Item accessorySlot: accessorySlotItem
     readonly property Item gridSlot: gridSlotItem
+    // The digits themselves, so the housing can tell a press on the time from one on panel gutter.
+    readonly property Item timeItem: digits
 
     visible: !clock.verticalEdge
     implicitWidth: bodyWidth * clock.zoom

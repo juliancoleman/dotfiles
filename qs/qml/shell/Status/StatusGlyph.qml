@@ -54,6 +54,8 @@ Item {
             + "l1.45 -5.412z M12 12v0.01",
         chevronLeft: "M15 18 L9 12 L15 6",
         chevronRight: "M9 18 L15 12 L9 6",
+        arrowDown: "M12 5v14 M19 12l-7 7-7-7",
+        arrowUp: "M12 19V5 M5 12l7-7 7 7",
         lock: "M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2v-7a2 2 0 0 1 2 -2z M7 11V7a5 5 0 0 1 10 0v4",
         // Lucide's lock, shrunk to sit where the wifi glyph's dot and inner arc would be.
         wifiLock: "M8.5 17h7a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-7a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1z M10 17v-1a2 2 0 0 1 4 0v1",
@@ -154,6 +156,12 @@ Item {
             break
         case "chevron-right":
             out.lit = paths.chevronRight
+            break
+        case "arrow-down":
+            out.lit = paths.arrowDown
+            break
+        case "arrow-up":
+            out.lit = paths.arrowUp
             break
         case "lock":
             out.lit = paths.lock
