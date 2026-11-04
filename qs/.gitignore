@@ -6,3 +6,4 @@ result-*
 .qmlcache/
 fan-helper/target/
 secure-helper/target/
+meter-helper/target/

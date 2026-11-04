@@ -169,7 +169,7 @@ Item {
             text: I18n.tr("No networks found")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
         }
     }
 }

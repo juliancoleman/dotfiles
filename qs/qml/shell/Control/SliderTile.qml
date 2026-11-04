@@ -1,29 +1,28 @@
 import QtQuick
+import "../Clock"
 import "../Common"
 import "../Status"
 
-Rectangle {
+// A setpoint: the lane drags it, the digits roll with it, a click on the knob mutes it. The knob's
+// ring is the signal actually flowing (`meter`, NaN for none), as a mixer's meter beside its fader.
+Tile {
     id: tile
 
-    property string motion: "easeOut"
     property string icon: ""
     property string title: ""
     property real value: 0
     property bool muted: false
     property bool toggleable: true
     property bool opens: false
+    property real meter: NaN
+    // The signal is being consumed (someone is listening to the microphone): ring in the accent.
+    property bool meterActive: false
     signal moved(real next)
     signal toggled()
     signal opened()
 
-    readonly property int motionDuration: Theme.durationFor(motion)
     readonly property real shown: muted ? 0 : Math.max(0, Math.min(1, value))
 
-    implicitHeight: 44
-    radius: 12
-    color: Theme.track
-    border.width: activeFocus ? 1 : 0
-    border.color: Theme.today
     activeFocusOnTab: visible
     Accessible.role: Accessible.Slider
     Accessible.name: title
@@ -34,40 +33,25 @@ Rectangle {
     Keys.onReturnPressed: if (opens) opened()
     Keys.onEnterPressed: if (opens) opened()
 
-    Rectangle {
+    Knob {
         id: knob
-        width: 30
-        height: 30
-        radius: 15
         anchors.left: parent.left
-        anchors.leftMargin: 7
+        anchors.leftMargin: Theme.knobInset
         anchors.verticalCenter: parent.verticalCenter
-        color: knobHit.containsMouse && tile.toggleable ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.07)
-
-        StatusGlyph {
-            anchors.centerIn: parent
-            width: 16
-            height: 16
-            icon: tile.icon
-            level: tile.shown
-            cutColor: knob.color
-        }
-
-        MouseArea {
-            id: knobHit
-            anchors.fill: parent
-            anchors.margins: -3
-            hoverEnabled: true
-            enabled: tile.toggleable
-            cursorShape: Qt.PointingHandCursor
-            onClicked: tile.toggled()
-        }
+        motion: tile.motion
+        icon: tile.icon
+        level: tile.meter
+        live: true
+        glyphLevel: tile.shown
+        ringColor: tile.meterActive ? Theme.today : Theme.textPrimary
+        interactive: tile.toggleable
+        onClicked: tile.toggled()
     }
 
     Item {
         id: lane
         anchors.left: knob.right
-        anchors.leftMargin: 12
+        anchors.leftMargin: Theme.knobGap + 3
         anchors.right: readout.left
         anchors.rightMargin: 10
         anchors.top: parent.top
@@ -114,18 +98,23 @@ Rectangle {
         }
     }
 
-    Text {
+    Item {
         id: readout
         anchors.right: tile.opens ? chevron.left : parent.right
         anchors.rightMargin: tile.opens ? 6 : 12
         anchors.verticalCenter: parent.verticalCenter
         width: 26
-        horizontalAlignment: Text.AlignRight
-        text: Math.round(tile.shown * 100)
-        color: Theme.textSecondary
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
-        font.features: { "tnum": 1 }
+        height: digits.implicitHeight
+
+        TickerNumber {
+            id: digits
+            anchors.right: parent.right
+            value: Math.round(tile.shown * 100)
+            motion: drag.pressed ? "none" : tile.motion
+            color: Theme.textSecondary
+            fontPixelSize: Theme.textLabel
+            fontWeight: Font.Normal
+        }
     }
 
     StatusGlyph {

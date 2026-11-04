@@ -1,0 +1,15 @@
+[package]
+name = "qs-meter-helper"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Turns a raw PCM stream into peak and RMS lines for the QS shell's level meters"
+
+[[bin]]
+name = "qs-meter"
+path = "src/main.rs"
+
+[dependencies]
+
+[profile.release]
+panic = "abort"

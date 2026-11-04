@@ -23,6 +23,7 @@ no user daemon.
 | `packages.<system>.default`, `packages.<system>.qs` | `qs-shell` wrapper around `quickshell -p share/qs/shell` plus `share/qs/config/default.json` |
 | `packages.<system>.fan-helper` | `qs-fan-helper` (root fan control helper) |
 | `packages.<system>.secure-helper` | `qs-secret` with `qs-askpass` and `pinentry-qs` symlinks |
+| `packages.<system>.meter-helper` | `qs-meter` (PCM → peak/RMS filter behind the live level rings; on `qs-shell`'s PATH with `pw-record`) |
 | `nixosModules.default` / `nixosModules.qs` | `services.qs.*` |
 | `homeManagerModules.default` / `homeManagerModules.qs` | `programs.qs.*` |
 

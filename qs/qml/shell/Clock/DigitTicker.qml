@@ -19,7 +19,8 @@ Item {
             easing.type: Easing.InOutQuad
         }
     }
-    property string fontFamily: Theme.fontFamily
+    // Digits are Latin in every locale; the JP face's taller line box would resize them on locale change.
+    property string fontFamily: Theme.latinFontFamily
     property real fontPixelSize: Theme.horizontalDigit
     property int fontWeight: Theme.clockFontWeight
     readonly property var defaultSamples: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]

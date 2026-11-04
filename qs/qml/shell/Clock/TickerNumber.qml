@@ -53,7 +53,7 @@ Row {
         visible: !root.known
         text: root.placeholder
         color: root.color
-        font.family: Theme.fontFamily
+        font.family: Theme.latinFontFamily
         font.pixelSize: root.fontPixelSize
         font.weight: root.fontWeight
     }
@@ -62,7 +62,7 @@ Row {
         visible: root.known && root.shown < 0
         text: "−"
         color: root.color
-        font.family: Theme.fontFamily
+        font.family: Theme.latinFontFamily
         font.pixelSize: root.fontPixelSize
         font.weight: root.fontWeight
     }
@@ -119,7 +119,7 @@ Row {
         visible: root.known && root.suffix !== ""
         text: root.suffix
         color: root.color
-        font.family: Theme.fontFamily
+        font.family: Theme.latinFontFamily
         font.pixelSize: root.fontPixelSize
         font.weight: root.fontWeight
     }

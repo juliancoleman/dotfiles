@@ -16,13 +16,14 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          qs = pkgs.callPackage ./nix/package.nix { };
           fan-helper = pkgs.callPackage ./nix/fan-helper.nix { };
           secure-helper = pkgs.callPackage ./nix/secure-helper.nix { };
+          meter-helper = pkgs.callPackage ./nix/meter-helper.nix { };
+          qs = pkgs.callPackage ./nix/package.nix { inherit meter-helper; };
         in
         {
           default = qs;
-          inherit qs fan-helper secure-helper;
+          inherit qs fan-helper secure-helper meter-helper;
         }
       );
 

@@ -16,9 +16,9 @@ Rectangle {
     property string motion: "spring"
 
     implicitHeight: 40
-    radius: 10
+    radius: Theme.radiusInput
     // Fade white's alpha only; animating from "transparent" (black) passes through grey.
-    color: Qt.rgba(1, 1, 1, hit.containsMouse || activeFocus ? 0.05 : 0)
+    color: hit.containsMouse || activeFocus ? Theme.lift : Qt.rgba(1, 1, 1, 0)
     border.width: activeFocus ? 1 : 0
     border.color: Theme.today
     activeFocusOnTab: visible
@@ -73,7 +73,7 @@ Rectangle {
             color: Theme.textPrimary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
             font.weight: row.current ? Font.Medium : Font.Normal
         }
 
@@ -84,7 +84,7 @@ Rectangle {
             color: Theme.textSecondary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.textCaption
         }
     }
 

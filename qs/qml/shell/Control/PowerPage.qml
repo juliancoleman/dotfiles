@@ -80,10 +80,10 @@ Item {
                 visible: width > 0.5
                 opacity: Math.min(1, share * tiles.model.length)
                 clip: true
-                radius: 12
-                color: Qt.lighter(Theme.track, hit.containsMouse || activeFocus ? 1.35 : 1)
-                border.width: isArmed || activeFocus ? 1 : 0
-                border.color: Theme.today
+                radius: Theme.radius
+                color: hit.containsMouse || activeFocus ? Qt.tint(Theme.track, Theme.lift) : Theme.track
+                border.width: 1
+                border.color: isArmed || activeFocus ? Theme.today : Theme.edge
                 activeFocusOnTab: page.active
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.title
@@ -115,7 +115,7 @@ Item {
                         text: tile.isArmed ? tile.modelData.confirm : tile.modelData.title
                         color: tile.isArmed ? Theme.textPrimary : Theme.textSecondary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textLabel
                     }
                 }
 

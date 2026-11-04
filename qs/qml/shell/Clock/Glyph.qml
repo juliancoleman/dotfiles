@@ -9,6 +9,5 @@ DigitTicker {
     motion: clock.motion
     animateChange: clock.animateTicker
     fontPixelSize: compact ? Theme.verticalDigit : clock.faceDigit
-    fontFamily: Theme.latinFontFamily
     color: Theme.textPrimary
 }

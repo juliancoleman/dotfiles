@@ -14,3 +14,4 @@ singleton FanControl 1.0 FanControl.qml
 FanTile 1.0 FanTile.qml
 MomentumFlickable 1.0 MomentumFlickable.qml
 singleton WiredSource 1.0 WiredSource.qml
+Tile 1.0 Tile.qml

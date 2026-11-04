@@ -95,7 +95,11 @@ Item {
     readonly property real stroke: Math.max(0.75, diameter * 0.07 - 1) + attached
     // A notch is too narrow to fit the percentage inside the ring, so it moves past the circle along the edge.
     readonly property real iconPad: (Math.max(2, diameter * 0.09) + 2) * (1 - attached) + 3 * attached
-    readonly property real iconSize: diameter - 2 * (room + stroke + iconPad)
+    // Clear space inside the stroke.
+    readonly property real iconRoom: diameter - 2 * (room + stroke)
+    // Never below 12: a notch-sized ring on a 2K panel otherwise draws the glyph too small to read. The
+    // floor still keeps a pixel of clearance to the stroke on each side.
+    readonly property real iconSize: Math.min(iconRoom - 2, Math.max(12, iconRoom - 2 * iconPad))
     // Outside the ring, the percentage matches the clock's meridiem; 0 keeps the ring-sized label.
     property int tailLabelSize: 0
     readonly property int ringLabelSize: Math.max(7, Math.round(diameter * 0.26))

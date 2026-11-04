@@ -1,16 +1,16 @@
 import QtQuick
+import "../Clock"
 import "../Common"
 import "../Status"
 
-Rectangle {
+// Memory, CPU, disk: each a ring around its glyph with the percentage rolling beneath, like the bar.
+Tile {
     id: tile
 
     // [{ icon, name, value }] with value as a 0..1 fraction.
     property var readings: []
 
-    implicitHeight: 56
-    radius: 12
-    color: Theme.track
+    implicitHeight: Theme.knobSize + Theme.textLabel + 20
     Accessible.role: Accessible.StaticText
     Accessible.name: readings.map(r => r.name + " " + Math.round(r.value * 100) + "%").join(", ")
 
@@ -27,23 +27,24 @@ Rectangle {
 
                 Column {
                     anchors.centerIn: parent
-                    spacing: 5
+                    spacing: 3
 
-                    StatusGlyph {
+                    Knob {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: 16
-                        height: 16
+                        motion: tile.motion
                         icon: modelData.icon
-                        cutColor: tile.color
+                        level: Math.max(0, Math.min(1, modelData.value))
+                        interactive: false
                     }
 
-                    Text {
+                    TickerNumber {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Math.round(modelData.value * 100) + "%"
+                        value: Math.round(modelData.value * 100)
+                        suffix: "%"
+                        motion: tile.motion
                         color: Theme.textSecondary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
-                        font.features: { "tnum": 1 }
+                        fontPixelSize: Theme.textLabel
+                        fontWeight: Font.Normal
                     }
                 }
             }

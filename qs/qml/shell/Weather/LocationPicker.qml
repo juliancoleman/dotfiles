@@ -56,7 +56,7 @@ Column {
         }
         color: Theme.textPrimary
         font.family: Theme.fontFamily
-        font.pixelSize: 13
+        font.pixelSize: Theme.textStrong
         elide: Text.ElideRight
     }
 
@@ -66,7 +66,7 @@ Column {
         text: root.exact || WeatherService.automaticFix ? WeatherService.errorText : ""
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.textCaption
         elide: Text.ElideRight
     }
 
@@ -74,10 +74,10 @@ Column {
         visible: root.exact
         width: parent.width
         height: visible ? 34 : 0
-        radius: 10
+        radius: Theme.radiusInput
         color: Theme.track
         border.width: 1
-        border.color: field.activeFocus ? Theme.today : Qt.rgba(1, 1, 1, 0.05)
+        border.color: field.activeFocus ? Theme.today : Theme.edge
 
         Text {
             anchors.fill: field
@@ -86,7 +86,7 @@ Column {
             text: root.searching ? I18n.tr("Searching…") : I18n.tr("Search for a city")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: Theme.textBody
         }
 
         TextInput {
@@ -99,7 +99,7 @@ Column {
             selectionColor: Theme.today
             selectedTextColor: Theme.todayInk
             font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: Theme.textBody
             selectByMouse: true
             verticalAlignment: TextInput.AlignVCenter
             Accessible.role: Accessible.EditableText
@@ -118,8 +118,8 @@ Column {
             required property var modelData
             width: root.width
             height: 30
-            radius: 8
-            color: rowHit.containsMouse ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
+            radius: Theme.radiusInput
+            color: rowHit.containsMouse ? Theme.lift : "transparent"
 
             Text {
                 anchors.left: parent.left
@@ -130,7 +130,7 @@ Column {
                 text: root.describe(row.modelData)
                 color: Theme.textPrimary
                 font.family: Theme.fontFamily
-                font.pixelSize: 13
+                font.pixelSize: Theme.textBody
                 elide: Text.ElideRight
             }
 

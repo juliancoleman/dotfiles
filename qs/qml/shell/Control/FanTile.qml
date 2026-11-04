@@ -1,12 +1,12 @@
 import QtQuick
+import "../Clock"
 import "../Common"
 import "../Status"
 
-// One controllable fan: the knob flips Auto/Manual; Manual reveals a duty slider.
-Rectangle {
+// One controllable fan: the knob flips Auto/Manual; Manual rings the knob with the duty and reveals a lane.
+Tile {
     id: tile
 
-    property string motion: "easeOut"
     property string title: ""
     property string rpmText: ""
     property bool manual: false
@@ -16,17 +16,12 @@ Rectangle {
     signal autoRequested()
     signal percentRequested(real next)
 
-    readonly property int motionDuration: Theme.durationFor(motion)
     property real dragPercent: -1
     readonly property real shownPercent: dragPercent >= 0 ? dragPercent : percent
     readonly property real fraction: Math.max(0, Math.min(1, shownPercent / 100))
 
-    implicitHeight: 44 + lane.height
-    radius: 12
-    color: Theme.track
+    implicitHeight: Theme.rowHeight + lane.height
     clip: true
-    border.width: activeFocus ? 1 : 0
-    border.color: Theme.today
     activeFocusOnTab: visible
     Accessible.role: manual ? Accessible.Slider : Accessible.Button
     Accessible.name: title
@@ -52,46 +47,21 @@ Rectangle {
         onTriggered: tile.dragPercent = -1
     }
 
-    Rectangle {
+    Knob {
         id: knob
-        x: 7
-        y: 7
-        width: 30
-        height: 30
-        radius: 15
-        color: tile.manual ? Theme.today
-             : knobHit.containsMouse && tile.controllable ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.07)
-
-        Behavior on color {
-            ColorAnimation {
-                duration: tile.motionDuration
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        StatusGlyph {
-            anchors.centerIn: parent
-            width: 16
-            height: 16
-            icon: "fan"
-            ink: tile.manual ? Theme.todayInk : Theme.textPrimary
-            cutColor: knob.color
-        }
-
-        MouseArea {
-            id: knobHit
-            anchors.fill: parent
-            anchors.margins: -3
-            hoverEnabled: true
-            enabled: tile.controllable
-            cursorShape: Qt.PointingHandCursor
-            onClicked: tile.toggle()
-        }
+        x: Theme.knobInset
+        y: Theme.knobInset
+        motion: tile.motion
+        icon: "fan"
+        on: tile.manual
+        level: tile.manual ? tile.fraction : NaN
+        interactive: tile.controllable
+        onClicked: tile.toggle()
     }
 
     Column {
         anchors.left: knob.right
-        anchors.leftMargin: 9
+        anchors.leftMargin: Theme.knobGap
         anchors.right: mode.left
         anchors.rightMargin: 6
         anchors.verticalCenter: knob.verticalCenter
@@ -103,7 +73,7 @@ Rectangle {
             color: Theme.textPrimary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
             font.weight: Font.Medium
         }
 
@@ -113,21 +83,40 @@ Rectangle {
             color: Theme.textSecondary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
             font.features: { "tnum": 1 }
         }
     }
 
-    Text {
+    Item {
         id: mode
         anchors.right: parent.right
         anchors.rightMargin: 12
         anchors.verticalCenter: knob.verticalCenter
-        text: tile.manual ? Math.round(tile.shownPercent) + "%" : I18n.tr("Auto")
-        color: tile.manual ? Theme.textPrimary : Theme.textSecondary
-        font.family: Theme.fontFamily
-        font.pixelSize: 11
-        font.features: { "tnum": 1 }
+        width: tile.manual ? duty.implicitWidth : auto.implicitWidth
+        height: tile.manual ? duty.implicitHeight : auto.implicitHeight
+
+        TickerNumber {
+            id: duty
+            anchors.right: parent.right
+            visible: tile.manual
+            value: Math.round(tile.shownPercent)
+            suffix: "%"
+            motion: drag.pressed ? "none" : tile.motion
+            color: Theme.textPrimary
+            fontPixelSize: Theme.textLabel
+            fontWeight: Font.Normal
+        }
+
+        Text {
+            id: auto
+            anchors.right: parent.right
+            visible: !tile.manual
+            text: I18n.tr("Auto")
+            color: Theme.textSecondary
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.textLabel
+        }
     }
 
     Item {

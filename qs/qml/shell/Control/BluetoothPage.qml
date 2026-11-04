@@ -141,7 +141,7 @@ Item {
             text: I18n.tr("No devices found")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
         }
     }
 }

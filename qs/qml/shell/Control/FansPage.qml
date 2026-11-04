@@ -68,7 +68,7 @@ Item {
             wrapMode: Text.Wrap
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.textCaption
         }
     }
 }

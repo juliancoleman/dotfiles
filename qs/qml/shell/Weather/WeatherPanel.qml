@@ -23,6 +23,9 @@ Item {
     // The notched weather trigger becomes the close action while this panel is open.
     property bool closeActionInFace: false
     property string motion: "easeOut"
+    // Hero reading. The type ramp tops out at textDisplay (22); the current temperature is the one reading
+    // meant to be seen from across the room, so it keeps its own size until Theme grows a hero step.
+    readonly property int heroDigit: 40
 
     property real pad: Theme.panelPad
     readonly property real innerWidth: width - pad * 2
@@ -104,8 +107,14 @@ Item {
     component Label: Text {
         color: Theme.textPrimary
         font.family: Theme.fontFamily
-        font.pixelSize: 12
+        font.pixelSize: Theme.textBody
         font.features: { "tnum": 1 }
+    }
+
+    // Latin-only readings (temperatures, percentages) keep the Latin face so digits don't change size with the
+    // UI locale.
+    component Reading: Label {
+        font.family: Theme.latinFontFamily
     }
 
     Item {
@@ -121,7 +130,7 @@ Item {
             Label {
                 id: placeName
                 text: WeatherService.place || I18n.tr("Weather")
-                font.pixelSize: 13
+                font.pixelSize: Theme.textStrong
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, Math.max(0, root.innerWidth
@@ -167,11 +176,13 @@ Item {
                 width: parent.width
                 height: Math.max(now.implicitHeight, summary.implicitHeight)
 
-                Label {
+                TickerNumber {
                     id: now
-                    text: WeatherService.temperature
-                    font.pixelSize: 40
-                    font.weight: Font.Light
+                    value: WeatherService.degrees
+                    suffix: "°"
+                    motion: root.motion
+                    fontPixelSize: root.heroDigit
+                    fontWeight: Font.Light
                 }
 
                 Column {
@@ -190,15 +201,15 @@ Item {
                     Label {
                         anchors.right: parent.right
                         text: WeatherService.condition
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textBody
                         font.weight: Font.Medium
                     }
 
-                    Label {
+                    Reading {
                         anchors.right: parent.right
                         visible: !!root.today
                         text: root.today ? I18n.tr("H:%1 L:%2").arg(root.degrees(root.today.high)).arg(root.degrees(root.today.low)) : ""
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textBody
                         color: Theme.textSecondary
                     }
                 }
@@ -234,7 +245,7 @@ Item {
                         Label {
                             visible: !isNaN(modelData.ends)
                             text: I18n.tr("Until %1").arg(root.timeLabel(modelData.ends, true))
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textLabel
                             color: Theme.textSecondary
                         }
                     }
@@ -311,7 +322,7 @@ Item {
                                 id: stamp
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: modelData.label
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.textLabel
                                 font.weight: Font.Medium
                                 color: Theme.textSecondary
                             }
@@ -328,21 +339,26 @@ Item {
                                     icon: modelData.icon
                                 }
 
-                                Label {
+                                Reading {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     anchors.bottom: parent.bottom
                                     visible: modelData.chance >= 20
                                     text: modelData.chance + "%"
+                                    // Below the ramp: the chance sits under an 18px glyph in a 30px cell and
+                                    // textCaption (10) collides with it.
                                     font.pixelSize: 9
                                     font.weight: Font.DemiBold
                                     color: Theme.purple
                                 }
                             }
 
-                            Label {
+                            // Sunrise and sunset carry a translated word in place of a reading.
+                            Reading {
+                                readonly property bool sun: modelData.icon === "sunrise" || modelData.icon === "sunset"
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: modelData.reading
-                                font.pixelSize: modelData.icon === "sunrise" || modelData.icon === "sunset" ? 11 : 13
+                                font.family: sun ? Theme.fontFamily : Theme.latinFontFamily
+                                font.pixelSize: sun ? Theme.textLabel : Theme.textStrong
                                 font.weight: Font.Medium
                             }
                         }
@@ -376,7 +392,7 @@ Item {
                         anchors.baseline: aqiTitle.baseline
                         visible: WeatherService.airQualityStale
                         text: I18n.tr("Not updated")
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textLabel
                         color: Theme.textSecondary
                     }
 
@@ -431,7 +447,7 @@ Item {
                     anchors.right: parent.right
                     visible: WeatherService.outlookStale
                     text: I18n.tr("Not updated")
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.textLabel
                     color: Theme.textSecondary
                 }
 
@@ -464,17 +480,18 @@ Item {
                             icon: day.modelData.icon
                         }
 
-                        Label {
+                        Reading {
                             x: 48 + 8 - implicitWidth / 2
                             anchors.bottom: parent.bottom
                             visible: day.modelData.chance >= 20
                             text: day.modelData.chance + "%"
+                            // Below the ramp: tucked under a 16px glyph in a 26px row; textCaption (10) overlaps it.
                             font.pixelSize: 8
                             font.weight: Font.DemiBold
                             color: Theme.purple
                         }
 
-                        Label {
+                        Reading {
                             id: lowLabel
                             x: 78
                             anchors.verticalCenter: parent.verticalCenter
@@ -518,7 +535,7 @@ Item {
                             }
                         }
 
-                        Label {
+                        Reading {
                             id: highLabel
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter

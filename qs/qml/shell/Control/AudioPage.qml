@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Services.Pipewire
 import "../Common"
+import "../Status"
 
 Item {
     id: page
@@ -46,6 +47,8 @@ Item {
                 : (page.source.muted || page.source.level <= 0.005 ? "volume-muted" : "volume")
             value: page.source ? page.source.level : 0
             muted: !!page.source && page.source.muted
+            meter: page.input ? Meter.input : Meter.output
+            meterActive: page.input && Meter.inputInUse
             onMoved: next => {
                 const audio = page.source.sink.audio
                 audio.muted = false
@@ -89,7 +92,7 @@ Item {
             text: page.input ? I18n.tr("No input devices") : I18n.tr("No output devices")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
         }
     }
 }

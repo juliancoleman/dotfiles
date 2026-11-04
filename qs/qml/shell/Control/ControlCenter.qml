@@ -47,7 +47,7 @@ Item {
 
     // Lent to the notch, the clock's housing supplies the gutter.
     readonly property real pad: lent ? 0 : Theme.panelPad
-    readonly property real gap: 6
+    readonly property real gap: Theme.tileGap
     readonly property real column: 70
     readonly property real gridWidth: column * 4 + gap * 3
     readonly property real panelWidth: gridWidth + pad * 2
@@ -260,6 +260,7 @@ Item {
         FanControl.watchers += delta
         SystemSource.watchers += delta
         Brightness.watchers += delta
+        Meter.watchers += delta
     }
 
     Rectangle {
@@ -329,14 +330,14 @@ Item {
                         spacing: 6
                         visible: root.status.battery.available
 
-                        Text {
+                        TickerNumber {
                             id: percent
-                            text: root.status.batteryPercent + "%"
+                            value: root.status.batteryPercent
+                            suffix: "%"
+                            motion: root.motion
                             color: Theme.textPrimary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 13
-                            font.weight: Font.Medium
-                            font.features: { "tnum": 1 }
+                            fontPixelSize: Theme.textStrong
+                            fontWeight: Font.Medium
                         }
 
                         Text {
@@ -344,7 +345,7 @@ Item {
                             text: root.batteryLine()
                             color: Theme.textSecondary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textLabel
                         }
                     }
 
@@ -589,6 +590,7 @@ Item {
                         icon: root.status.output.muted || root.status.output.level <= 0.005 ? "volume-muted" : "volume"
                         value: root.status.output.level
                         muted: root.status.output.muted
+                        meter: Meter.output
                         onMoved: next => {
                             const audio = root.status.output.sink.audio
                             audio.muted = false
@@ -607,6 +609,8 @@ Item {
                         icon: root.status.input.muted || root.status.input.level <= 0.005 ? "microphone-muted" : "microphone"
                         value: root.status.input.level
                         muted: root.status.input.muted
+                        meter: Meter.input
+                        meterActive: Meter.inputInUse
                         onMoved: next => {
                             const audio = root.status.input.sink.audio
                             audio.muted = false

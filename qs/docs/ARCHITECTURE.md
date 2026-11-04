@@ -14,6 +14,9 @@ Three processes exist:
 2. **`qs-fan-helper`** (`fan-helper/`, root, systemd socket‑activated at `/run/qs-fan-helper.sock`).
 3. **`qs-secret`** (`secure-helper/`, invoked as `qs-askpass` or `pinentry-qs`), a short‑lived client that
    connects to the shell's secure socket and exits.
+4. **`qs-meter`** (`meter-helper/`), a stdin→stdout filter: raw s16 mono PCM in, `peak rms` lines out at
+   a fixed cadence. The shell runs `pw-record … | qs-meter` per metered device, only while a meter is on
+   screen (`Status/Meter`); closing the read end tears the pipeline down.
 
 ### Singletons (from each directory's `qmldir`)
 
@@ -52,6 +55,9 @@ Three processes exist:
 **`Status`**
 - `Brightness` — reads/writes `/sys/class/backlight/*/brightness` through `FileView`; polls because sysfs has no inotify.
 - `Media` — selects the active MPRIS player and emits `mediaEvent`.
+- `Meter` — live output/input signal (dB-scaled peak, 60 dB range) via `pw-record | qs-meter` taps that
+  run while `watchers > 0`; `inputInUse` is true when a program other than the taps or a filter chain
+  (`node.link-group`) is capturing. Taps are named `qs-meter` so they can exclude themselves.
 
 **`Weather`**
 - `WeatherService` — NWS points/stations/forecast/alerts, Open‑Meteo daily and air quality, GeoClue `where-am-i`.
@@ -75,6 +81,34 @@ serialises the whole document (preserving unknown keys it read) and writes atomi
 file change; a value failing validation logs `qs config: invalid <key>` and keeps the in-memory value, so a
 hand‑typed mistake is never rewritten into the file. `Theme.motionDuration`, `Theme.springOvershoot`, and
 `I18n.locale` mirror `ClockConfig` so `Common` never imports the shell module.
+
+## Design language
+
+The bar's instruments are the identity; panels are built from the same parts rather than their own.
+
+- **Reel digits.** Any number that can change is a `Clock/TickerNumber` (built on `DigitTicker`), so a
+  percentage, temperature, or count rolls the way the time does. Static text stays `Text`.
+- **Ring readouts.** A 0..1 reading is drawn as `Status/StatusArc` around its glyph (the status circle,
+  weather circle, `Status/Knob` with `level`). A ring always shows something *live* — a meter, a usage, a
+  battery — never the setpoint its own row's slider already shows (Ableton's meter beside the fader).
+  Where a row has a slider but no live signal (brightness), the knob has no ring; the glyph's own fill
+  (`StatusGlyph.level`) carries the coarse level.
+- **Colour by function class.** Readings `textPrimary`; labels and captions `textSecondary`; one `today`
+  per surface for the active/armed state (an "on" knob, a mic being listened to); `bordeaux`/`danger`
+  only for destructive or warning states. Never colour for decoration.
+- **Knob, then row.** Every actionable row starts with a `Status/Knob`: clicking it acts at once (mute,
+  disable Wi‑Fi, flip a fan to manual); clicking the rest of the row goes deeper. `on` fills it with
+  `Theme.today`.
+- **One flat fill, one hairline.** Containers (`Control/Tile`) are `Theme.track` with a 1px `Theme.edge`
+  border that turns `Theme.today` on focus. No tonal elevation stacks, no blur. Hover tints with
+  `Theme.lift`; knobs use `knobFill`/`knobLift`.
+- **Tokens over literals.** `Theme` holds the type ramp (`textCaption` 10 … `textDisplay` 22, with
+  `textTitle` = the clock's `horizontalDigit`), shape (`radius` 12 for containers, `radiusInput` 6 for
+  rows and lanes inside them, `knobSize`/`knobInset`/`knobGap`, `rowHeight`, `tileGap`), and the overlay
+  colours above. New components take these; `Control` and `Weather` are converted, other panels still
+  carry literal sizes and `Qt.rgba` overlays to be swept. Digits always set in `latinFontFamily`
+  (`DigitTicker`), so a locale switch to the JP face doesn't resize numbers.
+- **Drawn glyphs.** Icons are `StatusGlyph` stroke paths (Lucide), never an icon font.
 
 ## Motion system
 
