@@ -123,6 +123,7 @@ Item {
     property real edgeGap: Theme.floatMargin
     property real notchAmount: 0
     property int housingCurve: Easing.OutCubic
+    readonly property bool housingMoving: gapEase.running || notchEase.running
 
     readonly property real springRoom: 1.16
     readonly property real reservedWidth: Math.ceil((verticalEdge

@@ -69,11 +69,50 @@ PanelWindow {
         }
     }
 
+    // The housing the bar shows. Switched from the control center's own settings page, the panel folds away
+    // first, the housing moves on its own, and the page comes back, so the two never animate against each
+    // other. (The initial binding is replaced by the handler's assignments on purpose.)
+    property string housing: ClockConfig.presentation
+    property string reopenPage: ""
+    Connections {
+        target: ClockConfig
+        function onPresentationChanged() {
+            if (controls.opened && ClockConfig.motion !== "none") {
+                root.reopenPage = controls.page
+                controls.close()
+            } else {
+                root.housing = ClockConfig.presentation
+            }
+        }
+    }
+    Connections {
+        target: controls
+        function onFolded() {
+            if (root.reopenPage === "")
+                return
+            root.housing = ClockConfig.presentation
+            if (!clock.housingMoving)
+                root.reopen()
+        }
+    }
+    Connections {
+        target: clock
+        function onHousingMovingChanged() {
+            if (!clock.housingMoving && root.reopenPage !== "")
+                root.reopen()
+        }
+    }
+    function reopen() {
+        controls.page = reopenPage
+        reopenPage = ""
+        controls.open()
+    }
+
     readonly property real diameter: clock.restingThickness
     readonly property real join: Math.max(0, Math.min(1, clock.notchAmount))
     readonly property real statusGap: Theme.statusGap * (1 - join)
     // Once fully fused, the notch is one unit: the circle and control center move into the clock's housing.
-    readonly property bool docked: ClockConfig.presentation === "notch" && join > 0.999
+    readonly property bool docked: housing === "notch" && join > 0.999
     // While fusing, the clock and circle center as a pair so docking (which centers them as one) doesn't jump.
     readonly property real lift: docked ? 0
         : join * (statusGap + (vertical ? controls.status.height : controls.status.width) + controls.endPad
@@ -116,7 +155,7 @@ PanelWindow {
     implicitHeight: vertical ? 0 : Math.max(clock.height, Theme.floatMargin
         + Math.max(controls.reserveHeight, notes.reserveHeight, weather.reserveHeight, launcher.maxH)
         * clock.springRoom)
-    exclusiveZone: ClockConfig.presentation === "notch"
+    exclusiveZone: housing === "notch"
         ? Math.ceil(vertical ? clock.restingHousingWidth : clock.restingHousingHeight) : 0
     color: "transparent"
     surfaceFormat.opaque: false
@@ -416,7 +455,7 @@ PanelWindow {
             use24Hour: ClockConfig.use24Hour
             showPeriod: ClockConfig.showPeriod
             motion: ClockConfig.motion
-            presentation: ClockConfig.presentation
+            presentation: root.housing
             opacity: root.coverFade
             enabled: !root.covered
             trailing: root.docked ? (root.vertical ? controls.status.height : controls.status.width) : 0

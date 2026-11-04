@@ -39,6 +39,8 @@ Item {
     readonly property bool lent: docked && !!statusSlot && !!bodySlot
     // Docked to the notch, the status circle itself becomes the close action, like weather and notifications.
     readonly property bool closeActionInFace: lent && opened
+    // The panel has finished folding away.
+    signal folded()
 
     readonly property bool circleRight: edge === "right"
     readonly property bool circleBottom: edge === "bottom"
@@ -243,7 +245,10 @@ Item {
         easing.type: Theme.easingFor(root.motion)
         easing.overshoot: Theme.springOvershoot
         // The next open starts from the grid; reset once the panel has folded away unseen.
-        onStopped: if (!root.opened) root.page = ""
+        onStopped: if (!root.opened) {
+            root.page = ""
+            root.folded()
+        }
     }
 
     NumberAnimation {
