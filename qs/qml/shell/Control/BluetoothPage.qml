@@ -28,17 +28,17 @@ Item {
 
     function status(device) {
         if (device.pairing)
-            return qsTr("Pairing…")
+            return I18n.tr("Pairing…")
         switch (device.state) {
         case BluetoothDeviceState.Connecting:
-            return qsTr("Connecting…")
+            return I18n.tr("Connecting…")
         case BluetoothDeviceState.Disconnecting:
-            return qsTr("Disconnecting…")
+            return I18n.tr("Disconnecting…")
         }
         if (device.connected)
             return device.batteryAvailable
-                ? qsTr("Connected · %1%").arg(Math.round(device.battery * 100)) : qsTr("Connected")
-        return device.paired ? qsTr("Paired") : ""
+                ? I18n.tr("Connected · %1%").arg(Math.round(device.battery * 100)) : I18n.tr("Connected")
+        return device.paired ? I18n.tr("Paired") : ""
     }
 
     function activate(device) {
@@ -88,9 +88,9 @@ Item {
             opens: false
             icon: page.powered ? "bluetooth" : "bluetooth-off"
             on: page.powered
-            title: qsTr("Bluetooth")
-            subtitle: !page.powered ? qsTr("Off")
-                : page.adapter.discovering ? qsTr("Searching for devices") : ""
+            title: I18n.tr("Bluetooth")
+            subtitle: !page.powered ? I18n.tr("Off")
+                : page.adapter.discovering ? I18n.tr("Searching for devices") : ""
             onToggled: page.adapter.enabled = !page.adapter.enabled
         }
 
@@ -137,7 +137,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 8
             bottomPadding: 10
-            text: qsTr("No devices found")
+            text: I18n.tr("No devices found")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: 11

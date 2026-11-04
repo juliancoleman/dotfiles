@@ -34,8 +34,11 @@ QtObject {
         { name: "Purple", color: purple }
     ]
 
-    property string fontFamily: "IBM Plex Sans"
+    property string latinFontFamily: "IBM Plex Sans"
     property string jaFontFamily: "IBM Plex Sans JP"
+    // UI text follows the locale so kana and kanji don't fall back to a mismatched font; the JP face carries
+    // the same Plex Latin, so mixed strings stay consistent.
+    readonly property string fontFamily: I18n.japanese ? jaFontFamily : latinFontFamily
 
     property int verticalDigit: 13
     property int horizontalDigit: 15

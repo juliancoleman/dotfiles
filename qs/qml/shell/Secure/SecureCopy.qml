@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import "../Common"
 
 // What the secure prompt says and shows for each kind of request. Requesters describe themselves
 // in mechanism terms ("…as the super user", action ids, askpass prompts); this says what is happening.
@@ -14,13 +15,13 @@ Singleton {
         "--chdir", "--unit", "--property", "--description", "--slice", "--nice", "--background", "--setenv",
         "--machine", "--prompt", "--close-from", "--host", "--role", "--type", "--other-user", "--command-timeout"]
     readonly property var polkitFamilies: [
-        ["org.freedesktop.NetworkManager", "wifi-lock", qsTr("Network settings")],
-        ["org.freedesktop.udisks2", "disk", qsTr("Disks")],
-        ["org.freedesktop.systemd1", "settings", qsTr("System services")],
-        ["org.freedesktop.login1", "lock", qsTr("Power")],
-        ["org.freedesktop.timedate1", "settings", qsTr("Date & time")],
-        ["org.freedesktop.hostname1", "settings", qsTr("System")],
-        ["org.freedesktop.locale1", "settings", qsTr("System")]
+        ["org.freedesktop.NetworkManager", "wifi-lock", I18n.tr("Network settings")],
+        ["org.freedesktop.udisks2", "disk", I18n.tr("Disks")],
+        ["org.freedesktop.systemd1", "settings", I18n.tr("System services")],
+        ["org.freedesktop.login1", "lock", I18n.tr("Power")],
+        ["org.freedesktop.timedate1", "settings", I18n.tr("Date & time")],
+        ["org.freedesktop.hostname1", "settings", I18n.tr("System")],
+        ["org.freedesktop.locale1", "settings", I18n.tr("System")]
     ]
 
     function themed(name) {
@@ -94,18 +95,18 @@ Singleton {
         const message = flow.message || ""
         const run = message.match(/run\s+[`'‘"](.+?)[`'’"]\s+as/)
         if (id === "org.freedesktop.policykit.exec" || run) {
-            const program = run ? run[1].split("/").pop() : qsTr("Command")
-            return { icon: "lock", image: themed(program), title: program, kind: qsTr("Run as administrator") }
+            const program = run ? run[1].split("/").pop() : I18n.tr("Command")
+            return { icon: "lock", image: themed(program), title: program, kind: I18n.tr("Run as administrator") }
         }
         if (run0Pid(message) !== "") {
             return {
                 icon: "lock",
                 image: lineageImage(lineage),
-                title: lineage.program || qsTr("Command"),
-                kind: qsTr("Run as administrator")
+                title: lineage.program || I18n.tr("Command"),
+                kind: I18n.tr("Run as administrator")
             }
         }
-        const family = polkitFamilies.find(entry => id.startsWith(entry[0])) || ["", "lock", qsTr("Administrator")]
+        const family = polkitFamilies.find(entry => id.startsWith(entry[0])) || ["", "lock", I18n.tr("Administrator")]
         let title = message.trim()
             .replace(/^authentication is (required|needed)\s+(in order\s+)?to\s+/i, "")
             .replace(/[.。]\s*$/, "")
@@ -125,13 +126,13 @@ Singleton {
             return {
                 icon: "key",
                 image: image,
-                title: name || message.title || description.split("\n")[0] || qsTr("Passphrase"),
-                kind: /openpgp|gpg/i.test(description + message.title) ? qsTr("GPG key") : qsTr("Passphrase"),
-                placeholder: cleanPrompt(prompt).replace(/^passphrase$/i, "") || qsTr("Passphrase")
+                title: name || message.title || description.split("\n")[0] || I18n.tr("Passphrase"),
+                kind: /openpgp|gpg/i.test(description + message.title) ? I18n.tr("GPG key") : I18n.tr("Passphrase"),
+                placeholder: cleanPrompt(prompt).replace(/^passphrase$/i, "") || I18n.tr("Passphrase")
             }
         }
         if (lineage.requester === "sudo") {
-            return { icon: "lock", image: image, title: lineage.program || qsTr("Command"), kind: qsTr("Run as administrator") }
+            return { icon: "lock", image: image, title: lineage.program || I18n.tr("Command"), kind: I18n.tr("Run as administrator") }
         }
         const key = prompt.match(/passphrase for (?:key )?['"]?([^'"]+?)['"]?\s*:?\s*$/i)
         if (key) {
@@ -139,8 +140,8 @@ Singleton {
                 icon: "key",
                 image: image,
                 title: key[1].split("/").pop(),
-                kind: qsTr("SSH key"),
-                placeholder: qsTr("Passphrase")
+                kind: I18n.tr("SSH key"),
+                placeholder: I18n.tr("Passphrase")
             }
         }
         const credential = prompt.match(/^(username|password) for ['"]([^'"]+)['"]/i)
@@ -151,19 +152,19 @@ Singleton {
                 icon: "lock",
                 image: image,
                 title: host,
-                kind: user ? qsTr("Git username") : qsTr("Git password"),
-                placeholder: user ? qsTr("Username") : qsTr("Password"),
+                kind: user ? I18n.tr("Git username") : I18n.tr("Git password"),
+                placeholder: user ? I18n.tr("Username") : I18n.tr("Password"),
                 echo: user
             }
         }
         const login = prompt.match(/^(\S+?)@(\S+?)'s password/)
         if (login) {
-            return { icon: "lock", image: image, title: login[2], kind: qsTr("SSH password for %1").arg(login[1]) }
+            return { icon: "lock", image: image, title: login[2], kind: I18n.tr("SSH password for %1").arg(login[1]) }
         }
         return {
             icon: "lock",
             image: image,
-            title: cleanPrompt(prompt) || lineage.program || qsTr("Password"),
+            title: cleanPrompt(prompt) || lineage.program || I18n.tr("Password"),
             kind: lineage.requester
         }
     }
@@ -171,7 +172,7 @@ Singleton {
     function socketError(message) {
         if (!message)
             return ""
-        return /bad|invalid|wrong|incorrect/i.test(message) ? qsTr("Wrong password") : message
+        return /bad|invalid|wrong|incorrect/i.test(message) ? I18n.tr("Wrong password") : message
     }
 
     // Desktop entries are scanned on first use; start early so app icons resolve on the first request.

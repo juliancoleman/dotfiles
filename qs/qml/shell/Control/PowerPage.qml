@@ -54,10 +54,10 @@ Item {
         Repeater {
             id: tiles
             model: [
-                { id: "lock", icon: "lock", title: qsTr("Lock") },
-                { id: "sleep", icon: "sleep", title: qsTr("Sleep") },
-                { id: "restart", icon: "restart", title: qsTr("Restart"), confirm: qsTr("Confirm Restart") },
-                { id: "shutdown", icon: "power-off", title: qsTr("Shut Down"), confirm: qsTr("Confirm Shut Down") }
+                { id: "lock", icon: "lock", title: I18n.tr("Lock") },
+                { id: "sleep", icon: "sleep", title: I18n.tr("Sleep") },
+                { id: "restart", icon: "restart", title: I18n.tr("Restart"), confirm: I18n.tr("Confirm Restart") },
+                { id: "shutdown", icon: "power-off", title: I18n.tr("Shut Down"), confirm: I18n.tr("Confirm Shut Down") }
             ]
 
             Rectangle {

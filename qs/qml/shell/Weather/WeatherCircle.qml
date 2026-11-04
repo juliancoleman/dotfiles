@@ -225,7 +225,7 @@ Item {
             y: root.lent ? (parent.height - height) / 2 : root.circleBottom ? housing.height - height : 0
             opacity: Math.min(root.presenceP, root.lent ? 1 : 1 - root.openP)
             Accessible.role: Accessible.Button
-            Accessible.name: root.opened ? qsTr("Close weather") : WeatherService.condition + ", " + root.reading
+            Accessible.name: root.opened ? I18n.tr("Close weather") : WeatherService.condition + ", " + root.reading
 
             // In the notch, opening weather replaces its cloud and temperature with the close action.
 

@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import ".."
+import "../Common"
 
 // Turns weather data into a few shell notifications: one when an official alert is issued or rain/snow
 // is forecast to start soon, and one reminder just before it begins. Sent keys persist so a restart
@@ -25,7 +26,8 @@ Singleton {
     }
 
     function timeText(ms) {
-        return Qt.formatTime(new Date(ms), ClockConfig.use24Hour ? "HH:mm" : "h:mm AP")
+        const when = new Date(ms)
+        return I18n.timeOfDay(when.getHours(), when.getMinutes(), ClockConfig.use24Hour, true)
     }
 
     function once(key, summary, body, critical) {
@@ -36,7 +38,7 @@ Singleton {
         sent = next
         store.setText(JSON.stringify(sent))
         const proc = sender.createObject(root, {
-            command: ["notify-send", "-a", qsTr("Weather"), "-u", critical ? "critical" : "normal", summary, body]
+            command: ["notify-send", "-a", I18n.tr("Weather"), "-u", critical ? "critical" : "normal", summary, body]
         })
         proc.exited.connect(function () { proc.destroy() })
         proc.running = true
@@ -50,7 +52,7 @@ Singleton {
             if (alert.ends && alert.ends < now)
                 continue
             const severe = alert.severity === "Extreme" || /Tornado Warning/.test(alert.event)
-            once("alert:" + alert.id, alert.event, alert.headline, severe)
+            once("alert:" + alert.id, I18n.tr(alert.event), alert.headline, severe)
         }
 
         const hours = WeatherService.hourly
@@ -65,8 +67,8 @@ Singleton {
                 continue
             upcoming = { icon: hour.icon, start: hour.start }
             once("precip:" + hour.icon + "@" + hour.start,
-                 qsTr("%1 expected around %2").arg(WeatherService.noun(hour.icon)).arg(timeText(hour.start)),
-                 qsTr("%1, %2% chance").arg(hour.text).arg(hour.chance), false)
+                 I18n.tr("%1 expected around %2").arg(WeatherService.noun(hour.icon)).arg(timeText(hour.start)),
+                 I18n.tr("%1, %2% chance").arg(WeatherService.describe(hour)).arg(hour.chance), false)
             break
         }
     }
@@ -83,7 +85,7 @@ Singleton {
         for (const alert of WeatherService.alerts) {
             const lead = alert.onset - now
             if (lead > 0 && lead <= alertReminder && announcedEarly("alert:" + alert.id, alert.onset, alertReminder))
-                once("soon:" + alert.id, qsTr("%1 starts in %2 minutes").arg(alert.event).arg(Math.max(1, Math.round(lead / 60000))),
+                once("soon:" + alert.id, I18n.tr("%1 starts in %2 minutes").arg(I18n.tr(alert.event)).arg(Math.max(1, Math.round(lead / 60000))),
                      alert.headline, false)
         }
         if (upcoming) {
@@ -91,8 +93,8 @@ Singleton {
             if (lead > -5 * 60 * 1000 && lead <= precipReminder
                     && announcedEarly("precip:" + upcoming.icon + "@" + upcoming.start, upcoming.start, precipReminder))
                 once("soon:precip:" + upcoming.icon + "@" + upcoming.start,
-                     qsTr("%1 starting soon").arg(WeatherService.noun(upcoming.icon)),
-                     qsTr("Expected around %1").arg(timeText(upcoming.start)), false)
+                     I18n.tr("%1 starting soon").arg(WeatherService.noun(upcoming.icon)),
+                     I18n.tr("Expected around %1").arg(timeText(upcoming.start)), false)
         }
     }
 

@@ -38,12 +38,12 @@ Item {
 
     function status(network) {
         if (network.connected)
-            return qsTr("Connected")
+            return I18n.tr("Connected")
         if (network.state === ConnectionState.Connecting)
-            return qsTr("Connecting…")
+            return I18n.tr("Connecting…")
         if (network.state === ConnectionState.Disconnecting)
-            return qsTr("Disconnecting…")
-        return network.known ? qsTr("Saved") : ""
+            return I18n.tr("Disconnecting…")
+        return network.known ? I18n.tr("Saved") : ""
     }
 
     function askPassword(network, error) {
@@ -52,8 +52,8 @@ Item {
             owner: page,
             icon: "wifi-lock",
             title: network.name,
-            kind: qsTr("Wi-Fi password"),
-            busyText: qsTr("Joining…"),
+            kind: I18n.tr("Wi-Fi password"),
+            busyText: I18n.tr("Joining…"),
             minLength: 8,
             submit: psk => network.connectWithPsk(psk)
         }, error)
@@ -76,11 +76,11 @@ Item {
         switch (reason) {
         case ConnectionFailReason.NoSecrets:
         case ConnectionFailReason.WifiAuthTimeout:
-            return qsTr("Wrong password")
+            return I18n.tr("Wrong password")
         case ConnectionFailReason.WifiNetworkLost:
-            return qsTr("Network out of range")
+            return I18n.tr("Network out of range")
         default:
-            return qsTr("Couldn't connect")
+            return I18n.tr("Couldn't connect")
         }
     }
 
@@ -102,9 +102,9 @@ Item {
             opens: false
             icon: Networking.wifiEnabled ? "wifi" : "wifi-off"
             on: Networking.wifiEnabled
-            title: qsTr("Wi-Fi")
-            subtitle: !Networking.wifiEnabled ? qsTr("Off")
-                : page.device && page.device.scannerEnabled ? qsTr("Searching for networks") : ""
+            title: I18n.tr("Wi-Fi")
+            subtitle: !Networking.wifiEnabled ? I18n.tr("Off")
+                : page.device && page.device.scannerEnabled ? I18n.tr("Searching for networks") : ""
             onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
         }
 
@@ -165,7 +165,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 8
             bottomPadding: 10
-            text: qsTr("No networks found")
+            text: I18n.tr("No networks found")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: 11

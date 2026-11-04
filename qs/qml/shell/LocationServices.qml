@@ -13,6 +13,7 @@ Singleton {
     property bool installed: false
     property bool enabled: false
     property bool busy: false
+    // systemctl's own words, or an English source; Settings passes it through I18n.tr.
     property string error: ""
 
     function check() {
@@ -45,7 +46,7 @@ Singleton {
         onExited: code => {
             root.busy = false
             if (code !== 0)
-                root.error = complaint.text.trim() || qsTr("Couldn't change location services")
+                root.error = complaint.text.trim() || "Couldn't change location services"
             root.check()
         }
     }

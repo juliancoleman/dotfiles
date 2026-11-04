@@ -399,7 +399,7 @@ Item {
         id: dateMeasure
         visible: false
         text: root.dateText
-        font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+        font.family: Theme.fontFamily
         font.pixelSize: Theme.dateSize
         font.weight: Theme.clockFontWeight
         font.letterSpacing: 0.2
@@ -609,7 +609,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         text: root.sideWeek
                         color: Theme.textSecondary
-                        font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.dateSize
                         font.weight: Theme.clockFontWeight
                     }
@@ -620,7 +620,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         text: root.sideDay
                         color: Theme.textSecondary
-                        font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.dateSize
                         font.weight: Theme.clockFontWeight
                     }
@@ -631,7 +631,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         text: root.sideYear
                         color: Theme.textSecondary
-                        font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                        font.family: Theme.fontFamily
                         font.pixelSize: Theme.dateSize
                         font.weight: Theme.clockFontWeight
                     }
@@ -701,9 +701,11 @@ Item {
                 ? housing.height - housing.padBottom - height
                 : housing.padTop
 
+            // The face's digits stay on the Latin face in every locale, so the JP face's taller line
+            // can't resize the housing.
             FontMetrics {
                 id: notchTrack
-                font.family: Theme.fontFamily
+                font.family: Theme.latinFontFamily
                 font.pixelSize: Theme.notchLine
                 font.weight: Theme.clockFontWeight
                 font.kerning: false
@@ -807,7 +809,7 @@ Item {
                         color: Theme.textPrimary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        font.family: Theme.fontFamily
+                        font.family: Theme.latinFontFamily
                         font.pixelSize: root.faceDigit
                         font.weight: Theme.clockFontWeight
                         font.kerning: false
@@ -857,7 +859,7 @@ Item {
         opacity: Math.max(opened, activeFocus ? 1 : 0)
         activeFocusOnTab: opened > 0.85
         Accessible.role: Accessible.Button
-        Accessible.name: delta < 0 ? qsTr("Previous month") : qsTr("Next month")
+        Accessible.name: delta < 0 ? I18n.tr("Previous month") : I18n.tr("Next month")
         Accessible.onPressAction: root.shiftMonth(delta)
 
         function activate() {
@@ -926,7 +928,7 @@ Item {
                 opacity: header.inlineDate ? 1 - header.opened : 0
                 text: root.dateText
                 color: Theme.textSecondary
-                font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                font.family: Theme.fontFamily
                 font.pixelSize: Theme.dateSize
                 font.weight: Theme.clockFontWeight
                 font.letterSpacing: 0.2
@@ -937,7 +939,7 @@ Item {
                 opacity: header.opened
                 text: root.monthTitle
                 color: Theme.textPrimary
-                font.family: root.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                font.family: Theme.fontFamily
                 font.pixelSize: 12
                 font.weight: Font.Medium
             }
@@ -958,7 +960,7 @@ Item {
         motion: root.motion
         animateChange: root.animateTicker
         fontPixelSize: compact ? Theme.verticalDigit : root.faceDigit
-        fontFamily: Theme.fontFamily
+        fontFamily: Theme.latinFontFamily
         color: Theme.textPrimary
     }
 
@@ -977,7 +979,7 @@ Item {
             motion: root.motion
             animateChange: root.animateLatin
             fontPixelSize: parent.fontPixelSize
-            fontFamily: Theme.fontFamily
+            fontFamily: Theme.latinFontFamily
             color: Theme.textSecondary
         }
         Text {
@@ -986,7 +988,7 @@ Item {
             y: mark.y + mark.baselineOffset - baselineOffset
             text: "M"
             color: Theme.textSecondary
-            font.family: Theme.fontFamily
+            font.family: Theme.latinFontFamily
             font.pixelSize: parent.fontPixelSize
             font.weight: Theme.clockFontWeight
             font.letterSpacing: 0.3

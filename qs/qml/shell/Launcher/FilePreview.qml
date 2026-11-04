@@ -68,7 +68,7 @@ Item {
                 if (!isFinite(bytes))
                     return
                 const when = new Date(epoch * 1000)
-                root.meta = root.sizeText(bytes) + " · " + when.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+                root.meta = root.sizeText(bytes) + " · " + when.toLocaleDateString(Qt.locale(I18n.qtLocale), Locale.ShortFormat)
             }
         }
     }
@@ -171,7 +171,7 @@ Item {
 
         Text {
             width: parent.width
-            text: root.file ? (root.file.isDir ? qsTr("Folder") : root.meta) : ""
+            text: root.file ? (root.file.isDir ? I18n.tr("Folder") : root.meta) : ""
             visible: text !== ""
             color: Theme.textSecondary
             font.family: Theme.fontFamily

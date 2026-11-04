@@ -36,13 +36,7 @@ Item {
 
     function timeLabel(epoch, minutes) {
         const local = WeatherService.wallClock(epoch, WeatherService.offsetAt(epoch))
-        const hours = local.getUTCHours()
-        const mins = local.getUTCMinutes()
-        const pad2 = n => (n < 10 ? "0" : "") + n
-        if (clock24)
-            return minutes ? pad2(hours) + ":" + pad2(mins) : pad2(hours)
-        const shown = hours % 12 === 0 ? 12 : hours % 12
-        return (minutes ? shown + ":" + pad2(mins) : shown) + (hours < 12 ? " AM" : " PM")
+        return I18n.timeOfDay(local.getUTCHours(), local.getUTCMinutes(), clock24, minutes)
     }
 
     function speed(kmh) {
@@ -56,7 +50,7 @@ Item {
             return []
         const out = list.map((h, i) => ({
             time: h.start,
-            label: i === 0 ? qsTr("Now") : timeLabel(h.start, false),
+            label: i === 0 ? I18n.tr("Now") : timeLabel(h.start, false),
             icon: h.icon,
             reading: i === 0 && !isNaN(WeatherService.degrees) ? WeatherService.temperature : degrees(h.celsius),
             chance: h.chance
@@ -70,7 +64,7 @@ Item {
                 time: sun.time,
                 label: timeLabel(sun.time, true),
                 icon: sun.rise ? "sunrise" : "sunset",
-                reading: sun.rise ? qsTr("Sunrise") : qsTr("Sunset"),
+                reading: sun.rise ? I18n.tr("Sunrise") : I18n.tr("Sunset"),
                 chance: 0
             })
         }
@@ -114,7 +108,7 @@ Item {
 
             Label {
                 id: placeName
-                text: WeatherService.place || qsTr("Weather")
+                text: WeatherService.place || I18n.tr("Weather")
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
@@ -135,7 +129,7 @@ Item {
             opened: 1
             visible: !root.closeActionInFace
             icon: "close"
-            label: qsTr("Close weather")
+            label: I18n.tr("Close weather")
             anchors.verticalCenter: parent.verticalCenter
             x: root.faceRoom > 0 ? parent.width + root.pad - (root.faceRoom + width) / 2 : parent.width - width
             onActivated: root.closeRequested()
@@ -190,7 +184,7 @@ Item {
                     Label {
                         anchors.right: parent.right
                         visible: !!root.today
-                        text: root.today ? qsTr("H:%1 L:%2").arg(root.degrees(root.today.high)).arg(root.degrees(root.today.low)) : ""
+                        text: root.today ? I18n.tr("H:%1 L:%2").arg(root.degrees(root.today.high)).arg(root.degrees(root.today.low)) : ""
                         font.pixelSize: 12
                         color: Theme.textSecondary
                     }
@@ -219,14 +213,14 @@ Item {
 
                         Label {
                             width: parent.width
-                            text: modelData.event
+                            text: I18n.tr(modelData.event)
                             font.weight: Font.DemiBold
                             elide: Text.ElideRight
                         }
 
                         Label {
                             visible: !isNaN(modelData.ends)
-                            text: qsTr("Until %1").arg(root.timeLabel(modelData.ends, true))
+                            text: I18n.tr("Until %1").arg(root.timeLabel(modelData.ends, true))
                             font.pixelSize: 11
                             color: Theme.textSecondary
                         }
@@ -246,8 +240,8 @@ Item {
 
                 Label {
                     text: !root.windNow ? ""
-                        : qsTr("Wind %1%2").arg(root.speed(root.windNow.kmh)).arg(root.windNow.from ? " " + root.windNow.from : "")
-                          + (root.windNow.gustKmh ? qsTr(", gusts %1").arg(root.speed(root.windNow.gustKmh)) : "")
+                        : I18n.tr("Wind %1%2").arg(root.speed(root.windNow.kmh)).arg(root.windNow.from ? " " + I18n.tr(root.windNow.from) : "")
+                          + (root.windNow.gustKmh ? I18n.tr(", gusts %1").arg(root.speed(root.windNow.gustKmh)) : "")
                 }
             }
 
@@ -358,15 +352,15 @@ Item {
 
                     Label {
                         id: aqiTitle
-                        text: qsTr("Air Quality")
+                        text: I18n.tr("Air Quality")
                         font.weight: Font.Medium
                         color: Theme.textSecondary
                     }
 
                     Label {
                         anchors.right: parent.right
-                        text: WeatherService.airQuality
-                            ? WeatherService.airQuality.aqi + " · " + WeatherService.airQuality.category : ""
+                        text: WeatherService.airQuality ? WeatherService.airQuality.aqi + " · "
+                            + WeatherService.airCategory(WeatherService.airQuality.aqi) : ""
                         font.weight: Font.Medium
                     }
                 }
@@ -425,8 +419,8 @@ Item {
                         Label {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 44
-                            text: day.index === 0 ? qsTr("Today")
-                                : Qt.locale(ClockConfig.locale).dayName(day.modelData.weekday, Locale.ShortFormat)
+                            text: day.index === 0 ? I18n.tr("Today")
+                                : Qt.locale(I18n.qtLocale).dayName(day.modelData.weekday, Locale.ShortFormat)
                             font.weight: Font.Medium
                         }
 

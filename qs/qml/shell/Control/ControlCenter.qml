@@ -78,22 +78,22 @@ Item {
     readonly property string pageTitle: {
         switch (page) {
         case "wifi":
-            return qsTr("Wi-Fi")
+            return I18n.tr("Wi-Fi")
         case "bluetooth":
-            return qsTr("Bluetooth")
+            return I18n.tr("Bluetooth")
         case "fans":
-            return qsTr("Fans")
+            return I18n.tr("Fans")
         case "output":
-            return qsTr("Output")
+            return I18n.tr("Output")
         case "input":
-            return qsTr("Input")
+            return I18n.tr("Input")
         case "power":
-            return qsTr("Power")
+            return I18n.tr("Power")
         case "settings":
-            return qsTr("Settings")
+            return I18n.tr("Settings")
         }
         const section = SettingsModel.section(settingsSection)
-        return section ? section.title : ""
+        return section ? I18n.tr(section.title) : ""
     }
 
     // One level up: a settings section to the section list, any other page to the grid.
@@ -199,19 +199,19 @@ Item {
             return ""
         const device = battery.device
         if (device.state === UPowerDeviceState.FullyCharged)
-            return qsTr("Charged")
+            return I18n.tr("Charged")
         if (battery.charging) {
             const full = Number(device.timeToFull)
-            return full > 0 ? qsTr("%1 until full").arg(duration(full)) : qsTr("Charging")
+            return full > 0 ? I18n.tr("%1 until full").arg(duration(full)) : I18n.tr("Charging")
         }
         const empty = Number(device.timeToEmpty)
-        return empty > 0 ? qsTr("%1 left").arg(duration(empty)) : ""
+        return empty > 0 ? I18n.tr("%1 left").arg(duration(empty)) : ""
     }
 
     function duration(seconds) {
         const minutes = Math.round(seconds / 60)
         const hours = Math.floor(minutes / 60)
-        return hours > 0 ? hours + ":" + String(minutes % 60).padStart(2, "0") : minutes + " min"
+        return hours > 0 ? hours + ":" + String(minutes % 60).padStart(2, "0") : I18n.tr("%1 min").arg(minutes)
     }
 
     readonly property var wifiDevice: {
@@ -320,12 +320,12 @@ Item {
                         id: closeButton
                         opened: root.openP
                         icon: "close"
-                        label: qsTr("Close control center")
+                        label: I18n.tr("Close control center")
                         anchors.verticalCenter: parent.verticalCenter
                         visible: !root.closeActionInFace
-                        x: root.circleRight
-                            ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + Theme.panelHeaderInset))
-                            : 0
+                        // Centered on the status circle it replaces, whichever end of the panel that is.
+                        readonly property real ringCenter: root.diameter / 2 - (root.pad + Theme.panelHeaderInset)
+                        x: root.circleRight ? parent.width - ringCenter - width / 2 : ringCenter - width / 2
                         onActivated: root.close()
                     }
 
@@ -373,7 +373,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? settings.x + settings.width + 6 : settings.x - width - 6
                         icon: "power-off"
-                        label: qsTr("Power")
+                        label: I18n.tr("Power")
                         onActivated: root.page = "power"
                     }
 
@@ -382,7 +382,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? power.x + power.width + 6 : power.x - width - 6
                         icon: "moon"
-                        label: qsTr("Do Not Disturb")
+                        label: I18n.tr("Do Not Disturb")
                         toggle: true
                         on: ClockConfig.doNotDisturb
                         onActivated: {
@@ -552,10 +552,10 @@ Item {
                         icon: Networking.wifiEnabled ? "wifi" : "wifi-off"
                         wifiBars: root.status.network.wifi ? root.status.network.bars : 3
                         on: Networking.wifiEnabled
-                        title: qsTr("Wi-Fi")
-                        subtitle: !Networking.wifiEnabled ? qsTr("Off")
+                        title: I18n.tr("Wi-Fi")
+                        subtitle: !Networking.wifiEnabled ? I18n.tr("Off")
                             : root.status.network.wifiNetwork ? root.status.network.wifiNetwork.name
-                            : qsTr("Not connected")
+                            : I18n.tr("Not connected")
                         onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
                         onOpened: root.page = "wifi"
                     }
@@ -568,10 +568,10 @@ Item {
                         opens: false
                         icon: wired.on && wired.address !== "" ? "ethernet" : "ethernet-off"
                         on: wired.on
-                        title: wired.on && wired.address !== "" ? wired.address : qsTr("Ethernet")
-                        subtitle: !wired.on ? qsTr("Off")
-                            : wired.address === "" ? qsTr("Not connected")
-                            : wired.gateway !== "" ? qsTr("Router %1").arg(wired.gateway)
+                        title: wired.on && wired.address !== "" ? wired.address : I18n.tr("Ethernet")
+                        subtitle: !wired.on ? I18n.tr("Off")
+                            : wired.address === "" ? I18n.tr("Not connected")
+                            : wired.gateway !== "" ? I18n.tr("Router %1").arg(wired.gateway)
                             : ""
                         onToggled: wired.toggle()
                     }
@@ -583,11 +583,11 @@ Item {
                         readonly property bool enabledNow: !!root.adapter && root.adapter.enabled
                         icon: enabledNow ? "bluetooth" : "bluetooth-off"
                         on: enabledNow
-                        title: qsTr("Bluetooth")
-                        subtitle: !enabledNow ? qsTr("Off")
+                        title: I18n.tr("Bluetooth")
+                        subtitle: !enabledNow ? I18n.tr("Off")
                             : root.connectedDevices.length === 1 ? root.connectedDevices[0].name
-                            : root.connectedDevices.length > 1 ? qsTr("%1 devices").arg(root.connectedDevices.length)
-                            : qsTr("On")
+                            : root.connectedDevices.length > 1 ? I18n.tr("%1 devices").arg(root.connectedDevices.length)
+                            : I18n.tr("On")
                         onToggled: root.adapter.enabled = !root.adapter.enabled
                         onOpened: root.page = "bluetooth"
                     }
@@ -595,7 +595,7 @@ Item {
                         width: root.gridWidth
                         motion: root.motion
                         visible: root.status.output.available
-                        title: qsTr("Volume")
+                        title: I18n.tr("Volume")
                         icon: root.status.output.muted || root.status.output.level <= 0.005 ? "volume-muted" : "volume"
                         value: root.status.output.level
                         muted: root.status.output.muted
@@ -613,7 +613,7 @@ Item {
                         width: root.gridWidth
                         motion: root.motion
                         visible: root.status.input.available
-                        title: qsTr("Microphone")
+                        title: I18n.tr("Microphone")
                         icon: root.status.input.muted || root.status.input.level <= 0.005 ? "microphone-muted" : "microphone"
                         value: root.status.input.level
                         muted: root.status.input.muted
@@ -631,7 +631,7 @@ Item {
                         width: root.gridWidth
                         motion: root.motion
                         visible: Brightness.available
-                        title: qsTr("Brightness")
+                        title: I18n.tr("Brightness")
                         icon: "brightness"
                         toggleable: false
                         value: Brightness.level
@@ -641,9 +641,9 @@ Item {
                     UsageTile {
                         width: root.gridWidth
                         readings: [
-                            { icon: "memory", name: qsTr("Memory"), value: usage.memory },
-                            { icon: "cpu", name: qsTr("CPU"), value: usage.cpu },
-                            { icon: "disk", name: qsTr("Disk"), value: usage.disk }
+                            { icon: "memory", name: I18n.tr("Memory"), value: usage.memory },
+                            { icon: "cpu", name: I18n.tr("CPU"), value: usage.cpu },
+                            { icon: "disk", name: I18n.tr("Disk"), value: usage.disk }
                         ]
                     }
 
@@ -654,9 +654,9 @@ Item {
                         icon: "fan"
                         toggleable: false
                         on: fanControl.manualCount > 0
-                        title: qsTr("Fans")
+                        title: I18n.tr("Fans")
                         subtitle: fanControl.manualCount > 0
-                            ? qsTr("Manual") + " · " + fans.rpmText(fans.fastest)
+                            ? I18n.tr("Manual") + " · " + fans.rpmText(fans.fastest)
                             : fans.summary
                         onOpened: root.page = "fans"
                     }
@@ -688,7 +688,7 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onContainsMouseChanged: if (!pressed) root.aimHover(containsMouse)
                 Accessible.role: Accessible.Button
-                Accessible.name: root.closeActionInFace ? qsTr("Close control center") : qsTr("Control center")
+                Accessible.name: root.closeActionInFace ? I18n.tr("Close control center") : I18n.tr("Control center")
                 onPressed: root.toggle()
                 onReleased: root.aimHover(containsMouse)
             }

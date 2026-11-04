@@ -30,7 +30,7 @@ Rectangle {
     activeFocusOnTab: visible
     Accessible.role: manual ? Accessible.Slider : Accessible.Button
     Accessible.name: title
-    Accessible.description: manual ? Math.round(shownPercent) + "%" : qsTr("Auto")
+    Accessible.description: manual ? Math.round(shownPercent) + "%" : I18n.tr("Auto")
     Keys.onSpacePressed: toggle()
     Keys.onReturnPressed: toggle()
     Keys.onLeftPressed: if (manual && controllable) percentRequested(Math.max(minimum, percent - 5))
@@ -123,7 +123,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 12
         anchors.verticalCenter: knob.verticalCenter
-        text: tile.manual ? Math.round(tile.shownPercent) + "%" : qsTr("Auto")
+        text: tile.manual ? Math.round(tile.shownPercent) + "%" : I18n.tr("Auto")
         color: tile.manual ? Theme.textPrimary : Theme.textSecondary
         font.family: Theme.fontFamily
         font.pixelSize: 11

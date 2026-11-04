@@ -12,7 +12,7 @@ Item {
     width: row.width + 12
     height: 28
     Accessible.role: Accessible.Button
-    Accessible.name: qsTr("Back")
+    Accessible.name: I18n.tr("Back")
     Keys.onReturnPressed: activated()
     Keys.onEnterPressed: activated()
     Keys.onSpacePressed: activated()

@@ -3,6 +3,7 @@ import "../Common"
 import "../Weather"
 
 // One SettingsModel control, drawn by its kind. Hidden while it doesn't apply, so a page's column closes up.
+// The model's English sources are translated here, on their way into the generic rows.
 Loader {
     id: row
 
@@ -29,8 +30,8 @@ Loader {
         id: choiceRow
 
         Options {
-            title: row.control.title
-            choices: row.control.choices
+            title: I18n.tr(row.control.title)
+            choices: row.control.choices.map(choice => ({ label: I18n.tr(choice.label), value: choice.value }))
             value: SettingsModel.value(row.key)
             onPicked: next => SettingsModel.apply(row.key, next)
         }
@@ -40,7 +41,7 @@ Loader {
         id: stepperRow
 
         Stepper {
-            title: row.control.title
+            title: I18n.tr(row.control.title)
             readout: SettingsModel.valueLabel(row.control)
             value: SettingsModel.value(row.key)
             minimum: row.control.minimum
@@ -55,8 +56,8 @@ Loader {
         id: paletteRow
 
         Swatches {
-            title: row.control.title
-            swatches: Theme.palette
+            title: I18n.tr(row.control.title)
+            swatches: Theme.palette.map(swatch => ({ name: I18n.tr(swatch.name), color: swatch.color }))
         }
     }
 

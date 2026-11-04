@@ -7,7 +7,7 @@ Item {
 
     property real opened: 1
     property string icon: "settings"
-    property string label: qsTr("Settings")
+    property string label: I18n.tr("Settings")
     property bool toggle: false
     property bool on: false
     signal activated()

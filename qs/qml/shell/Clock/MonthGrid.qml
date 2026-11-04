@@ -118,7 +118,7 @@ Item {
                 color: Theme.textSecondary
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                font.family: grid.localeName === "jp" ? Theme.jaFontFamily : Theme.fontFamily
+                font.family: Theme.fontFamily
                 font.pixelSize: 10
                 font.weight: Theme.clockFontWeight
             }

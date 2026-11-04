@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Polkit
+import "../Common"
 
 // The one place the shell asks for a secret. Polkit (pkexec, run0, system dialogs), the shell's own
 // requests (Wi-Fi passwords), and qs-askpass / pinentry-qs over the socket share it; polkit wins
@@ -35,7 +36,8 @@ Singleton {
     readonly property string placeholder: {
         const prompt = polkitActive ? (flow.inputPrompt || "").trim().replace(/:$/, "")
             : local ? local.placeholder || "" : ""
-        return prompt !== "" ? prompt : qsTr("Password")
+        // Polkit's prompt is usually a bare "Password", which the dictionary can still translate.
+        return I18n.tr(prompt || "Password")
     }
 
     // Bindings can see a cleared flow before polkitActive updates.
@@ -134,7 +136,7 @@ Singleton {
         }
         request.cancel = () => reply(client, { cancelled: true })
         const retried = message.pid && message.pid === answered.pid && Date.now() - answered.at < 15000
-        enqueue(request, SecureCopy.socketError(message.error) || (retried ? qsTr("Wrong password") : ""))
+        enqueue(request, SecureCopy.socketError(message.error) || (retried ? I18n.tr("Wrong password") : ""))
     }
 
     SocketServer {
@@ -160,7 +162,7 @@ Singleton {
         target: root.flow
         ignoreUnknownSignals: true
         function onAuthenticationFailed() {
-            root.polkitError = qsTr("Wrong password")
+            root.polkitError = I18n.tr("Wrong password")
             ++root.rejections
         }
     }

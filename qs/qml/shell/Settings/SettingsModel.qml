@@ -3,60 +3,64 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import ".."
+import "../Common"
 
 // Every setting, for both the control center's settings pages and the launcher's ">" search: what each
 // control is, when it applies, and how it reads and writes ClockConfig. A control is a row of choices unless
 // its `kind` says otherwise. A control shows its section's `icon` in the launcher unless it names its own.
+// Titles and labels stay English sources that the views pass through I18n.tr, so search can match either
+// language and a locale switch doesn't rebuild every page.
 Singleton {
     id: root
 
     readonly property var onOff: [
-        { label: qsTr("On"), value: "on" },
-        { label: qsTr("Off"), value: "off" }
+        { label: "On", value: "on" },
+        { label: "Off", value: "off" }
     ]
 
     readonly property var sections: [
         {
             id: "theme",
             icon: "palette",
-            title: qsTr("Theme"),
+            title: "Theme",
             controls: [
                 {
                     key: "locale",
-                    title: qsTr("Locale"),
+                    title: "Locale",
+                    // Each language names itself, so the dictionary deliberately has no entry for these.
                     choices: [
-                        { label: qsTr("English"), value: "en" },
+                        { label: "English", value: "en" },
                         { label: "日本語", value: "jp" }
                     ]
                 },
                 {
                     key: "presentation",
-                    title: qsTr("Housing"),
+                    title: "Housing",
                     choices: [
-                        { label: qsTr("Pill"), value: "pill" },
-                        { label: qsTr("Notch"), value: "notch" }
+                        { label: "Pill", value: "pill" },
+                        { label: "Notch", value: "notch" }
                     ]
                 },
                 {
                     key: "placement",
-                    title: qsTr("Edge"),
+                    title: "Edge",
                     choices: [
-                        { label: qsTr("Top"), value: "top" },
-                        { label: qsTr("Right"), value: "right" },
-                        { label: qsTr("Bottom"), value: "bottom" },
-                        { label: qsTr("Left"), value: "left" }
+                        { label: "Top", value: "top" },
+                        { label: "Right", value: "right" },
+                        { label: "Bottom", value: "bottom" },
+                        { label: "Left", value: "left" }
                     ]
                 },
                 {
                     key: "shadow",
-                    title: qsTr("Shadow"),
+                    title: "Shadow",
                     keywords: "drop shadow float floating depth elevation",
                     choices: onOff
                 },
                 {
                     key: "palette",
                     kind: "palette",
-                    title: qsTr("Palette"),
+                    title: "Palette",
                     keywords: "color colour ink pen bordeaux green blue black purple"
                 }
             ]
@@ -64,23 +68,23 @@ Singleton {
         {
             id: "motion",
             icon: "motion",
-            title: qsTr("Motion"),
+            title: "Motion",
             controls: [
                 {
                     key: "motion",
-                    title: qsTr("Motion"),
+                    title: "Motion",
                     choices: [
-                        { label: qsTr("Spring"), value: "spring" },
-                        { label: qsTr("Ease out"), value: "easeOut" },
-                        { label: qsTr("Ease in"), value: "easeIn" },
-                        { label: qsTr("Linear"), value: "linear" },
-                        { label: qsTr("None"), value: "none" }
+                        { label: "Spring", value: "spring" },
+                        { label: "Ease out", value: "easeOut" },
+                        { label: "Ease in", value: "easeIn" },
+                        { label: "Linear", value: "linear" },
+                        { label: "None", value: "none" }
                     ]
                 },
                 {
                     key: "duration",
                     kind: "stepper",
-                    title: qsTr("Duration"),
+                    title: "Duration",
                     keywords: "ms millisecond",
                     minimum: 50,
                     maximum: 1000,
@@ -91,7 +95,7 @@ Singleton {
                 {
                     key: "spring",
                     kind: "stepper",
-                    title: qsTr("Spring factor"),
+                    title: "Spring factor",
                     keywords: "overshoot bounce",
                     minimum: 0,
                     maximum: 4,
@@ -104,23 +108,23 @@ Singleton {
         {
             id: "clock",
             icon: "clock",
-            title: qsTr("Clock"),
+            title: "Clock",
             controls: [
                 {
                     key: "hourCycle",
-                    title: qsTr("Format"),
+                    title: "Format",
                     choices: [
-                        { label: qsTr("12 hour"), value: "12" },
-                        { label: qsTr("24 hour"), value: "24" }
+                        { label: "12 hour", value: "12" },
+                        { label: "24 hour", value: "24" }
                     ]
                 },
                 {
                     key: "meridiem",
-                    title: qsTr("AM / PM"),
+                    title: "AM / PM",
                     keywords: "meridiem period am pm 午前 午後",
                     choices: [
-                        { label: qsTr("Show"), value: "shown" },
-                        { label: qsTr("Hide"), value: "hidden" }
+                        { label: "Show", value: "shown" },
+                        { label: "Hide", value: "hidden" }
                     ]
                 }
             ]
@@ -128,15 +132,15 @@ Singleton {
         {
             id: "status",
             icon: "power",
-            title: qsTr("Status"),
+            title: "Status",
             controls: [
                 {
                     key: "batteryPercentage",
-                    title: qsTr("Battery percentage"),
+                    title: "Battery percentage",
                     keywords: "battery percent low power",
                     choices: [
-                        { label: qsTr("Always"), value: "always" },
-                        { label: qsTr("20% and below"), value: "low" }
+                        { label: "Always", value: "always" },
+                        { label: "20% and below", value: "low" }
                     ]
                 }
             ]
@@ -144,16 +148,16 @@ Singleton {
         {
             id: "launcher",
             icon: "search",
-            title: qsTr("Launcher"),
+            title: "Launcher",
             controls: [
                 {
                     key: "launcherView",
-                    title: qsTr("Default view"),
+                    title: "Default view",
                     keywords: "applications apps search list grid icons super space",
                     choices: [
-                        { label: qsTr("List"), value: "list" },
-                        { label: qsTr("Large icons"), value: "large" },
-                        { label: qsTr("Small icons"), value: "small" }
+                        { label: "List", value: "list" },
+                        { label: "Large icons", value: "large" },
+                        { label: "Small icons", value: "small" }
                     ]
                 }
             ]
@@ -161,17 +165,17 @@ Singleton {
         {
             id: "weather",
             icon: "partly-day",
-            title: qsTr("Weather"),
+            title: "Weather",
             controls: [
                 {
                     key: "weatherEnabled",
-                    title: qsTr("Show weather"),
+                    title: "Show weather",
                     keywords: "show hide forecast temperature",
                     choices: onOff
                 },
                 {
                     key: "weatherUnits",
-                    title: qsTr("Units"),
+                    title: "Units",
                     keywords: "temperature celsius fahrenheit degrees",
                     choices: [
                         { label: "°F", value: "imperial" },
@@ -181,18 +185,18 @@ Singleton {
                 {
                     key: "weatherAlerts",
                     icon: "alert",
-                    title: qsTr("Alerts"),
+                    title: "Alerts",
                     keywords: "notify notification warning rain snow storm wind tornado",
                     choices: onOff
                 },
                 {
                     key: "weatherLocationMode",
                     icon: "navigation",
-                    title: qsTr("Location"),
+                    title: "Location",
                     keywords: "city search place automatic location services gps",
                     choices: [
-                        { label: qsTr("Exact"), value: "exact" },
-                        { label: qsTr("Automatic"), value: "automatic" }
+                        { label: "Exact", value: "exact" },
+                        { label: "Automatic", value: "automatic" }
                     ]
                 },
                 // The place itself, found by name; searching finds it through Location above.
@@ -202,12 +206,12 @@ Singleton {
         {
             id: "privacy",
             icon: "lock",
-            title: qsTr("Privacy"),
+            title: "Privacy",
             controls: [
                 {
                     key: "locationServices",
                     icon: "navigation",
-                    title: qsTr("Location services"),
+                    title: "Location services",
                     keywords: "location gps geoclue where privacy time zone",
                     choices: onOff
                 },
@@ -347,10 +351,10 @@ Singleton {
         if (key !== "locationNote")
             return ""
         if (!LocationServices.installed)
-            return qsTr("Location services aren't set up on this system. Enable services.qs.locationServices in your NixOS configuration.")
-        return LocationServices.error || (LocationServices.enabled
-            ? qsTr("Apps and the shell can find this device's approximate location from nearby Wi-Fi networks.")
-            : qsTr("Nothing on this device can look up its location."))
+            return I18n.tr("Location services aren't set up on this system. Enable services.qs.locationServices in your NixOS configuration.")
+        return I18n.tr(LocationServices.error) || (LocationServices.enabled
+            ? I18n.tr("Apps and the shell can find this device's approximate location from nearby Wi-Fi networks.")
+            : I18n.tr("Nothing on this device can look up its location."))
     }
 
     // The current value as its control shows it, or "" for controls without one.
@@ -362,7 +366,7 @@ Singleton {
         case "choice":
             for (let i = 0; i < control.choices.length; ++i) {
                 if (control.choices[i].value === current)
-                    return control.choices[i].label
+                    return I18n.tr(control.choices[i].label)
             }
             return current
         default:
@@ -371,7 +375,8 @@ Singleton {
     }
 
     function includes(text, needle) {
-        return String(text || "").toLowerCase().indexOf(needle) >= 0
+        const source = String(text || "")
+        return source.toLowerCase().indexOf(needle) >= 0 || I18n.tr(source).toLowerCase().indexOf(needle) >= 0
     }
 
     function matches(entry, control, needle) {

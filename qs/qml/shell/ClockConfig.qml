@@ -35,6 +35,7 @@ Singleton {
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
+    onLocaleChanged: I18n.locale = locale
 
     function apply(parsed) {
         const bar = parsed && parsed.bar ? parsed.bar : {}

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../Common"
 
 Scope {
     id: root
@@ -17,10 +18,10 @@ Scope {
     }
 
     function rpmText(rpm) {
-        return rpm > 0 ? qsTr("%1 rpm").arg(rpm.toLocaleString(Qt.locale(), "f", 0)) : qsTr("Idle")
+        return rpm > 0 ? I18n.tr("%1 rpm").arg(rpm.toLocaleString(Qt.locale(I18n.qtLocale), "f", 0)) : I18n.tr("Idle")
     }
 
-    readonly property string summary: qsTr("Auto") + " · " + rpmText(fastest)
+    readonly property string summary: I18n.tr("Auto") + " · " + rpmText(fastest)
 
     function parse(text) {
         const next = []

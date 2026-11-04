@@ -179,7 +179,7 @@ Item {
                 Text {
                     width: parent.width
                     text: SecureInput.error !== "" ? SecureInput.error
-                        : SecureInput.busy ? (SecureInput.request.busyText || qsTr("Checking…"))
+                        : SecureInput.busy ? (SecureInput.request.busyText || I18n.tr("Checking…"))
                         : SecureInput.kind
                     color: SecureInput.error !== "" ? Theme.textPrimary : Theme.textSecondary
                     elide: Text.ElideRight

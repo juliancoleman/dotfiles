@@ -133,7 +133,7 @@ Rectangle {
         Text {
             id: more
             visible: body.truncated || row.expanded
-            text: row.expanded ? qsTr("Show less") : qsTr("Show more")
+            text: row.expanded ? I18n.tr("Show less") : I18n.tr("Show more")
             color: moreHit.containsMouse ? Theme.textPrimary : Theme.today
             font.family: Theme.fontFamily
             font.pixelSize: 10
@@ -209,7 +209,7 @@ Rectangle {
         opacity: row.hovered || activeFocus || row.activeFocus ? 1 : 0.55
         activeFocusOnTab: true
         Accessible.role: Accessible.Button
-        Accessible.name: qsTr("Dismiss")
+        Accessible.name: I18n.tr("Dismiss")
         Keys.onReturnPressed: NotificationService.dismiss(row.notificationId)
         Keys.onSpacePressed: NotificationService.dismiss(row.notificationId)
 

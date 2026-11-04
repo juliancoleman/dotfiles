@@ -13,13 +13,13 @@ Item {
         if (!control)
             return ""
         if (control.busy)
-            return qsTr("Another session is controlling the fans.")
+            return I18n.tr("Another session is controlling the fans.")
         if (control.error !== "")
             return control.error
         if (control.connected && !control.available)
             return control.reason
         if (!control.ready)
-            return qsTr("Manual control isn't enabled on this machine.")
+            return I18n.tr("Manual control isn't enabled on this machine.")
         return ""
     }
 
@@ -59,7 +59,7 @@ Item {
                 toggleable: false
                 icon: "fan"
                 title: modelData.label
-                subtitle: qsTr("Auto") + " · " + page.source.rpmText(modelData.rpm)
+                subtitle: I18n.tr("Auto") + " · " + page.source.rpmText(modelData.rpm)
             }
         }
 

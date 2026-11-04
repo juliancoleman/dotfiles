@@ -48,11 +48,11 @@ Column {
         text: {
             if (!root.exact) {
                 const fix = WeatherService.automaticFix
-                return fix ? qsTr("Near %1").arg(WeatherService.place || fix.latitude.toFixed(2) + ", " + fix.longitude.toFixed(2))
-                           : WeatherService.error || qsTr("Finding your location…")
+                return fix ? I18n.tr("Near %1").arg(WeatherService.place || fix.latitude.toFixed(2) + ", " + fix.longitude.toFixed(2))
+                           : I18n.tr(WeatherService.error || "Finding your location…")
             }
             const spot = ClockConfig.weatherLocation
-            return spot ? root.describe(spot) : qsTr("Search for a city to show its weather")
+            return spot ? root.describe(spot) : I18n.tr("Search for a city to show its weather")
         }
         color: Theme.textPrimary
         font.family: Theme.fontFamily
@@ -63,7 +63,7 @@ Column {
     Text {
         width: parent.width
         visible: text.length > 0
-        text: root.exact || WeatherService.automaticFix ? WeatherService.error : ""
+        text: root.exact || WeatherService.automaticFix ? I18n.tr(WeatherService.error) : ""
         color: Theme.textSecondary
         font.family: Theme.fontFamily
         font.pixelSize: 11
@@ -83,7 +83,7 @@ Column {
             anchors.fill: field
             verticalAlignment: Text.AlignVCenter
             visible: field.text.length === 0
-            text: root.searching ? qsTr("Searching…") : qsTr("Search for a city")
+            text: root.searching ? I18n.tr("Searching…") : I18n.tr("Search for a city")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: 13
@@ -103,7 +103,7 @@ Column {
             selectByMouse: true
             verticalAlignment: TextInput.AlignVCenter
             Accessible.role: Accessible.EditableText
-            Accessible.name: qsTr("Search for a city")
+            Accessible.name: I18n.tr("Search for a city")
             onTextChanged: debounce.restart()
             Keys.onReturnPressed: root.chooseFirst()
             Keys.onEnterPressed: root.chooseFirst()

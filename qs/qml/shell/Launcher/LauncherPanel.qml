@@ -227,7 +227,7 @@ Item {
                         anchors.fill: input
                         visible: input.text.length === 0
                         verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Search  ·  @ apps  ·  / files  ·  > settings")
+                        text: I18n.tr("Search  ·  @ apps  ·  / files  ·  > settings")
                         color: Theme.textSecondary
                         font: input.font
                     }
@@ -248,7 +248,7 @@ Item {
                         font.family: Theme.fontFamily
                         font.pixelSize: 13
                         Accessible.role: Accessible.EditableText
-                        Accessible.name: qsTr("Search")
+                        Accessible.name: I18n.tr("Search")
                         onTextChanged: root.query = text
 
                         Keys.onPressed: event => {
@@ -302,7 +302,7 @@ Item {
                     border.width: root.calcSelected ? 1 : 0
                     border.color: Qt.rgba(1, 1, 1, 0.08)
                     Accessible.role: Accessible.Button
-                    Accessible.name: root.calc ? qsTr("Copy %1").arg(root.calc.text) : ""
+                    Accessible.name: root.calc ? I18n.tr("Copy %1").arg(root.calc.text) : ""
 
                     Column {
                         anchors.left: parent.left
@@ -339,7 +339,7 @@ Item {
                         anchors.rightMargin: 14
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.calcSelected
-                        text: qsTr("Enter to copy")
+                        text: I18n.tr("Enter to copy")
                         color: Theme.textSecondary
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -368,13 +368,13 @@ Item {
 
                         Repeater {
                             model: [
-                                { title: qsTr("Applications"), count: root.appResults.length,
+                                { title: I18n.tr("Applications"), count: root.appResults.length,
                                   shown: root.mode === "apps" || (root.mode === "all"
                                       && (root.appResults.length > 0
                                           || root.fileResults.length === 0 && root.settingResults.length === 0)) },
-                                { title: qsTr("Files"), count: root.fileResults.length,
+                                { title: I18n.tr("Files"), count: root.fileResults.length,
                                   shown: root.mode === "files" || root.fileResults.length > 0 },
-                                { title: qsTr("Settings"), count: root.settingResults.length,
+                                { title: I18n.tr("Settings"), count: root.settingResults.length,
                                   shown: root.mode === "settings" || root.settingResults.length > 0 }
                             ].filter(section => section.shown)
 
@@ -410,9 +410,9 @@ Item {
 
                         Repeater {
                             model: [
-                                { view: "list", icon: "view-list", name: qsTr("List") },
-                                { view: "large", icon: "view-large", name: qsTr("Large icons") },
-                                { view: "small", icon: "view-small", name: qsTr("Small icons") }
+                                { view: "list", icon: "view-list", name: I18n.tr("List") },
+                                { view: "large", icon: "view-large", name: I18n.tr("Large icons") },
+                                { view: "small", icon: "view-small", name: I18n.tr("Small icons") }
                             ]
 
                             Rectangle {
@@ -472,11 +472,11 @@ Item {
                         readonly property bool isSetting: modelData.kind === "setting"
                         readonly property var file: modelData.kind === "file" ? modelData.file : null
                         readonly property string label: isApp ? modelData.entry.name
-                            : isSetting ? modelData.control.title : file.name
+                            : isSetting ? I18n.tr(modelData.control.title) : file.name
                         // A setting reads where it lives and what it's set to: "Theme · Pill".
                         readonly property string comment: isApp
                             ? (modelData.entry.genericName || modelData.entry.comment)
-                            : isSetting ? [modelData.section.title, SettingsModel.valueLabel(modelData.control)]
+                            : isSetting ? [I18n.tr(modelData.section.title), SettingsModel.valueLabel(modelData.control)]
                                 .filter(part => part !== "").join(" · ")
                             : file.dir
                         readonly property bool thumbnail: !!file && FileSearch.kindOf(file) === "image"
@@ -588,7 +588,7 @@ Item {
                         anchors.centerIn: parent
                         visible: root.results.length === 0 && !root.calc
                         text: root.mode === "files" && root.fileTerm === ""
-                            ? qsTr("Type to search your home folder") : qsTr("No matches")
+                            ? I18n.tr("Type to search your home folder") : I18n.tr("No matches")
                         color: Theme.textSecondary
                         font.family: Theme.fontFamily
                         font.pixelSize: 12

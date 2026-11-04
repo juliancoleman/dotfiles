@@ -40,7 +40,7 @@ Item {
             width: parent.width
             motion: page.motion
             visible: !!page.source && page.source.available
-            title: page.input ? qsTr("Microphone") : qsTr("Volume")
+            title: page.input ? I18n.tr("Microphone") : I18n.tr("Volume")
             icon: !page.source ? "" : page.input
                 ? (page.source.muted || page.source.level <= 0.005 ? "microphone-muted" : "microphone")
                 : (page.source.muted || page.source.level <= 0.005 ? "volume-muted" : "volume")
@@ -85,7 +85,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 8
             bottomPadding: 10
-            text: page.input ? qsTr("No input devices") : qsTr("No output devices")
+            text: page.input ? I18n.tr("No input devices") : I18n.tr("No output devices")
             color: Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: 11

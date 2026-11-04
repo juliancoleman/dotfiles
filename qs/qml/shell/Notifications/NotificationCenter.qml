@@ -339,7 +339,7 @@ Item {
 
                     Text {
                         id: title
-                        text: qsTr("Notifications")
+                        text: I18n.tr("Notifications")
                         color: Theme.textPrimary
                         font.family: Theme.fontFamily
                         font.pixelSize: 13
@@ -360,11 +360,11 @@ Item {
                     opened: root.openP
                     visible: !root.closeActionInBadge
                     icon: "close"
-                    label: qsTr("Close notifications")
+                    label: I18n.tr("Close notifications")
                     anchors.verticalCenter: parent.verticalCenter
-                    x: root.mirrored
-                        ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + Theme.panelHeaderInset))
-                        : 0
+                    // Centered on the badge it replaces, whichever end of the panel that is.
+                    readonly property real badgeCenter: root.diameter / 2 - (root.pad + Theme.panelHeaderInset)
+                    x: root.mirrored ? parent.width - badgeCenter - width / 2 : badgeCenter - width / 2
                     onActivated: root.close()
                 }
 
@@ -376,7 +376,7 @@ Item {
                     height: 26
                     activeFocusOnTab: root.opened
                     Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("Clear all")
+                    Accessible.name: I18n.tr("Clear all")
                     Keys.onReturnPressed: NotificationService.clearAll()
                     Keys.onSpacePressed: NotificationService.clearAll()
 
@@ -391,7 +391,7 @@ Item {
                     Text {
                         id: clearLabel
                         anchors.centerIn: parent
-                        text: qsTr("Clear all")
+                        text: I18n.tr("Clear all")
                         color: clearHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
                         font.family: Theme.fontFamily
                         font.pixelSize: 11
@@ -530,7 +530,7 @@ Item {
                 hoverEnabled: true
                 enabled: root.lent || !root.opened
                 Accessible.role: Accessible.Button
-                Accessible.name: root.opened ? qsTr("Close notifications") : qsTr("Notifications")
+                Accessible.name: root.opened ? I18n.tr("Close notifications") : I18n.tr("Notifications")
                 onContainsMouseChanged: if (!pressed) root.aimHover(containsMouse)
                 onPressed: root.toggle()
                 onReleased: root.aimHover(containsMouse)

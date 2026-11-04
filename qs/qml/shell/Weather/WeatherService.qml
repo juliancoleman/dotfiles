@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import ".."
+import "../Common"
 
 // Weather from the US National Weather Service: the nearest station's measured conditions, the hourly and
 // daily forecasts, and official alerts. Open-Meteo fills what the NWS doesn't publish: days past its seven,
@@ -24,6 +25,7 @@ Singleton {
     readonly property bool automatic: ClockConfig.weatherLocationMode === "automatic"
     readonly property bool locating: ClockConfig.weatherEnabled && automatic && LocationServices.enabled
     property var automaticFix: null
+    // Like `error`, an English source the views pass through I18n.tr, so it follows a locale switch.
     property string automaticError: ""
     readonly property var location: !ClockConfig.weatherEnabled ? null
         : automatic ? (LocationServices.enabled ? automaticFix : null) : ClockConfig.weatherLocation
@@ -47,6 +49,7 @@ Singleton {
     readonly property bool windWarned: alerts.some(a => windEvents.indexOf(a.event) >= 0)
     property double updatedAt: 0
     property double now: Date.now()
+    // An English source the views pass through I18n.tr, so it follows a locale switch.
     property string error: ""
     property bool loading: false
     property double loadStartedAt: 0
@@ -58,7 +61,7 @@ Singleton {
     readonly property bool stale: updatedAt > 0 && now - updatedAt > staleAfter
     readonly property bool available: !!current && !stale
     readonly property string icon: current ? current.icon : "cloud"
-    readonly property string condition: current ? current.text : ""
+    readonly property string condition: current ? describe(current) : ""
     readonly property real degrees: current && current.celsius !== null ? Math.round(imperial ? current.celsius * 9 / 5 + 32 : current.celsius) : NaN
     readonly property string temperature: isNaN(degrees) ? "–" : degrees + "°"
     readonly property string place: !point ? "" : point.state ? point.city + ", " + point.state : point.city
@@ -186,16 +189,46 @@ Singleton {
 
     function airCategory(aqi) {
         if (aqi <= 50)
-            return qsTr("Good")
+            return I18n.tr("Good")
         if (aqi <= 100)
-            return qsTr("Moderate")
+            return I18n.tr("Moderate")
         if (aqi <= 150)
-            return qsTr("Unhealthy for Sensitive Groups")
+            return I18n.tr("Unhealthy for Sensitive Groups")
         if (aqi <= 200)
-            return qsTr("Unhealthy")
+            return I18n.tr("Unhealthy")
         if (aqi <= 300)
-            return qsTr("Very Unhealthy")
-        return qsTr("Hazardous")
+            return I18n.tr("Very Unhealthy")
+        return I18n.tr("Hazardous")
+    }
+
+    // The NWS only speaks English, so other locales name the sky by its glyph instead of its words.
+    function describe(reading) {
+        if (!I18n.japanese)
+            return reading.text
+        switch (reading.icon) {
+        case "clear-day":
+        case "clear-night":
+            return I18n.tr("Clear")
+        case "partly-day":
+        case "partly-night":
+            return I18n.tr("Partly Cloudy")
+        case "wind":
+            return I18n.tr("Windy")
+        case "snow":
+            return I18n.tr("Snow")
+        case "hail":
+            return I18n.tr("Sleet")
+        case "rain":
+            return I18n.tr("Rain")
+        case "thunder":
+            return I18n.tr("Thunderstorms")
+        case "alert":
+            return I18n.tr("Severe Storm")
+        case "fog":
+            return I18n.tr("Fog")
+        default:
+            return I18n.tr("Cloudy")
+        }
     }
 
     function cardinal(degrees) {
@@ -210,13 +243,13 @@ Singleton {
     function noun(glyph) {
         switch (glyph) {
         case "snow":
-            return qsTr("Snow")
+            return I18n.tr("Snow")
         case "hail":
-            return qsTr("Sleet")
+            return I18n.tr("Sleet")
         case "thunder":
-            return qsTr("Thunderstorms")
+            return I18n.tr("Thunderstorms")
         default:
-            return qsTr("Rain")
+            return I18n.tr("Rain")
         }
     }
 
@@ -246,12 +279,12 @@ Singleton {
         const spot = location
         if (!spot) {
             if (!automatic)
-                error = qsTr("Choose a location in Settings")
+                error = "Choose a location in Settings"
             else if (!LocationServices.enabled)
-                error = LocationServices.installed ? qsTr("Location services are off")
-                                                   : qsTr("Location services aren't set up on this system")
+                error = LocationServices.installed ? "Location services are off"
+                                                   : "Location services aren't set up on this system"
             else
-                error = automaticError || qsTr("Finding your location…")
+                error = automaticError || "Finding your location…"
             return
         }
         if (loading && Date.now() - loadStartedAt < loadDeadline)
@@ -269,7 +302,7 @@ Singleton {
         fetch("https://api.weather.gov/points/" + key, function (body) {
             const props = body && body.properties
             if (!props || !props.forecastHourly) {
-                fail(qsTr("Weather is only available for US locations"))
+                fail("Weather is only available for US locations")
                 return
             }
             const near = props.relativeLocation && props.relativeLocation.properties
@@ -304,7 +337,7 @@ Singleton {
             if (!periods && !observed) {
                 if (current && current.key !== spot.key)
                     current = null
-                fail(qsTr("Couldn't reach the National Weather Service"))
+                fail("Couldn't reach the National Weather Service")
                 return
             }
             if (periods)
@@ -398,7 +431,7 @@ Singleton {
               function (body) {
             const reading = body && body.current
             airQuality = reading && reading.us_aqi !== null && reading.us_aqi !== undefined
-                ? { aqi: Math.round(reading.us_aqi), category: airCategory(reading.us_aqi) } : null
+                ? { aqi: Math.round(reading.us_aqi) } : null
         })
 
         fetch("https://api.weather.gov/alerts/active?point=" + spot.key, function (body) {
@@ -529,14 +562,14 @@ Singleton {
                     if (!last || Math.abs(last.latitude - next.latitude) > 0.005 || Math.abs(last.longitude - next.longitude) > 0.005)
                         root.automaticFix = next
                 } else {
-                    root.automaticError = qsTr("Automatic location needs location services")
+                    root.automaticError = "Automatic location needs location services"
                     root.refresh()
                 }
             }
         }
         onExited: code => {
             if (code !== 0 && !root.automaticFix) {
-                root.automaticError = qsTr("Automatic location needs location services")
+                root.automaticError = "Automatic location needs location services"
                 root.refresh()
             }
         }
