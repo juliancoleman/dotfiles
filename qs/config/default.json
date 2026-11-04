@@ -1,7 +1,8 @@
 {
   "bar": {
     "placement": "right",
-    "shadow": true
+    "shadow": true,
+    "scale": 1
   },
   "clock": {
     "hourCycle": 24,

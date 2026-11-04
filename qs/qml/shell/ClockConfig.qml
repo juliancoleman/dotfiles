@@ -20,6 +20,8 @@ Singleton {
     property string motion: "easeOut"
     property string presentation: "pill"
     property bool shadow: true
+    // Multiplies every size token in Theme; a 2K panel at scale 1 wants the bar a quarter larger.
+    property real scale: 1
     // "list", "large", or "small" grid.
     property string launcherView: "large"
     property int duration: 250
@@ -35,6 +37,7 @@ Singleton {
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
+    onScaleChanged: Theme.scale = scale
     onLocaleChanged: I18n.locale = locale
 
     function oneOf(...allowed) {
@@ -87,6 +90,7 @@ Singleton {
                                  "low", batteryPercentage)
         placement = pick("bar.placement", bar.placement, oneOf("top", "right", "bottom", "left"), "right", placement)
         shadow = pick("bar.shadow", bar.shadow, flag, true, shadow)
+        scale = Math.round(pick("bar.scale", bar.scale, within(0.75, 2), 1, scale) * 20) / 20
         launcherView = pick("launcher.view", launcher.view, oneOf("list", "large", "small"), "large", launcherView)
         use24Hour = pick("clock.hourCycle", clock.hourCycle, oneOf(12, 24), 24, use24Hour ? 24 : 12) === 24
         showPeriod = pick("clock.meridiem", clock.meridiem, oneOf("shown", "hidden"), "shown",
@@ -122,6 +126,7 @@ Singleton {
         }
         next.bar.placement = placement
         next.bar.shadow = shadow
+        next.bar.scale = scale
         next.launcher = Object.assign({}, next.launcher, { view: launcherView })
         next.clock.hourCycle = use24Hour ? 24 : 12
         next.clock.meridiem = showPeriod ? "shown" : "hidden"

@@ -111,6 +111,7 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | --- | --- | --- | --- |
 | `bar.placement` | `top` `right` `bottom` `left` | `right` | Screen edge the bar sits on |
 | `bar.shadow` | bool | `true` | Drop shadow under the bar |
+| `bar.scale` | number 0.75–2 | `1` | Multiplies every size token (`Theme.scale`); 0.05 steps. Output scale stays the compositor's job |
 | `clock.hourCycle` | `12` `24` | `24` | Hour cycle |
 | `clock.meridiem` | `shown` `hidden` | `shown` | Show AM/PM |
 | `clock.locale` | `en` `jp` (`ja` accepted as `jp`) | `en` | Clock/UI language |

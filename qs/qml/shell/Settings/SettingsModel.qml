@@ -68,6 +68,19 @@ Singleton {
                     set: next => ClockConfig.shadow = next === "on"
                 },
                 {
+                    key: "scale",
+                    kind: "stepper",
+                    title: "Scale",
+                    keywords: "size zoom density bigger smaller legible",
+                    minimum: 0.75,
+                    maximum: 2,
+                    step: 0.05,
+                    decimals: 2,
+                    suffix: "×",
+                    get: () => ClockConfig.scale,
+                    set: next => ClockConfig.scale = next
+                },
+                {
                     key: "palette",
                     kind: "palette",
                     title: "Palette",
