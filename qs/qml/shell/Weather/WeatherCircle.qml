@@ -63,9 +63,9 @@ Item {
     readonly property real pad: lent ? 0 : Theme.panelPad
     readonly property real panelWidth: 290 + pad * 2
     readonly property real panelHeight: panel.implicitHeight
-    // What the open panel needs with any circle up to 40 across and a full gutter. Only the forecast's own
-    // content moves it, never the circle or the docking, so the window isn't resized while those animate.
-    readonly property real reserveHeight: 40 + panel.contentHeight + Theme.panelPad + 40
+    // Tallest the panel gets; past it the forecast scrolls. A constant, like the control center's: the
+    // window is sized from it, and a layer-shell resize mid-animation drops a frame.
+    readonly property real reserveHeight: 560
     readonly property real reserveWidth: 290 + Theme.panelPad * 2
     readonly property real restWidth: alongY ? diameter : body + endPad
     readonly property real restHeight: alongY ? diameter + endPad : diameter
@@ -213,7 +213,7 @@ Item {
                 pad: root.pad
                 faceRoom: !root.lent && !root.circleBottom ? root.restWidth : 0
                 footRoom: !root.lent && root.circleBottom ? root.diameter : 0
-                maxHeight: root.lent ? Infinity : root.maxPanelHeight
+                maxHeight: Math.min(root.maxPanelHeight, root.reserveHeight - 40)
                 closeActionInFace: root.closeActionInFace
                 onCloseRequested: root.close()
             }
