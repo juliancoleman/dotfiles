@@ -155,7 +155,9 @@ PanelWindow {
     implicitHeight: vertical ? 0 : Math.max(clock.height, Theme.floatMargin
         + Math.max(controls.reserveHeight, notes.reserveHeight, weather.reserveHeight, launcher.maxH)
         * clock.springRoom)
-    exclusiveZone: housing === "notch"
+    // Windows make room for the notch once it's there, not while it forms: the compositor re-laying out
+    // every window during the move costs the move its frames.
+    exclusiveZone: housing === "notch" && !clock.housingMoving
         ? Math.ceil(vertical ? clock.restingHousingWidth : clock.restingHousingHeight) : 0
     color: "transparent"
     surfaceFormat.opaque: false
@@ -241,31 +243,35 @@ PanelWindow {
         }
     }
 
-    Loader {
-        active: (root.anyOpen || root.launcherShown) && !clock.pointerDown && !controls.pointerDown && !notes.pointerDown && !weather.pointerDown
-        sourceComponent: dismissWindow
+    // Clicking anywhere else closes what's open. The window arrives once the panel has finished opening and
+    // leaves as soon as closing starts: while it's mapped the compositor blends a screen-sized layer every
+    // frame, which drops frames of the panel's own animation.
+    readonly property bool somethingOpen: anyOpen || launcherShown
+    property bool dismissReady: false
+    onSomethingOpenChanged: dismissReady = false
+    Timer {
+        interval: Theme.motionDuration * 2
+        running: root.somethingOpen
+        onTriggered: root.dismissReady = true
     }
+    PanelWindow {
+        visible: root.dismissReady && !clock.pointerDown && !controls.pointerDown && !notes.pointerDown && !weather.pointerDown
+        screen: root.screen
+        color: "transparent"
+        exclusiveZone: 0
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        WlrLayershell.layer: WlrLayer.Top
 
-    Component {
-        id: dismissWindow
-        PanelWindow {
-            screen: root.screen
-            color: "transparent"
-            exclusiveZone: 0
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            WlrLayershell.layer: WlrLayer.Top
+        anchors {
+            top: true
+            right: true
+            bottom: true
+            left: true
+        }
 
-            anchors {
-                top: true
-                right: true
-                bottom: true
-                left: true
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: root.closeAll()
-            }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.closeAll()
         }
     }
 
