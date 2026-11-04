@@ -16,8 +16,8 @@ Item {
     readonly property color fill: on ? Theme.today
         : hit.containsMouse || activeFocus ? Theme.track : Theme.surface
 
-    implicitWidth: 24
-    implicitHeight: 24
+    implicitWidth: Theme.px(24)
+    implicitHeight: Theme.px(24)
     opacity: Math.max(opened, activeFocus ? 1 : 0)
     activeFocusOnTab: opened > 0.85
     Accessible.role: Accessible.Button

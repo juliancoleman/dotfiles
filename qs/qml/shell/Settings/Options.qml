@@ -11,7 +11,7 @@ Item {
     signal picked(string next)
     property string motion: "spring"
 
-    implicitHeight: 58
+    implicitHeight: Theme.px(58)
     activeFocusOnTab: visible
     Accessible.name: title
     Accessible.description: labelFor(value)
@@ -48,7 +48,7 @@ Item {
         text: options.title
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.textLabel
         font.letterSpacing: 1.15
         font.capitalization: Font.AllUppercase
     }
@@ -57,21 +57,24 @@ Item {
         id: track
         anchors.bottom: parent.bottom
         width: parent.width
-        height: 36
-        radius: 12
+        height: Theme.px(36)
+        radius: Theme.radius
         color: Theme.track
         border.width: 1
-        border.color: options.activeFocus ? Theme.today : Qt.rgba(1, 1, 1, 0.05)
+        border.color: options.activeFocus ? Theme.today : Theme.edge
 
+        readonly property int inset: Theme.px(3)
+        // Hairline between cells.
+        readonly property int gap: 2
         readonly property real cell: choices.length > 0
-            ? (width - 6 - (choices.length - 1) * 2) / choices.length : 0
+            ? (width - 2 * inset - (choices.length - 1) * gap) / choices.length : 0
 
         Rectangle {
-            radius: 9
-            x: 3 + options.indexFor(options.value) * (track.cell + 2)
-            y: 3
+            radius: Theme.radiusInput
+            x: track.inset + options.indexFor(options.value) * (track.cell + track.gap)
+            y: track.inset
             width: track.cell
-            height: track.height - 6
+            height: track.height - 2 * track.inset
             color: Theme.today
 
             Behavior on x {
@@ -84,8 +87,8 @@ Item {
 
         Row {
             anchors.fill: parent
-            anchors.margins: 3
-            spacing: 2
+            anchors.margins: track.inset
+            spacing: track.gap
 
             Repeater {
                 model: options.choices
@@ -94,19 +97,19 @@ Item {
                     id: cell
                     required property var modelData
                     width: track.cell
-                    height: 30
+                    height: track.height - 2 * track.inset
 
                     Text {
                         anchors.fill: parent
-                        anchors.leftMargin: 4
-                        anchors.rightMargin: 4
+                        anchors.leftMargin: Theme.px(4)
+                        anchors.rightMargin: Theme.px(4)
                         text: cell.modelData.label
                         color: cell.modelData.value === options.value ? Theme.todayInk : Theme.textSecondary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textBody
                         font.weight: cell.modelData.value === options.value ? Font.DemiBold : Font.Normal
                     }
 

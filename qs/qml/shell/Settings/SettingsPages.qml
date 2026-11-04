@@ -45,6 +45,7 @@ Item {
             Column {
                 id: list
                 width: parent.width
+                // Hairline between rows.
                 spacing: 2
 
                 Repeater {
@@ -83,7 +84,7 @@ Item {
                 Column {
                     id: controls
                     width: parent.width
-                    spacing: 12
+                    spacing: Theme.px(12)
 
                     Repeater {
                         model: page.modelData.controls

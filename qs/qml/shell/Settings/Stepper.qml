@@ -1,5 +1,6 @@
 import QtQuick
 import "../Common"
+import "../Clock"
 
 // A titled number nudged by fixed steps between bounds; `readout` is how the caller writes the value.
 Item {
@@ -7,14 +8,18 @@ Item {
 
     property string title: ""
     property string readout: ""
+    property string suffix: ""
     property real value: 0
     property real minimum: 0
     property real maximum: 1
     property real step: 1
     property int decimals: 0
+    property string motion: "easeOut"
     signal edited(real next)
 
-    implicitHeight: 58
+    readonly property int inset: Theme.px(3)
+
+    implicitHeight: Theme.px(58)
     activeFocusOnTab: visible
     Accessible.role: Accessible.Slider
     Accessible.name: title
@@ -35,7 +40,7 @@ Item {
         text: field.title
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.textLabel
         font.letterSpacing: 1.15
         font.capitalization: Font.AllUppercase
     }
@@ -43,19 +48,33 @@ Item {
     Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
-        height: 36
-        radius: 12
+        height: Theme.px(36)
+        radius: Theme.radius
         color: Theme.track
         border.width: 1
-        border.color: field.activeFocus ? Theme.today : Qt.rgba(1, 1, 1, 0.05)
+        border.color: field.activeFocus ? Theme.today : Theme.edge
+
+        // Whole numbers roll on the clock's tickers; the ticker has no fraction column, so decimals stay text.
+        TickerNumber {
+            anchors.centerIn: parent
+            visible: field.decimals === 0
+            value: field.decimals === 0 ? field.value : NaN
+            suffix: field.suffix
+            motion: field.motion
+            color: Theme.textPrimary
+            fontPixelSize: Theme.textStrong
+            fontWeight: Font.Medium
+        }
 
         Text {
             anchors.centerIn: parent
+            visible: field.decimals > 0
             text: field.readout
             color: Theme.textPrimary
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.family: Theme.latinFontFamily
+            font.pixelSize: Theme.textStrong
             font.weight: Font.Medium
+            font.features: ({ "tnum": 1 })
         }
 
         Repeater {
@@ -66,20 +85,20 @@ Item {
 
             Rectangle {
                 required property var modelData
-                width: 36
-                height: 30
-                radius: 9
-                x: modelData.side === "left" ? 3 : parent.width - width - 3
-                y: 3
-                color: pressed.pressed ? Qt.rgba(1, 1, 1, 0.08)
-                     : pressed.containsMouse ? Qt.rgba(1, 1, 1, 0.04) : "transparent"
+                width: Theme.px(36)
+                height: parent.height - 2 * field.inset
+                radius: Theme.radiusInput
+                x: modelData.side === "left" ? field.inset : parent.width - width - field.inset
+                y: field.inset
+                color: pressed.pressed ? Theme.knobFill
+                     : pressed.containsMouse ? Theme.lift : "transparent"
 
                 Text {
                     anchors.centerIn: parent
                     text: parent.modelData.label
                     color: Theme.textPrimary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.textTitle
                 }
 
                 MouseArea {

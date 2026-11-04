@@ -26,7 +26,7 @@ Item {
 
     Item {
         anchors.centerIn: parent
-        width: Math.max(0, header.width - 56 * header.opened)
+        width: Math.max(0, header.width - 2 * Theme.px(28) * header.opened)
         height: header.height
 
         Text {
@@ -47,7 +47,7 @@ Item {
             text: header.clock.monthTitle
             color: Theme.textPrimary
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
             font.weight: Font.Medium
         }
     }

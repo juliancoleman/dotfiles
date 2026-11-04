@@ -23,8 +23,8 @@ Item {
     // A settings result was chosen; the bar opens its control center on this section, on the same screen.
     signal settingChosen(string section)
 
-    readonly property real listW: 400
-    readonly property real previewW: 270
+    readonly property real listW: Theme.px(400)
+    readonly property real previewW: Theme.px(270)
     // The preview opens away from a side edge so the list stays where it was.
     readonly property bool previewLeft: edge === "right"
     readonly property bool showPreview: fileResults.length > 0
@@ -38,9 +38,9 @@ Item {
         }
     }
     // Fits what's showing, so a lone answer opens short; past this the results scroll.
-    readonly property real maxH: 450
-    readonly property real fitH: Math.min(maxH, Math.max(showPreview ? 340 : 0, grid.y + Theme.panelPad - 2
-        + (results.length > 0 ? grid.contentHeight : calc ? 0 : 60)))
+    readonly property real maxH: Theme.px(450)
+    readonly property real fitH: Math.min(maxH, Math.max(showPreview ? Theme.px(340) : 0, grid.y + Theme.panelPad - 2
+        + (results.length > 0 ? grid.contentHeight : calc ? 0 : Theme.px(60))))
     property real openH: fitH
     Behavior on openH {
         enabled: root.shown && root.pc > 0.999
@@ -89,7 +89,7 @@ Item {
     visible: p > 0.001
 
     function corner(outer) {
-        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + 18 * pc
+        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + Theme.px(18) * pc
         return outer ? radius * (1 - notch) : radius
     }
 
@@ -185,9 +185,9 @@ Item {
             opacity: Math.max(0, (root.pc - 0.35) / 0.65)
 
             FilePreview {
-                x: root.previewLeft ? Theme.panelPad : root.listW - 4
+                x: root.previewLeft ? Theme.panelPad : root.listW - Theme.px(4)
                 y: Theme.panelPad
-                width: root.previewW - Theme.panelPad - 4
+                width: root.previewW - Theme.panelPad - Theme.px(4)
                 height: parent.height - Theme.panelPad * 2
                 visible: root.showPreview || body.width > root.listW + 1
                 opacity: Math.max(0, (body.width - root.listW) / root.previewW)
@@ -205,19 +205,19 @@ Item {
                     x: Theme.panelPad
                     y: Theme.panelPad
                     width: parent.width - Theme.panelPad * 2
-                    height: 34
-                    radius: 10
+                    height: Theme.px(34)
+                    radius: Theme.radius
                     color: Theme.track
                     border.width: 1
-                    border.color: input.activeFocus ? Theme.today : Qt.rgba(1, 1, 1, 0.08)
+                    border.color: input.activeFocus ? Theme.today : Theme.edge
 
                     StatusGlyph {
                         id: leader
                         anchors.left: parent.left
-                        anchors.leftMargin: 11
+                        anchors.leftMargin: Theme.px(11)
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 13
-                        height: 13
+                        width: Theme.px(13)
+                        height: Theme.px(13)
                         icon: "search"
                         ink: Theme.textSecondary
                         cutColor: field.color
@@ -227,6 +227,7 @@ Item {
                         anchors.fill: input
                         visible: input.text.length === 0
                         verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
                         text: I18n.tr("Search  ·  @ apps  ·  / files  ·  > settings")
                         color: Theme.textSecondary
                         font: input.font
@@ -236,17 +237,17 @@ Item {
                         id: input
                         anchors.left: leader.right
                         anchors.right: parent.right
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 10
+                        anchors.leftMargin: Theme.px(8)
+                        anchors.rightMargin: Theme.px(10)
                         anchors.verticalCenter: parent.verticalCenter
-                        height: parent.height - 8
+                        height: parent.height - Theme.px(8)
                         verticalAlignment: TextInput.AlignVCenter
                         clip: true
                         color: Theme.textPrimary
                         selectionColor: Theme.today
                         selectedTextColor: Theme.todayInk
                         font.family: Theme.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.textStrong
                         Accessible.role: Accessible.EditableText
                         Accessible.name: I18n.tr("Search")
                         onTextChanged: root.query = text
@@ -293,22 +294,22 @@ Item {
                 Rectangle {
                     id: answer
                     x: Theme.panelPad
-                    y: field.y + field.height + (visible ? 8 : 0)
+                    y: field.y + field.height + (visible ? Theme.px(8) : 0)
                     width: parent.width - Theme.panelPad * 2
-                    height: visible ? 60 : 0
+                    height: visible ? Theme.px(60) : 0
                     visible: root.calc !== null
-                    radius: 12
+                    radius: Theme.radius
                     color: root.calcSelected ? Theme.ink : Theme.track
-                    border.width: root.calcSelected ? 1 : 0
-                    border.color: Qt.rgba(1, 1, 1, 0.08)
+                    border.width: 1
+                    border.color: Theme.edge
                     Accessible.role: Accessible.Button
                     Accessible.name: root.calc ? I18n.tr("Copy %1").arg(root.calc.text) : ""
 
                     Column {
                         anchors.left: parent.left
-                        anchors.leftMargin: 14
+                        anchors.leftMargin: Theme.px(14)
                         anchors.right: hint.left
-                        anchors.rightMargin: 10
+                        anchors.rightMargin: Theme.px(10)
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 1
 
@@ -318,7 +319,7 @@ Item {
                             elide: Text.ElideRight
                             color: Theme.textSecondary
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textLabel
                         }
 
                         Text {
@@ -326,8 +327,8 @@ Item {
                             text: root.calc ? root.calc.text : ""
                             elide: Text.ElideRight
                             color: Theme.textPrimary
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 22
+                            font.family: Theme.latinFontFamily
+                            font.pixelSize: Theme.textDisplay
                             font.weight: Font.Light
                             font.features: { "tnum": 1 }
                         }
@@ -336,13 +337,13 @@ Item {
                     Text {
                         id: hint
                         anchors.right: parent.right
-                        anchors.rightMargin: 14
+                        anchors.rightMargin: Theme.px(14)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.calcSelected
                         text: I18n.tr("Enter to copy")
                         color: Theme.textSecondary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textLabel
                     }
 
                     MouseArea {
@@ -356,15 +357,15 @@ Item {
 
                 Item {
                     id: header
-                    x: 16
-                    y: answer.y + answer.height + 6
+                    x: Theme.px(16)
+                    y: answer.y + answer.height + Theme.px(6)
                     visible: !root.calc || root.results.length > 0
-                    height: visible ? 36 : 0
-                    width: parent.width - 28
+                    height: visible ? Theme.px(36) : 0
+                    width: parent.width - Theme.px(28)
 
                     Row {
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: 14
+                        spacing: Theme.px(14)
 
                         Repeater {
                             model: [
@@ -380,14 +381,14 @@ Item {
 
                             Row {
                                 required property var modelData
-                                spacing: 6
+                                spacing: Theme.px(6)
 
                                 Text {
                                     id: title
                                     text: modelData.title
                                     color: Theme.textPrimary
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.textBody
                                     font.weight: Font.DemiBold
                                 }
 
@@ -395,8 +396,8 @@ Item {
                                     anchors.baseline: title.baseline
                                     text: modelData.count
                                     color: Theme.textSecondary
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 11
+                                    font.family: Theme.latinFontFamily
+                                    font.pixelSize: Theme.textLabel
                                     font.features: { "tnum": 1 }
                                 }
                             }
@@ -406,7 +407,7 @@ Item {
                     Row {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: 2
+                        spacing: Theme.px(2)
 
                         Repeater {
                             model: [
@@ -418,17 +419,17 @@ Item {
                             Rectangle {
                                 required property var modelData
                                 readonly property bool chosen: root.view === modelData.view
-                                width: 26
-                                height: 24
-                                radius: 7
+                                width: Theme.px(26)
+                                height: Theme.px(24)
+                                radius: Theme.radiusInput
                                 color: chosen ? Theme.ink : toggleHit.containsMouse ? Theme.track : "transparent"
                                 Accessible.role: Accessible.Button
                                 Accessible.name: modelData.name
 
                                 StatusGlyph {
                                     anchors.centerIn: parent
-                                    width: 14
-                                    height: 14
+                                    width: Theme.px(14)
+                                    height: Theme.px(14)
                                     icon: modelData.icon
                                     ink: chosen ? Theme.textPrimary : Theme.textSecondary
                                 }
@@ -448,7 +449,7 @@ Item {
                 GridView {
                     id: grid
                     readonly property int columns: root.listView ? 1
-                        : Math.max(1, Math.floor(width / (root.view === "small" ? 76 : 96)))
+                        : Math.max(1, Math.floor(width / (root.view === "small" ? Theme.px(76) : Theme.px(96))))
                     // Cells inset their highlight by 2, so the grid sits 2 short of the gutter.
                     x: Theme.panelPad - 2
                     y: header.y + header.height
@@ -457,7 +458,7 @@ Item {
                     clip: true
                     model: root.results
                     cellWidth: Math.floor(width / columns)
-                    cellHeight: root.listView ? 40 : root.view === "small" ? 70 : 88
+                    cellHeight: root.listView ? Theme.px(40) : root.view === "small" ? Theme.px(70) : Theme.px(88)
                     boundsBehavior: Flickable.StopAtBounds
                     highlightMoveDuration: 0
                     currentIndex: 0
@@ -486,19 +487,19 @@ Item {
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: 2
-                            radius: 10
+                            radius: Theme.radiusInput
                             color: cell.current && !root.calcSelected ? Theme.ink : "transparent"
                         }
 
                         IconImage {
                             id: icon
-                            readonly property int size: root.listView ? 24 : root.view === "small" ? 26 : 38
+                            readonly property int size: root.listView ? Theme.px(24) : root.view === "small" ? Theme.px(26) : Theme.px(38)
                             implicitSize: size
                             asynchronous: true
                             source: cell.thumbnail || cell.isSetting ? ""
                                 : cell.isApp ? AppSearch.icon(cell.modelData.entry) : FileSearch.icon(cell.file)
-                            x: root.listView ? 10 : (cell.width - size) / 2
-                            y: root.listView ? (cell.height - size) / 2 : root.view === "small" ? 11 : 13
+                            x: root.listView ? Theme.px(10) : (cell.width - size) / 2
+                            y: root.listView ? (cell.height - size) / 2 : root.view === "small" ? Theme.px(11) : Theme.px(13)
 
                             Image {
                                 anchors.fill: parent
@@ -532,7 +533,7 @@ Item {
                                     width: parent.width - 4
                                     horizontalAlignment: Text.AlignHCenter
                                     fontSizeMode: Text.HorizontalFit
-                                    minimumPixelSize: 6
+                                    minimumPixelSize: Theme.px(6)
                                     text: cell.isApp ? cell.label.charAt(0).toUpperCase()
                                         : cell.isSetting ? ""
                                         : (cell.file.ext || (cell.file.isDir ? "dir" : "file")).slice(0, 4).toUpperCase()
@@ -546,17 +547,17 @@ Item {
 
                         Text {
                             id: name
-                            x: root.listView ? icon.x + icon.size + 11 : 5
-                            width: root.listView ? cell.width - x - 10 : cell.width - 10
+                            x: root.listView ? icon.x + icon.size + Theme.px(11) : Theme.px(5)
+                            width: root.listView ? cell.width - x - Theme.px(10) : cell.width - Theme.px(10)
                             y: root.listView
                                 ? (cell.comment ? cell.height / 2 - implicitHeight + 1 : (cell.height - implicitHeight) / 2)
-                                : icon.y + icon.size + 6
+                                : icon.y + icon.size + Theme.px(6)
                             text: cell.label
                             color: Theme.textPrimary
                             horizontalAlignment: root.listView ? Text.AlignLeft : Text.AlignHCenter
                             elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
-                            font.pixelSize: root.listView ? 12 : 11
+                            font.pixelSize: root.listView ? Theme.textBody : Theme.textLabel
                             font.weight: Font.Medium
                         }
 
@@ -569,7 +570,7 @@ Item {
                             color: Theme.textSecondary
                             elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textLabel
                         }
 
                         MouseArea {
@@ -591,7 +592,7 @@ Item {
                             ? I18n.tr("Type to search your home folder") : I18n.tr("No matches")
                         color: Theme.textSecondary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textBody
                     }
                 }
             }

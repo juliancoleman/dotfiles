@@ -61,12 +61,15 @@ QtObject {
     }
 
     // Type ramp. Readings share the clock's digit size so a panel reads as the same instrument as the bar.
+    readonly property int textMicro: px(8)
     readonly property int textCaption: px(10)
     readonly property int textLabel: px(11)
     readonly property int textBody: px(12)
     readonly property int textStrong: px(13)
     readonly property int textTitle: horizontalDigit
     readonly property int textDisplay: px(22)
+    // The one reading a panel is about (the weather's current temperature, the launcher's query).
+    readonly property int textHero: px(40)
 
     // Shape. Containers share one radius; controls set inside them (rows, lanes, fields) take the smaller.
     readonly property int radius: px(12)

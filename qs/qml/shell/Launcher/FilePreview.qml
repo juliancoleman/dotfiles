@@ -95,14 +95,16 @@ Item {
         x: 0
         y: 0
         width: parent.width
-        height: Math.min(parent.height - details.height - 12, width * 1.05)
-        radius: 12
+        height: Math.min(parent.height - details.height - Theme.px(12), width * 1.05)
+        radius: Theme.radius
         color: Theme.track
+        border.width: 1
+        border.color: Theme.edge
         clip: true
 
         Image {
             anchors.fill: parent
-            anchors.margins: 10
+            anchors.margins: Theme.px(10)
             visible: root.kind === "image" || root.kind === "pdf"
             source: root.kind === "image" ? FileSearch.url(root.file.path) : root.kind === "pdf" ? root.pageImage : ""
             sourceSize: Qt.size(520, 520)
@@ -114,15 +116,16 @@ Item {
 
         Text {
             anchors.fill: parent
-            anchors.margins: 12
+            anchors.margins: Theme.panelPad
             visible: root.kind === "text" && root.textBody !== ""
             text: root.textBody
             textFormat: Text.PlainText
             wrapMode: Text.WrapAnywhere
             clip: true
             color: Theme.textSecondary
+            // Source text previews stay monospace on purpose.
             font.family: "monospace"
-            font.pixelSize: 10
+            font.pixelSize: Theme.textCaption
             lineHeight: 1.15
         }
 
@@ -131,7 +134,7 @@ Item {
                 || (root.kind === "text" && root.textBody === "")
             anchors.centerIn: parent
             visible: fallback && source != ""
-            implicitSize: 72
+            implicitSize: Theme.px(72)
             asynchronous: true
             source: root.entry ? AppSearch.icon(root.entry) : root.file ? FileSearch.icon(root.file) : ""
         }
@@ -143,7 +146,7 @@ Item {
         anchors.right: parent.right
         anchors.leftMargin: 2
         anchors.rightMargin: 2
-        y: stage.height + 10
+        y: stage.height + Theme.px(10)
         spacing: 2
 
         Text {
@@ -152,7 +155,7 @@ Item {
             elide: Text.ElideMiddle
             color: Theme.textPrimary
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
             font.weight: Font.Medium
         }
 
@@ -166,7 +169,7 @@ Item {
             wrapMode: root.entry ? Text.Wrap : Text.NoWrap
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
         }
 
         Text {
@@ -175,7 +178,7 @@ Item {
             visible: text !== ""
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
             font.features: { "tnum": 1 }
         }
     }

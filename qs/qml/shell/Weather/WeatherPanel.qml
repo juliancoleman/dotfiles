@@ -23,10 +23,6 @@ Item {
     // The notched weather trigger becomes the close action while this panel is open.
     property bool closeActionInFace: false
     property string motion: "easeOut"
-    // Hero reading. The type ramp tops out at textDisplay (22); the current temperature is the one reading
-    // meant to be seen from across the room, so it keeps its own size until Theme grows a hero step.
-    readonly property int heroDigit: 40
-
     property real pad: Theme.panelPad
     readonly property real innerWidth: width - pad * 2
     readonly property bool clock24: ClockConfig.use24Hour
@@ -181,7 +177,7 @@ Item {
                     value: WeatherService.degrees
                     suffix: "°"
                     motion: root.motion
-                    fontPixelSize: root.heroDigit
+                    fontPixelSize: Theme.textHero
                     fontWeight: Font.Light
                 }
 
@@ -344,9 +340,7 @@ Item {
                                     anchors.bottom: parent.bottom
                                     visible: modelData.chance >= 20
                                     text: modelData.chance + "%"
-                                    // Below the ramp: the chance sits under an 18px glyph in a 30px cell and
-                                    // textCaption (10) collides with it.
-                                    font.pixelSize: 9
+                                    font.pixelSize: Theme.textMicro
                                     font.weight: Font.DemiBold
                                     color: Theme.purple
                                 }
@@ -485,8 +479,7 @@ Item {
                             anchors.bottom: parent.bottom
                             visible: day.modelData.chance >= 20
                             text: day.modelData.chance + "%"
-                            // Below the ramp: tucked under a 16px glyph in a 26px row; textCaption (10) overlaps it.
-                            font.pixelSize: 8
+                            font.pixelSize: Theme.textMicro
                             font.weight: Font.DemiBold
                             color: Theme.purple
                         }

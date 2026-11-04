@@ -45,6 +45,8 @@ Loader {
         Stepper {
             title: I18n.tr(row.control.title)
             readout: SettingsModel.valueLabel(row.control)
+            suffix: row.control.suffix
+            motion: row.motion
             value: SettingsModel.value(row.key)
             minimum: row.control.minimum
             maximum: row.control.maximum
@@ -77,7 +79,7 @@ Loader {
             text: SettingsModel.note(row.key)
             color: Theme.textSecondary
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
         }
     }
 }

@@ -56,13 +56,13 @@ Item {
     readonly property bool mirrored: !lent && circleRight
 
     // Media and count sit inset in the circle; the notch's leading pad is measured to them.
-    readonly property real inset: 4
+    readonly property real inset: Theme.px(4)
     property real endPad: 0
 
     // Lent to the notch, the clock's housing supplies the gutter.
     readonly property real pad: lent ? 0 : Theme.panelPad
-    readonly property real panelWidth: 298 + pad * 2
-    readonly property real listMax: 330
+    readonly property real panelWidth: Theme.px(298) + pad * 2
+    readonly property real listMax: Theme.px(330)
     readonly property real listContent: Math.min(listMax, list.implicitHeight)
     property real shownContent: listContent
     Behavior on shownContent {
@@ -91,8 +91,8 @@ Item {
     }
     // Tallest the panel gets, with any circle up to 40 across: a constant, since the window is sized from
     // it and a layer-shell resize mid-animation drops a frame.
-    readonly property real reserveHeight: 40 + Theme.panelHeaderGap + listMax + Theme.panelPad + 40
-    readonly property real reserveWidth: 298 + Theme.panelPad * 2
+    readonly property real reserveHeight: Theme.px(40) + Theme.panelHeaderGap + listMax + Theme.panelPad + Theme.px(40)
+    readonly property real reserveWidth: Theme.px(298) + Theme.panelPad * 2
 
     readonly property real restWidth: diameter + (alongY ? 0 : endPad)
     readonly property real restHeight: diameter + (alongY ? endPad : 0)
@@ -171,6 +171,7 @@ Item {
 
     // Corners on the screen edge, and those facing the clock, square off as the circle fuses into the notch.
     function corner(outer, facingClock) {
+        // 14 is the fused housing's corner, shared with the weather circle's housing; not a container radius.
         const radius = diameter / 2 * (1 - Math.min(1, openP)) + 14 * openP
         return outer || facingClock ? radius * (1 - Math.max(0, Math.min(1, attach))) : radius
     }
@@ -317,16 +318,16 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: root.mirrored ? parent.right : undefined
                     anchors.left: root.mirrored ? undefined : parent.left
-                    anchors.rightMargin: root.mirrored ? root.diameter - 4 : 0
-                    anchors.leftMargin: root.mirrored || root.closeActionInBadge ? 0 : root.diameter - 4
-                    spacing: 6
+                    anchors.rightMargin: root.mirrored ? root.diameter - Theme.panelHeaderInset : 0
+                    anchors.leftMargin: root.mirrored || root.closeActionInBadge ? 0 : root.diameter - Theme.panelHeaderInset
+                    spacing: Theme.tileGap
 
                     Text {
                         id: title
                         text: I18n.tr("Notifications")
                         color: Theme.textPrimary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.textStrong
                         font.weight: Font.Medium
                     }
 
@@ -334,8 +335,8 @@ Item {
                         anchors.baseline: title.baseline
                         text: NotificationService.count
                         color: Theme.textSecondary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.family: Theme.latinFontFamily
+                        font.pixelSize: Theme.textLabel
                         font.features: { "tnum": 1 }
                     }
                 }
@@ -356,9 +357,9 @@ Item {
                 Item {
                     id: clear
                     anchors.verticalCenter: parent.verticalCenter
-                    x: root.mirrored ? -4 : parent.width - width + 4
-                    width: clearLabel.implicitWidth + 16
-                    height: 26
+                    x: root.mirrored ? -Theme.panelHeaderInset : parent.width - width + Theme.panelHeaderInset
+                    width: clearLabel.implicitWidth + Theme.px(16)
+                    height: Theme.px(26)
                     activeFocusOnTab: root.opened
                     Accessible.role: Accessible.Button
                     Accessible.name: I18n.tr("Clear all")
@@ -367,7 +368,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: 8
+                        radius: Theme.radiusInput
                         color: clearHit.containsMouse || clear.activeFocus ? Theme.track : "transparent"
                         border.width: clear.activeFocus ? 1 : 0
                         border.color: Theme.today
@@ -379,7 +380,7 @@ Item {
                         text: I18n.tr("Clear all")
                         color: clearHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textLabel
                         font.weight: Font.Medium
                     }
 
@@ -405,7 +406,7 @@ Item {
                 Column {
                     id: list
                     width: parent.width
-                    spacing: 6
+                    spacing: Theme.tileGap
 
                     Repeater {
                         model: NotificationService.model
@@ -438,6 +439,7 @@ Item {
                 height: badge.face
                 radius: width / 2
                 color: Theme.ink
+                // A critical arrival rings the circle in lightened danger: a warning state, not decoration.
                 border.width: NotificationService.newestCritical ? 1.5 : 0
                 border.color: Qt.lighter(Theme.danger, 1.8)
                 opacity: 1
@@ -462,8 +464,8 @@ Item {
 
                     StatusGlyph {
                         anchors.centerIn: parent
-                        width: 14
-                        height: 14
+                        width: Theme.px(14)
+                        height: Theme.px(14)
                         visible: !picture.visible
                         icon: "bell"
                     }
@@ -471,8 +473,8 @@ Item {
 
                 StatusGlyph {
                     anchors.centerIn: parent
-                    width: 14
-                    height: 14
+                    width: Theme.px(14)
+                    height: Theme.px(14)
                     opacity: root.closeActionInBadge ? 0 : root.showMedia ? 0 : 1
                     visible: opacity > 0.01
                     Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
@@ -489,8 +491,8 @@ Item {
             Rectangle {
                 x: badge.width - width - 1
                 y: 1
-                width: Math.max(height, count.implicitWidth + 6)
-                height: 13
+                width: Math.max(height, count.implicitWidth + Theme.tileGap)
+                height: Theme.px(13)
                 radius: height / 2
                 color: Theme.today
                 opacity: root.closeActionInBadge || ClockConfig.doNotDisturb ? 0 : 1
@@ -502,8 +504,8 @@ Item {
                     anchors.centerIn: parent
                     text: NotificationService.count > 99 ? "99+" : NotificationService.count
                     color: Theme.todayInk
-                    font.family: Theme.fontFamily
-                    font.pixelSize: 9
+                    font.family: Theme.latinFontFamily
+                    font.pixelSize: Theme.px(9)
                     font.weight: Font.DemiBold
                     font.features: { "tnum": 1 }
                 }

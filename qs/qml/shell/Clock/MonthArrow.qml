@@ -9,7 +9,7 @@ Item {
     property int delta: -1
     property real opened: 0
 
-    width: 28 * opened
+    width: Theme.px(28) * opened
     height: clock.headerH
     opacity: Math.max(opened, activeFocus ? 1 : 0)
     activeFocusOnTab: opened > 0.85
@@ -24,8 +24,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.margins: 1
-        radius: 7
-        color: arrow.activeFocus ? Qt.rgba(0.72, 0.76, 1, 0.16) : "transparent"
+        radius: Theme.radiusInput
+        color: arrow.activeFocus ? Qt.alpha(Theme.today, 0.16) : "transparent"
         border.width: arrow.activeFocus ? 1 : 0
         border.color: Theme.today
     }
@@ -35,7 +35,7 @@ Item {
         text: arrow.delta < 0 ? "‹" : "›"
         color: hit.pressed || arrow.activeFocus ? Theme.today : Theme.textPrimary
         font.family: Theme.fontFamily
-        font.pixelSize: 16
+        font.pixelSize: Theme.textTitle
         font.weight: Font.Medium
     }
 

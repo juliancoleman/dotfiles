@@ -12,9 +12,10 @@ Item {
     property int motionCurve: Easing.OutCubic
     property bool motionNone: false
 
-    readonly property real cell: 24
-    readonly property real gap: 2
-    readonly property real weekHeight: 16
+    readonly property int cell: Theme.px(24)
+    // Hairline between cells.
+    readonly property int gap: 2
+    readonly property int weekHeight: Theme.px(16)
     readonly property int columns: 7
     property int rows: 6
     property real rowSpan: 6
@@ -23,6 +24,7 @@ Item {
         : ["S", "M", "T", "W", "T", "F", "S"]
 
     implicitWidth: columns * cell + (columns - 1) * gap
+    // The 6 below the weekday row is mirrored by ClockWidget.maxGridHeight, which stays literal with it.
     implicitHeight: weekHeight + 6 + rowSpan * cell + Math.max(0, rowSpan - 1) * gap
     clip: true
 
@@ -80,7 +82,7 @@ Item {
             slideFade = 1
             return
         }
-        const kick = (forward ? 1 : -1) * 18
+        const kick = (forward ? 1 : -1) * Theme.px(18)
         slideEase.stop()
         fadeEase.stop()
         slideX += kick
@@ -119,7 +121,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 font.family: Theme.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: Theme.textCaption
                 font.weight: Theme.clockFontWeight
             }
         }
@@ -155,8 +157,8 @@ Item {
                              : modelData.inMonth ? Theme.textPrimary : Theme.textSecondary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.family: Theme.latinFontFamily
+                        font.pixelSize: Theme.textBody
                         font.weight: modelData.today ? Font.DemiBold : Theme.clockFontWeight
                         font.features: ({ "tnum": 1 })
                     }

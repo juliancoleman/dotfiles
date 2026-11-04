@@ -13,7 +13,7 @@ Rectangle {
     property bool expanded: false
     // Alone in the pop-up the panel is the card, so the row drops its own; stacked in the list it keeps one.
     property bool bare: false
-    readonly property real inset: 10
+    readonly property real inset: Theme.px(10)
 
     readonly property bool critical: !!handle && handle.urgency === NotificationUrgency.Critical
     readonly property var namedActions: handle ? handle.actions.filter(a => a.identifier !== "default") : []
@@ -22,10 +22,11 @@ Rectangle {
     readonly property string media: NotificationService.mediaFor(handle)
 
     implicitHeight: content.implicitHeight + inset * 2
-    radius: 12
-    color: bare ? "transparent" : hovered || activeFocus ? Qt.tint(Theme.track, Qt.rgba(1, 1, 1, 0.04)) : Theme.track
-    border.width: activeFocus ? 1 : critical && !bare ? 1 : 0
-    border.color: activeFocus ? Theme.today : Qt.lighter(Theme.danger, 1.6)
+    radius: Theme.radius
+    color: bare ? "transparent" : hovered || activeFocus ? Qt.tint(Theme.track, Theme.lift) : Theme.track
+    // Critical rows keep a lightened danger hairline: it is a warning state, not a hover tint.
+    border.width: activeFocus || !bare ? 1 : 0
+    border.color: activeFocus ? Theme.today : critical ? Qt.lighter(Theme.danger, 1.6) : Theme.edge
     activeFocusOnTab: visible
     Accessible.role: Accessible.Button
     Accessible.name: handle ? handle.summary : ""
@@ -60,10 +61,10 @@ Rectangle {
 
     Rectangle {
         id: badge
-        x: row.inset
-        y: row.inset
-        width: 28
-        height: 28
+        x: Theme.knobInset
+        y: Theme.knobInset
+        width: Theme.knobSize
+        height: Theme.knobSize
         radius: width / 2
         color: Theme.ink
         clip: true
@@ -73,15 +74,15 @@ Rectangle {
             anchors.fill: parent
             source: row.media
             fillMode: Image.PreserveAspectCrop
-            sourceSize: Qt.size(56, 56)
+            sourceSize: Qt.size(Theme.knobSize * 2, Theme.knobSize * 2)
             asynchronous: true
             visible: status === Image.Ready
         }
 
         StatusGlyph {
             anchors.centerIn: parent
-            width: 15
-            height: 15
+            width: Theme.buttonIconSize
+            height: Theme.buttonIconSize
             visible: !picture.visible
             icon: "bell"
         }
@@ -89,10 +90,10 @@ Rectangle {
 
     Column {
         id: content
-        x: badge.x + badge.width + row.inset
+        x: badge.x + badge.width + Theme.knobGap
         y: row.inset
-        width: row.width - x - 34
-        spacing: 2
+        width: row.width - x - Theme.px(34)
+        spacing: Theme.px(2)
 
         Text {
             width: parent.width
@@ -101,7 +102,7 @@ Rectangle {
             color: Theme.textSecondary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.textCaption
         }
 
         Text {
@@ -111,7 +112,7 @@ Rectangle {
             elide: Text.ElideRight
             maximumLineCount: 1
             font.family: Theme.fontFamily
-            font.pixelSize: 12
+            font.pixelSize: Theme.textBody
             font.weight: Font.Medium
         }
 
@@ -126,7 +127,7 @@ Rectangle {
             maximumLineCount: row.expanded ? 100 : 3
             textFormat: Text.PlainText
             font.family: Theme.fontFamily
-            font.pixelSize: 11
+            font.pixelSize: Theme.textLabel
             lineHeight: 1.1
         }
 
@@ -136,13 +137,13 @@ Rectangle {
             text: row.expanded ? I18n.tr("Show less") : I18n.tr("Show more")
             color: moreHit.containsMouse ? Theme.textPrimary : Theme.today
             font.family: Theme.fontFamily
-            font.pixelSize: 10
+            font.pixelSize: Theme.textCaption
             font.weight: Font.Medium
 
             MouseArea {
                 id: moreHit
                 anchors.fill: parent
-                anchors.margins: -4
+                anchors.margins: -Theme.px(4)
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: row.expanded = !row.expanded
@@ -152,8 +153,8 @@ Rectangle {
         Flow {
             width: parent.width
             visible: row.namedActions.length > 0
-            topPadding: 4
-            spacing: 6
+            topPadding: Theme.px(4)
+            spacing: Theme.tileGap
 
             HoverHandler { id: actionHover }
 
@@ -163,10 +164,10 @@ Rectangle {
                 Rectangle {
                     id: action
                     required property var modelData
-                    width: label.implicitWidth + 20
-                    height: 24
-                    radius: 8
-                    color: actionHit.containsMouse || activeFocus ? Qt.rgba(1, 1, 1, 0.1) : Qt.rgba(1, 1, 1, 0.05)
+                    width: label.implicitWidth + Theme.px(20)
+                    height: Theme.px(24)
+                    radius: Theme.radiusInput
+                    color: actionHit.containsMouse || activeFocus ? Theme.knobLift : Theme.lift
                     border.width: activeFocus ? 1 : 0
                     border.color: Theme.today
                     activeFocusOnTab: true
@@ -181,7 +182,7 @@ Rectangle {
                         text: action.modelData.text
                         color: Theme.textPrimary
                         font.family: Theme.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textLabel
                     }
 
                     MouseArea {
@@ -201,11 +202,11 @@ Rectangle {
         readonly property bool hovered: closeHit.containsMouse
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 6
-        width: 22
-        height: 22
+        anchors.margins: Theme.tileGap
+        width: Theme.px(22)
+        height: Theme.px(22)
         radius: width / 2
-        color: hovered || activeFocus ? Qt.rgba(1, 1, 1, 0.1) : "transparent"
+        color: hovered || activeFocus ? Theme.knobLift : "transparent"
         opacity: row.hovered || activeFocus || row.activeFocus ? 1 : 0.55
         activeFocusOnTab: true
         Accessible.role: Accessible.Button
@@ -215,8 +216,8 @@ Rectangle {
 
         StatusGlyph {
             anchors.centerIn: parent
-            width: 12
-            height: 12
+            width: Theme.px(12)
+            height: Theme.px(12)
             icon: "close"
         }
 

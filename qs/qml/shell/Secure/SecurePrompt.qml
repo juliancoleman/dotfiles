@@ -12,9 +12,9 @@ Item {
     property string motion: "easeOut"
     property bool shown: false
 
-    readonly property real openW: 288
-    readonly property real openH: 98
-    readonly property real pad: 12
+    readonly property real openW: Theme.px(288)
+    readonly property real openH: Theme.px(98)
+    readonly property real pad: Theme.panelPad
     property real openProgress: 0
     readonly property real p: Math.max(0, openProgress)
     readonly property real pc: Math.min(1, p)
@@ -32,7 +32,7 @@ Item {
     visible: p > 0.001
 
     function corner(outer) {
-        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + 14 * pc
+        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + Theme.radius * pc
         return outer ? radius * (1 - notch) : radius
     }
 
@@ -126,10 +126,10 @@ Item {
                 id: knob
                 x: root.pad
                 y: root.pad
-                width: 30
-                height: 30
-                radius: 15
-                color: SecureInput.error !== "" ? Theme.danger : Qt.rgba(1, 1, 1, 0.07)
+                width: Theme.knobSize
+                height: Theme.knobSize
+                radius: width / 2
+                color: SecureInput.error !== "" ? Theme.danger : Theme.knobFill
 
                 Behavior on color {
                     ColorAnimation {
@@ -140,9 +140,9 @@ Item {
 
                 Image {
                     anchors.centerIn: parent
-                    width: 18
-                    height: 18
-                    sourceSize: Qt.size(36, 36)
+                    width: Theme.px(18)
+                    height: Theme.px(18)
+                    sourceSize: Qt.size(Theme.px(36), Theme.px(36))
                     visible: SecureInput.image !== "" && status === Image.Ready
                     source: SecureInput.image
                     smooth: true
@@ -150,8 +150,8 @@ Item {
 
                 StatusGlyph {
                     anchors.centerIn: parent
-                    width: 16
-                    height: 16
+                    width: Theme.buttonIconSize
+                    height: Theme.buttonIconSize
                     visible: SecureInput.image === ""
                     icon: SecureInput.glyph
                     cutColor: knob.color
@@ -160,7 +160,7 @@ Item {
 
             Column {
                 anchors.left: knob.right
-                anchors.leftMargin: 10
+                anchors.leftMargin: Theme.px(10)
                 anchors.right: parent.right
                 anchors.rightMargin: root.pad
                 anchors.verticalCenter: knob.verticalCenter
@@ -172,7 +172,7 @@ Item {
                     color: Theme.textPrimary
                     elide: Text.ElideMiddle
                     font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textBody
                     font.weight: Font.Medium
                 }
 
@@ -184,28 +184,28 @@ Item {
                     color: SecureInput.error !== "" ? Theme.textPrimary : Theme.textSecondary
                     elide: Text.ElideRight
                     font.family: Theme.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.textLabel
                 }
             }
 
             Rectangle {
                 id: field
                 x: root.pad
-                y: knob.y + knob.height + 10
+                y: knob.y + knob.height + Theme.px(10)
                 width: parent.width - root.pad * 2
-                height: 34
-                radius: 10
+                height: Theme.px(34)
+                radius: Theme.radiusInput
                 color: Theme.track
                 border.width: 1
-                border.color: input.activeFocus ? Theme.today : Qt.rgba(1, 1, 1, 0.08)
+                border.color: input.activeFocus ? Theme.today : Theme.edge
 
                 StatusGlyph {
                     id: leader
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: Theme.px(10)
                     anchors.verticalCenter: parent.verticalCenter
-                    width: visible ? 13 : 0
-                    height: 13
+                    width: visible ? Theme.px(13) : 0
+                    height: Theme.px(13)
                     visible: !SecureInput.echo
                     icon: "lock"
                     ink: Theme.textSecondary
@@ -219,17 +219,17 @@ Item {
                     text: SecureInput.placeholder
                     color: Theme.textSecondary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textBody
                 }
 
                 TextInput {
                     id: input
                     anchors.left: leader.right
                     anchors.right: go.left
-                    anchors.leftMargin: leader.visible ? 7 : 2
-                    anchors.rightMargin: 8
+                    anchors.leftMargin: leader.visible ? Theme.px(7) : 2
+                    anchors.rightMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height - 8
+                    height: parent.height - Theme.px(8)
                     verticalAlignment: TextInput.AlignVCenter
                     echoMode: SecureInput.echo ? TextInput.Normal : TextInput.Password
                     passwordCharacter: "•"
@@ -240,7 +240,7 @@ Item {
                     selectionColor: Theme.today
                     selectedTextColor: Theme.todayInk
                     font.family: Theme.fontFamily
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textBody
                     Accessible.role: Accessible.EditableText
                     Accessible.name: SecureInput.placeholder
                     Accessible.passwordEdit: !SecureInput.echo
@@ -256,12 +256,12 @@ Item {
                     id: go
                     readonly property bool ready: !SecureInput.busy && input.text.length >= SecureInput.minLength
                     anchors.right: parent.right
-                    anchors.rightMargin: 4
+                    anchors.rightMargin: Theme.px(4)
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 26
-                    height: 26
-                    radius: 13
-                    color: ready ? Theme.today : Qt.rgba(1, 1, 1, 0.06)
+                    width: Theme.px(26)
+                    height: Theme.px(26)
+                    radius: width / 2
+                    color: ready ? Theme.today : Theme.lift
                     opacity: SecureInput.busy ? 0.45 + 0.55 * pulse.value : 1
 
                     QtObject {
@@ -279,8 +279,8 @@ Item {
 
                     StatusGlyph {
                         anchors.centerIn: parent
-                        width: 14
-                        height: 14
+                        width: Theme.px(14)
+                        height: Theme.px(14)
                         icon: "chevron-right"
                         ink: go.ready ? Theme.todayInk : Theme.textSecondary
                         cutColor: go.color

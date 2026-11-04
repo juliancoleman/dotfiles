@@ -9,8 +9,8 @@ Item {
     property string title: ""
     signal activated()
 
-    width: row.width + 12
-    height: 28
+    width: row.width + Theme.px(12)
+    height: Theme.px(28)
     Accessible.role: Accessible.Button
     Accessible.name: I18n.tr("Back")
     Keys.onReturnPressed: activated()
@@ -19,7 +19,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: 8
+        radius: Theme.radiusInput
         color: hit.containsMouse || back.activeFocus ? Theme.track : "transparent"
         border.width: back.activeFocus ? 1 : 0
         border.color: Theme.today
@@ -27,14 +27,14 @@ Item {
 
     Row {
         id: row
-        x: 4
+        x: Theme.panelHeaderInset
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 4
+        spacing: Theme.px(4)
 
         StatusGlyph {
             anchors.verticalCenter: parent.verticalCenter
-            width: 14
-            height: 14
+            width: Theme.px(14)
+            height: Theme.px(14)
             icon: "chevron-left"
         }
 
@@ -43,7 +43,7 @@ Item {
             text: back.title
             color: Theme.textPrimary
             font.family: Theme.fontFamily
-            font.pixelSize: 13
+            font.pixelSize: Theme.textStrong
             font.weight: Font.Medium
         }
     }

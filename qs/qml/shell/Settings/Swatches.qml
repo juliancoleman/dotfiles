@@ -9,13 +9,13 @@ Item {
     property var swatches: []
     property int hovered: -1
 
-    implicitHeight: 58
+    implicitHeight: Theme.px(58)
 
     Text {
         text: swatchRow.title
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.textLabel
         font.letterSpacing: 1.15
         font.capitalization: Font.AllUppercase
     }
@@ -25,15 +25,15 @@ Item {
         text: swatchRow.hovered >= 0 ? swatchRow.swatches[swatchRow.hovered].name : ""
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: 11
+        font.pixelSize: Theme.textLabel
     }
 
     Row {
         id: circles
         anchors.bottom: parent.bottom
         width: parent.width
-        height: 36
-        readonly property real size: 28
+        height: Theme.px(36)
+        readonly property int size: Theme.px(28)
         spacing: swatchRow.swatches.length > 1
             ? (width - swatchRow.swatches.length * size) / (swatchRow.swatches.length - 1) : 0
 
@@ -49,7 +49,7 @@ Item {
                 radius: width / 2
                 color: modelData.color
                 border.width: 1
-                border.color: swatchRow.hovered === index ? Theme.textSecondary : Qt.rgba(1, 1, 1, 0.12)
+                border.color: swatchRow.hovered === index ? Theme.textSecondary : Theme.edge
                 Accessible.role: Accessible.StaticText
                 Accessible.name: modelData.name
 
