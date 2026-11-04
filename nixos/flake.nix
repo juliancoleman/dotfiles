@@ -20,10 +20,6 @@
       url = "github:can1357/oh-my-pi";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    claude-desktop = {
-      url = "github:poeck/claude-desktop-nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
   outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, ... }@inputs:
   let

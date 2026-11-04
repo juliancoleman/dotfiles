@@ -114,7 +114,6 @@ in
 
   # ── Shared packages (work on all hosts) ──
   environment.systemPackages = with pkgs; [
-    inputs.claude-desktop.packages.${system}.default
     bat
     btop
     carapace
