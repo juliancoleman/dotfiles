@@ -34,7 +34,7 @@ Item {
     }
     // Fits what's showing, so a lone answer opens short; past this the results scroll.
     readonly property real maxH: 450
-    readonly property real fitH: Math.min(maxH, Math.max(showPreview ? 340 : 0, grid.y + 8
+    readonly property real fitH: Math.min(maxH, Math.max(showPreview ? 340 : 0, grid.y + Theme.panelPad - 2
         + (results.length > 0 ? grid.contentHeight : calc ? 0 : 60)))
     property real openH: fitH
     Behavior on openH {
@@ -173,10 +173,10 @@ Item {
             opacity: Math.max(0, (root.pc - 0.35) / 0.65)
 
             FilePreview {
-                x: root.previewLeft ? 12 : root.listW - 4
-                y: 12
-                width: root.previewW - 16
-                height: parent.height - 24
+                x: root.previewLeft ? Theme.panelPad : root.listW - 4
+                y: Theme.panelPad
+                width: root.previewW - Theme.panelPad - 4
+                height: parent.height - Theme.panelPad * 2
                 visible: root.showPreview || body.width > root.listW + 1
                 opacity: Math.max(0, (body.width - root.listW) / root.previewW)
                 item: root.selected
@@ -190,9 +190,9 @@ Item {
 
                 Rectangle {
                     id: field
-                    x: 12
-                    y: 12
-                    width: parent.width - 24
+                    x: Theme.panelPad
+                    y: Theme.panelPad
+                    width: parent.width - Theme.panelPad * 2
                     height: 34
                     radius: 10
                     color: Theme.track
@@ -280,9 +280,9 @@ Item {
 
                 Rectangle {
                     id: answer
-                    x: 12
+                    x: Theme.panelPad
                     y: field.y + field.height + (visible ? 8 : 0)
-                    width: parent.width - 24
+                    width: parent.width - Theme.panelPad * 2
                     height: visible ? 60 : 0
                     visible: root.calc !== null
                     radius: 12
@@ -434,10 +434,11 @@ Item {
                     id: grid
                     readonly property int columns: root.listView ? 1
                         : Math.max(1, Math.floor(width / (root.view === "small" ? 76 : 96)))
-                    x: 8
+                    // Cells inset their highlight by 2, so the grid sits 2 short of the gutter.
+                    x: Theme.panelPad - 2
                     y: header.y + header.height
-                    width: parent.width - 16
-                    height: parent.height - y - 8
+                    width: parent.width - (Theme.panelPad - 2) * 2
+                    height: parent.height - y - (Theme.panelPad - 2)
                     clip: true
                     model: root.results
                     cellWidth: Math.floor(width / columns)

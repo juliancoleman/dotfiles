@@ -51,7 +51,10 @@ QtObject {
     property int notchOuterPad: 3
     property int notchInnerPad: 4
     property int floatMargin: 8
+    // Gutter between an open panel's edge and its content, shared by the launcher, notch, and pill panels.
+    readonly property int panelPad: 12
     property int periodGap: 4
+    readonly property int buttonIconSize: 16
     property int stackGap: 3
     property int statusGap: 8
     property int motionDuration: 250

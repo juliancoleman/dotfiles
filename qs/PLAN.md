@@ -182,6 +182,8 @@ Use the Rust service for NetworkManager, BlueZ, weather, hardware/storage, brigh
 - A panel visually attaches to its trigger, grows inward from the screen edge, and clamps to that display.
 - Opening another replaces the current panel.
 - Outside click, Escape, or activating the trigger toggles/dismisses it.
+- In notched mode, every non-calendar panel exposes an accessible close action in its trigger: the control-center X replaces the full status indicator, weather/notification faces become X, and the clock face stays unchanged.
+- Floating panels retain an accessible close action in the panel header.
 - Nested subpanels consume Escape and Back before the parent panel closes.
 
 ## 6. Workspace indicator

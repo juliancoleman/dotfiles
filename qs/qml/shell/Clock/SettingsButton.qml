@@ -45,8 +45,8 @@ Item {
 
     StatusGlyph {
         anchors.centerIn: parent
-        width: 16
-        height: 16
+        width: Theme.buttonIconSize
+        height: Theme.buttonIconSize
         icon: button.icon
         ink: button.on ? Theme.todayInk : Theme.textPrimary
     }

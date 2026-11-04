@@ -1,6 +1,7 @@
 import QtQuick
 import ".."
 import "../Common"
+import "../Clock"
 import "../Control"
 import "../Status"
 
@@ -32,14 +33,6 @@ Item {
     property real hoverProgress: 0
     readonly property real openP: Math.max(0, openProgress)
     readonly property real hoverP: Math.max(0, hoverProgress)
-    // Fades the circle's face to the close mark; a peek keeps the face.
-    property real crossP: opened ? 1 : 0
-    Behavior on crossP {
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Easing.OutCubic
-        }
-    }
     readonly property real openZoom: 1.06
     readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (openZoom - 1)
     readonly property bool pointerDown: circleHit.pressed
@@ -52,6 +45,7 @@ Item {
     property Item badgeSlot: null
     property Item bodySlot: null
     readonly property bool lent: docked && !!badgeSlot && !!bodySlot
+    readonly property bool closeActionInBadge: lent && opened
 
     readonly property bool alongY: edge === "left" || edge === "right"
     // The circle sits before the clock: to its left along a top/bottom bar, above it along a side bar.
@@ -65,7 +59,8 @@ Item {
     readonly property real inset: 4
     property real endPad: 0
 
-    readonly property real pad: 8
+    // Lent to the notch, the clock's housing supplies the gutter.
+    readonly property real pad: lent ? 0 : Theme.panelPad
     readonly property real panelWidth: 298 + pad * 2
     readonly property real listMax: 330
     readonly property real listContent: Math.min(listMax, list.implicitHeight)
@@ -333,8 +328,7 @@ Item {
                     anchors.right: root.mirrored ? parent.right : undefined
                     anchors.left: root.mirrored ? undefined : parent.left
                     anchors.rightMargin: root.mirrored ? root.diameter - 4 : 0
-                    anchors.leftMargin: root.mirrored || root.lent ? 0 : root.diameter - 4
-                    layoutDirection: root.mirrored ? Qt.RightToLeft : Qt.LeftToRight
+                    anchors.leftMargin: root.mirrored || root.closeActionInBadge ? 0 : root.diameter - 4
                     spacing: 6
 
                     Text {
@@ -354,6 +348,18 @@ Item {
                         font.pixelSize: 11
                         font.features: { "tnum": 1 }
                     }
+                }
+                SettingsButton {
+                    id: closeButton
+                    opened: root.openP
+                    visible: !root.closeActionInBadge
+                    icon: "close"
+                    label: qsTr("Close notifications")
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: root.mirrored
+                        ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4))
+                        : 0
+                    onActivated: root.close()
                 }
 
                 Item {
@@ -429,7 +435,7 @@ Item {
             height: root.diameter
             x: root.lent ? (parent.width - width) / 2 : root.circleRight ? housing.width - width : 0
             y: root.lent ? (parent.height - height) / 2 : root.circleBottom ? housing.height - height : 0
-            opacity: root.lent ? Math.min(1, root.presenceP) : 1
+            opacity: root.lent ? Math.min(1, root.presenceP) : 1 - Math.min(1, root.openP)
 
             readonly property real face: root.diameter - root.inset * 2
             readonly property string media: NotificationService.mediaFor(root.newest)
@@ -443,12 +449,12 @@ Item {
                 color: Theme.ink
                 border.width: NotificationService.newestCritical ? 1.5 : 0
                 border.color: Qt.lighter(Theme.danger, 1.8)
-                opacity: 1 - root.crossP
+                opacity: 1
                 clip: true
 
                 Item {
                     anchors.fill: parent
-                    opacity: root.showMedia ? 1 : 0
+                    opacity: root.closeActionInBadge ? 0 : root.showMedia ? 1 : 0
                     visible: opacity > 0.01
                     Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
@@ -476,10 +482,15 @@ Item {
                     anchors.centerIn: parent
                     width: 14
                     height: 14
-                    opacity: root.showMedia ? 0 : 1
+                    opacity: root.closeActionInBadge ? 0 : root.showMedia ? 0 : 1
                     visible: opacity > 0.01
                     Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                     icon: ClockConfig.doNotDisturb ? "moon" : "bell"
+                }
+                CloseMark {
+                    anchors.centerIn: parent
+                    shown: root.closeActionInBadge
+                    motion: root.motion
                 }
             }
 
@@ -491,7 +502,7 @@ Item {
                 height: 13
                 radius: height / 2
                 color: Theme.today
-                opacity: (1 - root.crossP) * (ClockConfig.doNotDisturb ? 0 : 1)
+                opacity: root.closeActionInBadge || ClockConfig.doNotDisturb ? 0 : 1
                 visible: opacity > 0.01
                 Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
@@ -507,20 +518,11 @@ Item {
                 }
             }
 
-            StatusGlyph {
-                anchors.centerIn: parent
-                width: 14
-                height: 14
-                opacity: root.crossP
-                visible: opacity > 0.01
-                icon: "close"
-            }
-
             MouseArea {
                 id: circleHit
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+                enabled: root.lent || !root.opened
                 Accessible.role: Accessible.Button
                 Accessible.name: root.opened ? qsTr("Close notifications") : qsTr("Notifications")
                 onContainsMouseChanged: if (!pressed) root.aimHover(containsMouse)

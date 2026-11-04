@@ -36,13 +36,15 @@ Item {
         : battery.available ? battery.percentage : 0
     // Set while something nearby already shows the battery percentage.
     property bool labelSuppressed: false
-    readonly property bool labelShown: control === "" && battery.available && !labelSuppressed
+    readonly property bool labelShown: !closeAction && control === "" && battery.available && !labelSuppressed
         && (batteryPercentage === "always" || batteryLow)
     readonly property color arcColor: control !== "" ? Theme.textPrimary
         : battery.charging ? Theme.charging
         : batteryLow ? Theme.danger
         : Theme.textPrimary
 
+    // Opening the panel replaces the full status indicator with a centered close action.
+    property bool closeAction: false
     readonly property string icon: slotIcon !== "" ? slotIcon : network.icon
 
     property string shownIcon: ""
@@ -243,6 +245,7 @@ Item {
         width: root.diameter - 2 * root.room
         height: width
         lineWidth: root.stroke
+        visible: !root.closeAction
         value: root.shownValue
         gap: root.shownGap * (1 - root.attached)
         gapWidth: label.implicitWidth + 2
@@ -258,7 +261,7 @@ Item {
         readonly property real tailY: root.alongY ? root.diameter - root.room / 2 : (root.diameter - implicitHeight) / 2
         value: root.batteryPercent
         motion: root.motion
-        opacity: Math.max(0, Math.min(1, root.shownGap))
+        opacity: root.closeAction ? 0 : Math.max(0, Math.min(1, root.shownGap))
         fontPixelSize: root.labelSize
         // Inside the ring the digits need the extra weight; beside it they set like the clock's.
         fontWeight: root.attached > 0.5 ? Theme.clockFontWeight : Font.DemiBold
@@ -271,6 +274,7 @@ Item {
         y: (root.diameter - height) / 2 - root.labelSize * 0.3 * Math.max(0, Math.min(1, root.shownGap)) * (1 - root.attached)
         width: root.iconSize
         height: root.iconSize
+        visible: !root.closeAction
         clip: swap.running && slide.from !== 0
 
         StatusGlyph {
@@ -289,6 +293,15 @@ Item {
             transform: Translate { id: incomingShift }
         }
     }
+    // Centered on the ring itself, not the whole item, which can include the battery tail.
+    CloseMark {
+        x: (root.diameter - width) / 2
+        y: (root.diameter - height) / 2
+        shown: root.closeAction
+        motion: root.motion
+    }
+
+
 
     // Next enters from the right and previous from the left; neutral swaps pop in place.
     QtObject {

@@ -36,14 +36,7 @@ Item {
     property bool opened: false
     property real openProgress: 0
     readonly property real openP: Math.max(0, openProgress)
-    // Fades the reading to the close mark.
-    property real crossP: opened ? 1 : 0
-    Behavior on crossP {
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Easing.OutCubic
-        }
-    }
+    readonly property bool closeActionInFace: lent && opened
 
     readonly property bool alongY: edge === "left" || edge === "right"
     // The capsule sits before the clock: to its left along a top/bottom bar, above it along a side bar.
@@ -66,7 +59,9 @@ Item {
 
     // Room the pill has to open into; lent to the notch, the clock's housing decides.
     property real maxPanelHeight: Infinity
-    readonly property real panelWidth: 314
+    // Lent to the notch, the clock's housing supplies the gutter.
+    readonly property real pad: lent ? 0 : Theme.panelPad
+    readonly property real panelWidth: 290 + pad * 2
     readonly property real panelHeight: panel.implicitHeight
     readonly property real reserveHeight: panelHeight + 40
     readonly property real restWidth: alongY ? diameter : body + endPad
@@ -212,9 +207,12 @@ Item {
                 id: panel
                 width: parent.width
                 rowHeight: root.diameter
+                pad: root.pad
                 faceRoom: !root.lent && !root.circleBottom ? root.restWidth : 0
                 footRoom: !root.lent && root.circleBottom ? root.diameter : 0
                 maxHeight: root.lent ? Infinity : root.maxPanelHeight
+                closeActionInFace: root.closeActionInFace
+                onCloseRequested: root.close()
             }
         }
 
@@ -225,25 +223,19 @@ Item {
             height: root.diameter
             x: root.lent ? (parent.width - width) / 2 : root.circleRight ? housing.width - width : 0
             y: root.lent ? (parent.height - height) / 2 : root.circleBottom ? housing.height - height : 0
-            opacity: Math.min(1, root.presenceP)
+            opacity: Math.min(root.presenceP, root.lent ? 1 : 1 - root.openP)
             Accessible.role: Accessible.Button
             Accessible.name: root.opened ? qsTr("Close weather") : WeatherService.condition + ", " + root.reading
 
-            // The panel repeats the reading at its top, so open, the capsule becomes its close mark.
-            StatusGlyph {
-                x: root.lent || root.alongY ? (parent.width - width) / 2
-                    : root.circleRight ? parent.width - root.diameter / 2 - width / 2 : root.diameter / 2 - width / 2
-                y: (parent.height - height) / 2
-                width: 14
-                height: 14
-                opacity: root.crossP
-                visible: opacity > 0.01
-                icon: "close"
-            }
+            // In the notch, opening weather replaces its cloud and temperature with the close action.
+
 
             Item {
-                opacity: 1 - root.crossP
-                visible: opacity > 0.01
+                opacity: root.closeActionInFace ? 0 : 1
+                Behavior on opacity {
+                    NumberAnimation { duration: Theme.durationFor(root.motion); easing.type: Easing.OutCubic }
+                }
+
                 x: root.alongY ? (parent.width - width) / 2 : root.inset
                 y: (parent.height - height) / 2 - (root.alongY ? root.labelSize * 0.45 : 0)
                 width: root.iconSize
@@ -262,17 +254,25 @@ Item {
                     opacity: root.iconFade
                 }
             }
+            CloseMark {
+                anchors.centerIn: parent
+                shown: root.closeActionInFace
+                motion: root.motion
+            }
+
 
             TickerNumber {
                 id: label
-                opacity: 1 - root.crossP
-                visible: opacity > 0.01
                 x: root.alongY ? (parent.width - implicitWidth) / 2 : root.inset + root.iconSize + root.iconGap
                 y: root.alongY ? parent.height - root.room - 1 - baselineOffset : (parent.height - implicitHeight) / 2
                 value: WeatherService.stale ? NaN : WeatherService.degrees
                 motion: root.motion
                 fontPixelSize: root.labelSize
                 fontWeight: root.alongY ? Font.DemiBold : Theme.clockFontWeight
+                opacity: root.closeActionInFace ? 0 : 1
+                Behavior on opacity {
+                    NumberAnimation { duration: Theme.durationFor(root.motion); easing.type: Easing.OutCubic }
+                }
             }
 
             MouseArea {

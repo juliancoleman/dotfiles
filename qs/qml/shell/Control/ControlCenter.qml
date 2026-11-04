@@ -36,11 +36,14 @@ Item {
     property Item statusSlot: null
     property Item bodySlot: null
     readonly property bool lent: docked && !!statusSlot && !!bodySlot
+    // Docked to a top or bottom notch, the status circle itself becomes the close action, like weather and notifications.
+    readonly property bool closeActionInFace: lent && opened && !alongY
 
     readonly property bool circleRight: edge === "right"
     readonly property bool circleBottom: edge === "bottom"
 
-    readonly property real pad: 8
+    // Lent to the notch, the clock's housing supplies the gutter.
+    readonly property real pad: lent ? 0 : Theme.panelPad
     readonly property real gap: 6
     readonly property real column: 70
     readonly property real gridWidth: column * 4 + gap * 3
@@ -262,19 +265,20 @@ Item {
                         id: closeButton
                         opened: root.openP
                         icon: "close"
-                        label: qsTr("Close")
+                        label: qsTr("Close control center")
                         anchors.verticalCenter: parent.verticalCenter
-                        // Center the close mark over the status circle, like the weather panel:
-                        // the circle's center sits 17px from the body edge, the header 12px, so +5.
-                        x: root.circleRight ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4)) : 0
+                        visible: !root.closeActionInFace
+                        x: root.circleRight
+                            ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4))
+                            : 0
                         onActivated: root.close()
                     }
 
                     Row {
                         id: batteryRow
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: root.circleRight ? closeButton.left : undefined
-                        anchors.left: root.circleRight ? undefined : closeButton.right
+                        anchors.right: root.circleRight ? (closeButton.visible ? closeButton.left : parent.right) : undefined
+                        anchors.left: root.circleRight ? undefined : (closeButton.visible ? closeButton.right : parent.left)
                         anchors.rightMargin: 6
                         anchors.leftMargin: 6
                         layoutDirection: root.circleRight ? Qt.RightToLeft : Qt.LeftToRight
@@ -625,16 +629,19 @@ Item {
             motion: root.motion
             batteryPercentage: root.batteryPercentage
             tailLabelSize: root.tailLabelSize
+            closeAction: root.closeActionInFace
             labelSuppressed: root.opened && !root.lent
             opacity: root.lent ? 1 : 1 - Math.min(1, root.openP)
 
             MouseArea {
                 id: circleHit
-                enabled: !root.opened
                 anchors.fill: parent
+                enabled: !root.opened || root.closeActionInFace
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onContainsMouseChanged: if (!pressed) root.aimHover(containsMouse)
+                Accessible.role: Accessible.Button
+                Accessible.name: root.closeActionInFace ? qsTr("Close control center") : qsTr("Control center")
                 onPressed: root.toggle()
                 onReleased: root.aimHover(containsMouse)
             }

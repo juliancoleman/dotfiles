@@ -441,16 +441,24 @@ Item {
         readonly property real breath: 8 * root.expanded
         readonly property real baseOuter: Theme.notchOuterPad * root.notchAmount + Theme.padX * (1 - root.notchAmount)
         readonly property real baseInner: Theme.notchInnerPad * root.notchAmount + Theme.padX * (1 - root.notchAmount)
+        // An open panel in a top or bottom notch, calendar included, gets the shared gutter on its sides and far end.
+        readonly property real gutter: root.verticalEdge ? 0 : Math.min(1, root.expanded)
+        function toGutter(pad) { return pad * (1 - gutter) + Theme.panelPad * gutter }
+        // The row's resting pads; the open housing's breath and gutter surround the panel, not the row.
+        readonly property real restLeft: root.leadEndPad
+        readonly property real restRight: root.trailing > 0 ? root.trailingPad : Theme.padX + 3
+        readonly property real restTop: root.edge === "bottom" ? baseInner : baseOuter
+        readonly property real restBottom: root.edge === "top" ? baseInner : baseOuter
         readonly property real padLeft: root.edge === "right" ? baseInner + breath
             : root.edge === "left" ? baseOuter
-            : root.leadEndPad + breath
+            : toGutter(restLeft + breath)
         readonly property real padRight: root.edge === "left" ? baseInner + breath
             : root.edge === "right" ? baseOuter
-            : (root.trailing > 0 ? root.trailingPad : Theme.padX + 3) + breath
-        readonly property real padTop: root.edge === "bottom" ? baseInner + breath
+            : toGutter(restRight + breath)
+        readonly property real padTop: root.edge === "bottom" ? toGutter(baseInner + breath)
             : root.edge === "top" ? baseOuter
             : root.leadEndPad + breath
-        readonly property real padBottom: root.edge === "top" ? baseInner + breath
+        readonly property real padBottom: root.edge === "top" ? toGutter(baseInner + breath)
             : root.edge === "bottom" ? baseOuter
             : (root.trailing > 0 ? root.trailingPad : Theme.padY) + breath
 
@@ -543,6 +551,7 @@ Item {
             // Spans the notch's full thickness, from the housing's screen edge to its inner edge.
             Item {
                 id: vTrailSlot
+                z: 1
                 visible: root.verticalEdge && root.trailing > 0
                 x: vFace.x - (root.edge === "right" ? housing.baseInner : housing.baseOuter)
                 y: vFace.y + vFace.height + Theme.padY
@@ -681,21 +690,20 @@ Item {
             readonly property real timeBox: glyphHeight
                 + Math.max(0, notchLineHeight - glyphHeight) * root.notchAmount
             readonly property real timeLead: (timeBox - glyphHeight) / 2
-                // The open housing's breath is padding around the panel, not the row: leave it out so the row holds still.
-                + (housing.padBottom - housing.padTop + (root.edge === "bottom" ? housing.breath : -housing.breath)) / 2
+                + (housing.restBottom - housing.restTop) / 2
             readonly property real headerY: root.dateAboveTime ? 0 : timeLead + glyphHeight + dateGap
             readonly property real gridY: headerShown + gridGap + (root.dateAboveTime ? 0 : timeLead + glyphHeight + dateGap)
-            // The housing's end pad is short by the circle's own inset; content wider than the row gets it back
-            // and centers on the housing rather than the body, while the row holds its resting place.
-            readonly property real trailPad: root.trailing > 0 ? Theme.padX + 3 - root.trailingPad : 0
-            readonly property real leadPad: Theme.padX + 3 - root.leadEndPad
-            readonly property real padSkew: Math.abs(trailPad - leadPad)
+            // Content wider than the row centers on the housing rather than the body, so the body grows by
+            // the housing's pad skew; the row is nudged back to hold its resting place as the pads change.
+            readonly property real padSkew: Math.abs(housing.padRight - housing.padLeft)
             readonly property real bodyWidth: Math.max(rowSpan, (hHeader.implicitWidth + padSkew) * dateReveal,
                                                        (root.accessoryWidth + padSkew) * root.accessoryP)
-            readonly property real centerX: (bodyWidth - trailPad + leadPad) / 2
+            readonly property real centerX: (bodyWidth + housing.padRight - housing.padLeft) / 2
             readonly property real bodyHeight: timeBox + dateGap + tail
             readonly property real timeY: (root.dateAboveTime ? tail + dateGap : 0) + timeLead
-            readonly property real timeShift: (bodyWidth - rowSpan) / 2
+            readonly property real rowNudge: ((housing.restLeft - housing.restRight)
+                                              - (housing.padLeft - housing.padRight)) / 2 / root.zoom
+            readonly property real timeShift: (bodyWidth - rowSpan) / 2 + rowNudge
             readonly property real timeX: timeShift + root.leadSpan
             implicitWidth: bodyWidth * root.zoom
             implicitHeight: bodyHeight * root.zoom

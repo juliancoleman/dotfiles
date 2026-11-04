@@ -1,5 +1,6 @@
 import QtQuick
 import ".."
+import "../Clock"
 import "../Common"
 import "../Control"
 import "../Status"
@@ -9,15 +10,19 @@ import "../Status"
 Item {
     id: root
 
-    // The place row matches the capsule's height so, in a top bar's pill, the capsule's close mark sits at its end.
+    signal closeRequested()
+
+    // The place row shares the capsule's height in a top bar pill; its close action sits at the far end.
     property real rowHeight: 26
     property real faceRoom: 0
     // Below a bottom or side bar's pill the capsule holds the panel's bottom corner instead.
     property real footRoom: 0
     // Where the screen runs out first, everything but the place row scrolls.
     property real maxHeight: Infinity
+    // The notched weather trigger becomes the close action while this panel is open.
+    property bool closeActionInFace: false
 
-    readonly property real pad: 12
+    property real pad: Theme.panelPad
     readonly property real innerWidth: width - pad * 2
     readonly property bool clock24: ClockConfig.use24Hour
     readonly property var today: WeatherService.daily.length > 0 ? WeatherService.daily[0] : null
@@ -112,7 +117,8 @@ Item {
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
-                width: Math.min(implicitWidth, root.innerWidth - root.faceRoom - 20)
+                width: Math.min(implicitWidth, Math.max(0, root.innerWidth
+                    - (root.closeActionInFace ? 0 : closeButton.width) - 20))
             }
 
             StatusGlyph {
@@ -122,6 +128,16 @@ Item {
                 height: 10
                 icon: "navigation"
             }
+        }
+        SettingsButton {
+            id: closeButton
+            opened: 1
+            visible: !root.closeActionInFace
+            icon: "close"
+            label: qsTr("Close weather")
+            anchors.verticalCenter: parent.verticalCenter
+            x: parent.width - root.faceRoom - width
+            onActivated: root.closeRequested()
         }
     }
 

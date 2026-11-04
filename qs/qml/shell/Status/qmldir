@@ -8,3 +8,4 @@ AudioSource 1.0 AudioSource.qml
 BatterySource 1.0 BatterySource.qml
 BluetoothSource 1.0 BluetoothSource.qml
 NetworkSource 1.0 NetworkSource.qml
+CloseMark 1.0 CloseMark.qml
