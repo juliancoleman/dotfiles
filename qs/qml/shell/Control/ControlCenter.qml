@@ -37,8 +37,8 @@ Item {
     property Item statusSlot: null
     property Item bodySlot: null
     readonly property bool lent: docked && !!statusSlot && !!bodySlot
-    // Docked to a top or bottom notch, the status circle itself becomes the close action, like weather and notifications.
-    readonly property bool closeActionInFace: lent && opened && !alongY
+    // Docked to the notch, the status circle itself becomes the close action, like weather and notifications.
+    readonly property bool closeActionInFace: lent && opened
 
     readonly property bool circleRight: edge === "right"
     readonly property bool circleBottom: edge === "bottom"

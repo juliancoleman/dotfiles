@@ -43,7 +43,7 @@ Rectangle {
         onClicked: row.activated()
     }
 
-    // Rows without an icon, like settings' sections, start their text where the icon would.
+    // Rows without an icon start their text where the icon would.
     StatusGlyph {
         id: glyph
         anchors.left: parent.left

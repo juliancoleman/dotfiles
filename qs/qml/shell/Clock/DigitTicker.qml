@@ -12,6 +12,13 @@ Item {
     property bool wraps: true
     property string motion: "easeOut"
     property color color: Theme.textPrimary
+    // A digit that changes tone (the 12-hour clock's muted leading zero) fades with its roll.
+    Behavior on color {
+        ColorAnimation {
+            duration: Theme.durationFor(ticker.motion)
+            easing.type: Easing.InOutQuad
+        }
+    }
     property string fontFamily: Theme.fontFamily
     property real fontPixelSize: Theme.horizontalDigit
     property int fontWeight: Theme.clockFontWeight
@@ -20,7 +27,6 @@ Item {
     readonly property int reelPadding: 2
 
     property string displayedDigit: digit
-    property color paintedColor: color
     property var reelValues: buildReel()
     property real reelPosition: indexFor(digit) + reelPadding
     property int curve: Easing.OutCubic
@@ -77,7 +83,6 @@ Item {
     function finish() {
         displayedDigit = digit
         reelPosition = reelPadding + indexFor(digit)
-        paintedColor = color
     }
 
     function syncDigit() {
@@ -86,35 +91,25 @@ Item {
             ease.stop()
             displayedDigit = next
             reelPosition = reelPadding + indexFor(next)
-            paintedColor = color
             return
         }
-        if (next === displayedDigit && !ease.running) {
-            paintedColor = color
+        if (next === displayedDigit && !ease.running)
             return
-        }
         if (!animateChange) {
             ease.stop()
             displayedDigit = next
             reelPosition = reelPadding + indexFor(next)
-            paintedColor = color
             return
         }
         if (ease.running) {
             ease.stop()
             displayedDigit = reelValues[Math.round(reelPosition)]
             reelPosition = reelPadding + indexFor(displayedDigit)
-            paintedColor = color
         }
         if (next === displayedDigit) {
             return
         }
         play()
-    }
-
-    onColorChanged: {
-        if (!ease.running)
-            paintedColor = color
     }
 
     onDigitChanged: syncDigit()
@@ -152,7 +147,7 @@ Item {
                     width: ticker.width
                     height: ticker.height
                     text: modelData
-                    color: ticker.paintedColor
+                    color: ticker.color
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     font.family: ticker.fontFamily

@@ -74,10 +74,12 @@ Item {
         }
     }
     readonly property real fullHeight: diameter + Theme.panelHeaderGap + shownContent + pad
-    // Beside the circle in the pill; on its own in the notch's shared space.
-    readonly property real peekWidth: panelWidth - (lent ? pad * 2 : pad + diameter + 4)
-    readonly property real peekHeight: lent ? peekRow.implicitHeight + pad * 2
-        : Math.max(diameter, peekRow.implicitHeight + pad * 2)
+    // The pop-up's one notification is drawn bare, the panel standing in for its card, so its content sits
+    // on the panel's gutter; the row's own inset is taken back out of the panel's pad.
+    readonly property real peekInset: pad - peekRow.inset
+    readonly property real peekWidth: panelWidth - peekInset * 2
+    readonly property real peekHeight: lent ? peekRow.implicitHeight + peekInset * 2
+        : Math.max(diameter, peekRow.implicitHeight + peekInset * 2)
     property real panelHeight: peekMode ? peekHeight : fullHeight
     Behavior on panelHeight {
         enabled: root.openP > 0.01
@@ -288,7 +290,10 @@ Item {
             enabled: root.showing
 
             property real fullFade: root.peekMode ? 0 : 1
+            // Only cross-fades between a showing peek and the full list; opening straight into a peek must not
+            // flash the full header on the way.
             Behavior on fullFade {
+                enabled: root.openP > 0.01
                 NumberAnimation {
                     duration: Theme.durationFor(root.motion)
                     easing.type: Easing.OutCubic
@@ -308,9 +313,10 @@ Item {
                     handle: root.newest
                     notificationId: root.newest ? root.newest.id : -1
                     motion: root.motion
+                    bare: true
                     width: root.peekWidth
-                    x: root.lent || root.circleRight ? root.pad : root.diameter + 4
-                    y: root.lent || !root.circleBottom ? root.pad : body.height - root.pad - height
+                    x: root.peekInset
+                    y: root.lent || !root.circleBottom ? root.peekInset : body.height - root.peekInset - height
                 }
             }
 

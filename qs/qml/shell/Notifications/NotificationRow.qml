@@ -11,6 +11,9 @@ Rectangle {
     required property int notificationId
     property string motion: "easeOut"
     property bool expanded: false
+    // Alone in the pop-up the panel is the card, so the row drops its own; stacked in the list it keeps one.
+    property bool bare: false
+    readonly property real inset: 10
 
     readonly property bool critical: !!handle && handle.urgency === NotificationUrgency.Critical
     readonly property var namedActions: handle ? handle.actions.filter(a => a.identifier !== "default") : []
@@ -18,10 +21,10 @@ Rectangle {
     readonly property bool hovered: hit.containsMouse || close.hovered || actionHover.hovered
     readonly property string media: NotificationService.mediaFor(handle)
 
-    implicitHeight: content.implicitHeight + 20
+    implicitHeight: content.implicitHeight + inset * 2
     radius: 12
-    color: hovered || activeFocus ? Qt.tint(Theme.track, Qt.rgba(1, 1, 1, 0.04)) : Theme.track
-    border.width: activeFocus ? 1 : critical ? 1 : 0
+    color: bare ? "transparent" : hovered || activeFocus ? Qt.tint(Theme.track, Qt.rgba(1, 1, 1, 0.04)) : Theme.track
+    border.width: activeFocus ? 1 : critical && !bare ? 1 : 0
     border.color: activeFocus ? Theme.today : Qt.lighter(Theme.danger, 1.6)
     activeFocusOnTab: visible
     Accessible.role: Accessible.Button
@@ -57,8 +60,8 @@ Rectangle {
 
     Rectangle {
         id: badge
-        x: 10
-        y: 10
+        x: row.inset
+        y: row.inset
         width: 28
         height: 28
         radius: width / 2
@@ -86,8 +89,8 @@ Rectangle {
 
     Column {
         id: content
-        x: badge.x + badge.width + 10
-        y: 10
+        x: badge.x + badge.width + row.inset
+        y: row.inset
         width: row.width - x - 34
         spacing: 2
 

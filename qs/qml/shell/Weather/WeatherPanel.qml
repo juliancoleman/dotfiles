@@ -12,7 +12,8 @@ Item {
 
     signal closeRequested()
 
-    // The place row shares the capsule's height in a top bar pill; its close action sits at the far end.
+    // The place row shares the capsule's height in a top bar pill; its close action takes the capsule's place,
+    // like the control center's ring, so it sits where the pointer already is.
     property real rowHeight: 26
     property real faceRoom: 0
     // Below a bottom or side bar's pill the capsule holds the panel's bottom corner instead.
@@ -136,7 +137,7 @@ Item {
             icon: "close"
             label: qsTr("Close weather")
             anchors.verticalCenter: parent.verticalCenter
-            x: parent.width - root.faceRoom - width
+            x: root.faceRoom > 0 ? parent.width + root.pad - (root.faceRoom + width) / 2 : parent.width - width
             onActivated: root.closeRequested()
         }
     }

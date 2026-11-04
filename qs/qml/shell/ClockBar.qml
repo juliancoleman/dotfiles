@@ -307,6 +307,8 @@ PanelWindow {
             enabled: !root.covered
             docked: root.docked
             yielding: !root.docked && notes.showing
+            // Fades out beneath the notification panel growing over its spot, not on top of it.
+            z: yielding ? -1 : 0
             slot: weatherSlot
             bodySlot: clock.accessorySlot
             // Along a side bar the pill opens upward from above the clock, so the space above it is the limit.

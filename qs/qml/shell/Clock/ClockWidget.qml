@@ -98,7 +98,9 @@ Item {
         + calendarWidth * openP + accessoryWidth * accessoryP
     readonly property real panelHeight: sideDateSpan * hoverP * (1 - Math.min(1, expanded))
         + calendarHeight * openP + accessoryHeight * accessoryP
-    readonly property real sideGap: sideDateGap * reveal
+    // Beside a side notch, hover's date sits a small gap from the time; an open panel takes the shared gutter.
+    readonly property real sideGap: sideDateGap * hoverP * (1 - Math.min(1, expanded))
+        + Theme.panelPad * Math.min(1, expanded)
     readonly property var monthNames: ["January", "February", "March", "April", "May", "June",
                                         "July", "August", "September", "October", "November", "December"]
     property int viewYear: new Date().getFullYear()
@@ -124,7 +126,7 @@ Item {
 
     readonly property real springRoom: 1.16
     readonly property real reservedWidth: Math.ceil((verticalEdge
-        ? (vFace.timeColumn + sideDateGap + Math.max(calendarWidth, accessoryWidth)) * openZoom
+        ? (vFace.timeColumn + Theme.panelPad + Math.max(calendarWidth, accessoryWidth)) * openZoom
             + (Theme.padX + 12) * 2 + Theme.floatMargin
         : (Math.max(hDigits.implicitWidth + Math.max(hJa.implicitWidth, hEn.implicitWidth) + Theme.periodGap
                         + leadSpan + trailSpan,

@@ -53,6 +53,7 @@ Item {
                     ListRow {
                         required property var modelData
                         width: list.width
+                        icon: modelData.icon
                         title: modelData.title
                         trailing: "chevron-right"
                         onActivated: root.sectionChosen(modelData.id)
