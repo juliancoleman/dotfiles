@@ -215,6 +215,12 @@ Item {
         active: root.opened
     }
 
+    // Only machines without Wi-Fi read it, for the wired tile in Wi-Fi's place.
+    WiredSource {
+        id: wired
+        active: root.opened && !root.wifiDevice
+    }
+
     SystemSource {
         id: usage
         active: root.opened
@@ -527,6 +533,22 @@ Item {
                             : qsTr("Not connected")
                         onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
                         onOpened: root.page = "wifi"
+                    }
+
+                    // Without a Wi-Fi card, the same place holds a kill switch for all networking.
+                    ToggleTile {
+                        width: root.column * 2 + root.gap
+                        motion: root.motion
+                        visible: !root.wifiDevice
+                        opens: false
+                        icon: wired.on && wired.address !== "" ? "ethernet" : "ethernet-off"
+                        on: wired.on
+                        title: wired.on && wired.address !== "" ? wired.address : qsTr("Ethernet")
+                        subtitle: !wired.on ? qsTr("Off")
+                            : wired.address === "" ? qsTr("Not connected")
+                            : wired.gateway !== "" ? qsTr("Router %1").arg(wired.gateway)
+                            : ""
+                        onToggled: wired.toggle()
                     }
 
                     ToggleTile {

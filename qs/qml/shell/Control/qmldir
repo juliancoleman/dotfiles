@@ -13,3 +13,4 @@ PowerPage 1.0 PowerPage.qml
 FanControl 1.0 FanControl.qml
 FanTile 1.0 FanTile.qml
 MomentumFlickable 1.0 MomentumFlickable.qml
+WiredSource 1.0 WiredSource.qml

@@ -4,6 +4,8 @@
   makeWrapper,
   quickshell,
   fd,
+  iproute2,
+  networkmanager,
   poppler-utils,
   wl-clipboard,
   xdg-utils,
@@ -25,7 +27,7 @@ stdenvNoCC.mkDerivation {
 
     makeWrapper ${lib.getExe quickshell} "$out/bin/qs-shell" \
       --add-flags "-p $out/share/qs/shell" \
-      --suffix PATH : ${lib.makeBinPath [ fd poppler-utils wl-clipboard xdg-utils ]}
+      --suffix PATH : ${lib.makeBinPath [ fd iproute2 networkmanager poppler-utils wl-clipboard xdg-utils ]}
 
     runHook postInstall
   '';
