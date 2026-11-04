@@ -3,7 +3,8 @@ import Quickshell
 import "../Common"
 import "../Status"
 
-// Sleep locks the screen, then suspends. Restart and Shut Down ask for a second click, since open work goes with them.
+// Lock and Sleep act at once; Sleep locks the screen first. Restart and Shut Down ask for a second click,
+// since open work goes with them.
 Item {
     id: page
 
@@ -17,16 +18,21 @@ Item {
 
     onActiveChanged: armed = ""
 
-    function run(id) {
-        if (id !== "sleep" && armed !== id) {
-            armed = id
+    readonly property string lockCommand: "pidof hyprlock >/dev/null || exec hyprlock"
+
+    function run(action) {
+        if (action.confirm && armed !== action.id) {
+            armed = action.id
             return
         }
         armed = ""
         acted()
-        switch (id) {
+        switch (action.id) {
+        case "lock":
+            Quickshell.execDetached(["sh", "-c", lockCommand])
+            break
         case "sleep":
-            Quickshell.execDetached(["sh", "-c", "pidof hyprlock >/dev/null || hyprlock & sleep 1; exec systemctl suspend"])
+            Quickshell.execDetached(["sh", "-c", "(" + lockCommand + ") & sleep 1; exec systemctl suspend"])
             break
         case "restart":
             Quickshell.execDetached(["systemctl", "reboot"])
@@ -48,6 +54,7 @@ Item {
         Repeater {
             id: tiles
             model: [
+                { id: "lock", icon: "lock", title: qsTr("Lock") },
                 { id: "sleep", icon: "sleep", title: qsTr("Sleep") },
                 { id: "restart", icon: "restart", title: qsTr("Restart"), confirm: qsTr("Confirm Restart") },
                 { id: "shutdown", icon: "power-off", title: qsTr("Shut Down"), confirm: qsTr("Confirm Shut Down") }
@@ -58,7 +65,7 @@ Item {
                 required property var modelData
                 required property int index
                 readonly property bool isArmed: page.armed === modelData.id
-                property real share: page.armed === "" ? 1 / 3 : isArmed ? 1 : 0
+                property real share: page.armed === "" ? 1 / tiles.model.length : isArmed ? 1 : 0
                 Behavior on share {
                     NumberAnimation {
                         duration: Theme.durationFor(page.motion)
@@ -71,7 +78,7 @@ Item {
                 width: Math.max(0, share * row.unit - row.spacing)
                 height: row.height
                 visible: width > 0.5
-                opacity: Math.min(1, share * 3)
+                opacity: Math.min(1, share * tiles.model.length)
                 clip: true
                 radius: 12
                 color: Qt.lighter(Theme.track, hit.containsMouse || activeFocus ? 1.35 : 1)
@@ -80,8 +87,8 @@ Item {
                 activeFocusOnTab: page.active
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.title
-                Keys.onReturnPressed: page.run(modelData.id)
-                Keys.onSpacePressed: page.run(modelData.id)
+                Keys.onReturnPressed: page.run(modelData)
+                Keys.onSpacePressed: page.run(modelData)
 
                 Behavior on color {
                     ColorAnimation {
@@ -117,7 +124,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: page.run(tile.modelData.id)
+                    onClicked: page.run(tile.modelData)
                 }
             }
         }
