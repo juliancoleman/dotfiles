@@ -5,6 +5,7 @@ import Quickshell.Services.UPower
 import ".."
 import "../Clock"
 import "../Common"
+import "../Settings"
 import "../Status"
 
 // The status circle grows into this panel. The circle holds its corner (nearest the clock and the
@@ -48,16 +49,21 @@ Item {
     readonly property real column: 70
     readonly property real gridWidth: column * 4 + gap * 3
     readonly property real panelWidth: gridWidth + pad * 2
-    readonly property real panelHeight: diameter + 2 + shownContent + pad
+    readonly property real panelHeight: diameter + Theme.panelHeaderGap + shownContent + pad
 
-    // "" shows the grid; otherwise the id of the full-width page that replaced it.
+    // "" shows the grid; otherwise the id of the full-width page that replaced it. Settings are pages here
+    // too: "settings" lists the sections, and "settings/<section>" holds one section's controls.
     property string page: ""
+    readonly property string settingsPrefix: "settings/"
+    readonly property bool onSettings: page === "settings" || page.startsWith(settingsPrefix)
+    readonly property string settingsSection: page.startsWith(settingsPrefix) ? page.slice(settingsPrefix.length) : ""
     readonly property real pageContent: page === "wifi" ? wifiPage.implicitHeight
         : page === "bluetooth" ? bluetoothPage.implicitHeight
         : page === "fans" ? fansPage.implicitHeight
         : page === "output" ? outputPage.implicitHeight
         : page === "input" ? inputPage.implicitHeight
         : page === "power" ? powerPage.implicitHeight
+        : onSettings ? settingsPages.implicitHeight
         : grid.height
     property real shownContent: pageContent
     Behavior on shownContent {
@@ -69,13 +75,55 @@ Item {
         }
     }
 
-    // Escape steps back out one level: page to grid, grid to closed.
+    readonly property string pageTitle: {
+        switch (page) {
+        case "wifi":
+            return qsTr("Wi-Fi")
+        case "bluetooth":
+            return qsTr("Bluetooth")
+        case "fans":
+            return qsTr("Fans")
+        case "output":
+            return qsTr("Output")
+        case "input":
+            return qsTr("Input")
+        case "power":
+            return qsTr("Power")
+        case "settings":
+            return qsTr("Settings")
+        }
+        const section = SettingsModel.section(settingsSection)
+        return section ? section.title : ""
+    }
+
+    // One level up: a settings section to the section list, any other page to the grid.
+    function parentPage() {
+        return settingsSection !== "" ? "settings" : ""
+    }
+
+    // Escape steps back out one level: section to settings, page to grid, grid to closed.
     function stepBack() {
         if (page !== "")
-            page = ""
+            page = parentPage()
         else
             close()
     }
+
+    // Opens straight onto settings, or one section of it, as the launcher does. The page is picked before
+    // opening so the height snaps rather than growing from the grid's.
+    function openSettings(section) {
+        page = section ? settingsPrefix + section : "settings"
+        open()
+    }
+
+    // Super+Comma: settings when they aren't showing, closed when they are.
+    function toggleSettings() {
+        if (opened && onSettings)
+            close()
+        else
+            openSettings("")
+    }
+
     // Tallest the panel gets, so the bar can reserve room for the spring's overshoot.
     readonly property real reserveHeight: 420
 
@@ -257,13 +305,14 @@ Item {
 
             Item {
                 id: header
-                x: root.pad + 4
+                x: root.pad + Theme.panelHeaderInset
                 y: root.circleBottom ? body.height - root.diameter : 0
-                width: body.width - (root.pad + 4) * 2
+                width: body.width - (root.pad + Theme.panelHeaderInset) * 2
                 height: root.diameter
 
                 PageLayer {
                     home: true
+                    motion: root.motion
                     shown: root.page === ""
                     anchors.fill: parent
 
@@ -275,7 +324,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: !root.closeActionInFace
                         x: root.circleRight
-                            ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4))
+                            ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + Theme.panelHeaderInset))
                             : 0
                         onActivated: root.close()
                     }
@@ -315,10 +364,7 @@ Item {
                         opened: root.openP
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.circleRight ? 0 : parent.width - width
-                        onActivated: {
-                            root.close()
-                            ClockConfig.settingsOpen = true
-                        }
+                        onActivated: root.page = "settings"
                     }
 
                     SettingsButton {
@@ -347,72 +393,25 @@ Item {
                 }
 
                 PageLayer {
+                    motion: root.motion
                     shown: root.page !== ""
                     anchors.fill: parent
 
-                    Item {
-                        id: back
+                    BackButton {
                         anchors.left: parent.left
-                        anchors.leftMargin: -4
+                        anchors.leftMargin: -Theme.panelHeaderInset
                         anchors.verticalCenter: parent.verticalCenter
-                        width: backRow.width + 12
-                        height: 28
                         activeFocusOnTab: root.page !== ""
-                        Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("Back")
-                        Keys.onReturnPressed: root.page = ""
-                        Keys.onSpacePressed: root.page = ""
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: 8
-                            color: backHit.containsMouse || back.activeFocus ? Theme.track : "transparent"
-                            border.width: back.activeFocus ? 1 : 0
-                            border.color: Theme.today
-                        }
-
-                        Row {
-                            id: backRow
-                            x: 4
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 4
-
-                            StatusGlyph {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 14
-                                height: 14
-                                icon: "chevron-left"
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: root.page === "wifi" ? qsTr("Wi-Fi")
-                                    : root.page === "bluetooth" ? qsTr("Bluetooth")
-                                    : root.page === "fans" ? qsTr("Fans")
-                                    : root.page === "output" ? qsTr("Output")
-                                    : root.page === "input" ? qsTr("Input")
-                                    : root.page === "power" ? qsTr("Power") : ""
-                                color: Theme.textPrimary
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 13
-                                font.weight: Font.Medium
-                            }
-                        }
-
-                        MouseArea {
-                            id: backHit
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.page = ""
-                        }
+                        title: root.pageTitle
+                        onActivated: root.page = root.parentPage()
                     }
                 }
             }
 
-            readonly property real contentY: root.circleBottom ? root.pad : root.diameter + 2
+            readonly property real contentY: root.circleBottom ? root.pad : root.diameter + Theme.panelHeaderGap
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "wifi"
                 x: root.pad
                 y: body.contentY
@@ -429,6 +428,7 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "bluetooth"
                 x: root.pad
                 y: body.contentY
@@ -445,6 +445,7 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "output"
                 x: root.pad
                 y: body.contentY
@@ -460,6 +461,7 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "input"
                 x: root.pad
                 y: body.contentY
@@ -476,6 +478,7 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "fans"
                 x: root.pad
                 y: body.contentY
@@ -492,6 +495,7 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
                 shown: root.page === "power"
                 x: root.pad
                 y: body.contentY
@@ -508,7 +512,28 @@ Item {
             }
 
             PageLayer {
+                motion: root.motion
+                shown: root.onSettings
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: settingsPages.implicitHeight
+
+                SettingsPages {
+                    id: settingsPages
+                    width: parent.width
+                    section: root.settingsSection
+                    motion: root.motion
+                    active: root.opened && root.onSettings
+                    // Kept within the height the bar reserves for this panel.
+                    maxHeight: root.reserveHeight - root.diameter - Theme.panelHeaderGap - root.pad
+                    onSectionChosen: id => root.page = root.settingsPrefix + id
+                }
+            }
+
+            PageLayer {
                 home: true
+                motion: root.motion
                 shown: root.page === ""
                 x: root.pad
                 y: body.contentY
@@ -666,33 +691,6 @@ Item {
                 Accessible.name: root.closeActionInFace ? qsTr("Close control center") : qsTr("Control center")
                 onPressed: root.toggle()
                 onReleased: root.aimHover(containsMouse)
-            }
-        }
-    }
-
-    component PageLayer: Item {
-        id: layer
-
-        property bool shown: false
-        property bool home: false
-        property real shift: shown ? 0 : home ? -24 : 24
-
-        opacity: shown ? 1 : 0
-        visible: opacity > 0.01
-        enabled: shown
-        transform: Translate { x: layer.shift }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.durationFor(root.motion)
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on shift {
-            NumberAnimation {
-                duration: Theme.durationFor(root.motion)
-                easing.type: Theme.easingFor(root.motion)
-                easing.overshoot: Theme.springOvershoot
             }
         }
     }

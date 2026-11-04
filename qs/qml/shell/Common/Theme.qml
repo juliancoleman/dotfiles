@@ -53,6 +53,11 @@ QtObject {
     property int floatMargin: 8
     // Gutter between an open panel's edge and its content, shared by the launcher, notch, and pill panels.
     readonly property int panelPad: 12
+    // A panel's header row sits this far inside its content's gutter; a back button reaches back out by the
+    // same amount so its hover box starts at the content's edge.
+    readonly property int panelHeaderInset: 4
+    // Between a panel's header row and its content.
+    readonly property int panelHeaderGap: 2
     property int periodGap: 4
     readonly property int buttonIconSize: 16
     property int stackGap: 3

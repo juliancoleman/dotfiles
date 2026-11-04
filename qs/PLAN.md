@@ -490,9 +490,12 @@ All capable controls appear in the first version. Adding/removing/hiding control
 
 ## 12. Settings application
 
-- Separate Quickshell package/process with the same design tokens as the shell.
-- Singleton window. Activating a gear while open raises it and moves it to the originating display while preserving the current page.
-- Gear appears in the pinned control-center footer and opens settings; operational pickers never open settings.
+- Settings are control-center pages, so they open wherever the control center does, in both pill and notch presentations, on the display whose gear, shortcut, or launcher was used.
+- The control-center gear opens the settings page, which lists the sections by name; a section's page slides in with a Back header like the other control-center subpages. Back and Escape step from a section to the section list, then to the grid, then close.
+- Super+Comma opens the control center on settings, or closes it when it is already showing settings. The calendar has no gear. Operational pickers never open settings.
+- The launcher searches settings by control, section, keyword, and choice; a result opens the control center at its section. Unprefixed searches list them after apps and files once something is typed; `>` narrows to settings.
+- One settings model drives both the settings pages and the launcher search.
+- Pages taller than the control center's reserved height scroll.
 - Scope: bar placement/scale, top-level widget visibility/order constraints, control layout/order/width, semantic palette and surface appearance, clock/date, weather locations and units, behavior, notification defaults, and semantic animation/reduced-motion values.
 - The settings app does not configure Wi-Fi profiles, Bluetooth devices, audio routing, brightness hardware, storage, or fan safety policy.
 - Capability detection is automatic only in the first version.

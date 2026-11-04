@@ -9,6 +9,7 @@ import "Control"
 import "Launcher"
 import "Notifications"
 import "Secure"
+import "Settings"
 import "Weather"
 
 PanelWindow {
@@ -32,10 +33,7 @@ PanelWindow {
     readonly property real coverFade: 1 - Math.max(secure.pc, launcher.pc)
 
     function closePanels() {
-        clock.closeCalendar()
-        controls.close()
-        notes.close()
-        weather.close()
+        closeExcept(null)
     }
 
     function closeAll() {
@@ -43,12 +41,33 @@ PanelWindow {
         LauncherState.close()
     }
 
-    onCalendarOpenChanged: if (calendarOpen) { controls.close(); notes.close(); weather.close() }
-    onControlsOpenChanged: if (controlsOpen) { clock.closeCalendar(); notes.close(); weather.close() }
-    onNotesOpenChanged: if (notesOpen) { clock.closeCalendar(); controls.close(); weather.close() }
-    onWeatherOpenChanged: if (weatherOpen) { clock.closeCalendar(); controls.close(); notes.close() }
+    // The panels share the bar's space, so opening one closes the rest.
+    function closeExcept(kept) {
+        if (kept !== clock)
+            clock.closeCalendar()
+        if (kept !== controls)
+            controls.close()
+        if (kept !== notes)
+            notes.close()
+        if (kept !== weather)
+            weather.close()
+    }
+
+    onCalendarOpenChanged: if (calendarOpen) closeExcept(clock)
+    onControlsOpenChanged: if (controlsOpen) closeExcept(controls)
+    onNotesOpenChanged: if (notesOpen) closeExcept(notes)
+    onWeatherOpenChanged: if (weatherOpen) closeExcept(weather)
     onSecureShownChanged: if (secureShown) closeAll()
     onLauncherShownChanged: if (launcherShown) closePanels()
+
+    // Super+Comma: settings are control-center pages, toggled on the focused output's bar.
+    Connections {
+        target: SettingsState
+        function onToggleRequested(screenName) {
+            if (screenName === root.modelData.name)
+                controls.toggleSettings()
+        }
+    }
 
     readonly property real diameter: clock.restingThickness
     readonly property real join: Math.max(0, Math.min(1, clock.notchAmount))
@@ -425,6 +444,7 @@ PanelWindow {
             notch: clock.notchAmount
             motion: ClockConfig.motion
             shown: root.launcherShown
+            onSettingChosen: section => controls.openSettings(section)
         }
     }
 }

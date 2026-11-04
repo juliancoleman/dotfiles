@@ -1,2 +1,4 @@
 module Common
 singleton Theme 1.0 Theme.qml
+PageLayer 1.0 PageLayer.qml
+singleton FocusedOutput 1.0 FocusedOutput.qml

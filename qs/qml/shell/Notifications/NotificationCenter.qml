@@ -73,7 +73,7 @@ Item {
             easing.overshoot: Theme.springOvershoot
         }
     }
-    readonly property real fullHeight: diameter + 2 + shownContent + pad
+    readonly property real fullHeight: diameter + Theme.panelHeaderGap + shownContent + pad
     // Beside the circle in the pill; on its own in the notch's shared space.
     readonly property real peekWidth: panelWidth - (lent ? pad * 2 : pad + diameter + 4)
     readonly property real peekHeight: lent ? peekRow.implicitHeight + pad * 2
@@ -87,7 +87,7 @@ Item {
             easing.overshoot: Theme.springOvershoot
         }
     }
-    readonly property real reserveHeight: diameter + 2 + listMax + pad + 40
+    readonly property real reserveHeight: diameter + Theme.panelHeaderGap + listMax + pad + 40
 
     readonly property real restWidth: diameter + (alongY ? 0 : endPad)
     readonly property real restHeight: diameter + (alongY ? endPad : 0)
@@ -318,9 +318,9 @@ Item {
                 id: header
                 opacity: body.fullFade
                 visible: opacity > 0.01
-                x: root.pad + 4
+                x: root.pad + Theme.panelHeaderInset
                 y: root.headerBottom ? body.height - root.diameter : 0
-                width: body.width - (root.pad + 4) * 2
+                width: body.width - (root.pad + Theme.panelHeaderInset) * 2
                 height: root.diameter
 
                 Row {
@@ -357,7 +357,7 @@ Item {
                     label: qsTr("Close notifications")
                     anchors.verticalCenter: parent.verticalCenter
                     x: root.mirrored
-                        ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + 4))
+                        ? parent.width - width / 2 - (root.diameter / 2 - (root.pad + Theme.panelHeaderInset))
                         : 0
                     onActivated: root.close()
                 }
@@ -406,7 +406,7 @@ Item {
                 opacity: body.fullFade
                 visible: opacity > 0.01
                 x: root.pad
-                y: root.headerBottom ? root.pad : root.diameter + 2
+                y: root.headerBottom ? root.pad : root.diameter + Theme.panelHeaderGap
                 width: body.width - root.pad * 2
                 height: root.shownContent
                 contentHeight: list.implicitHeight

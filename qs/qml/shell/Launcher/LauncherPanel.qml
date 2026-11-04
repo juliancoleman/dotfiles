@@ -3,11 +3,13 @@ import Quickshell
 import Quickshell.Widgets
 import ".."
 import "../Common"
+import "../Settings"
 import "../Status"
 
-// Super+Space: the bar's housing (`from`) grows into a search over applications and the home folder's files,
-// shown as a list, large icons, or small icons. "@" searches only applications and "/" only files; otherwise
-// apps come first and files follow. Math answers above them all, and Enter copies it. While files are among
+// Super+Space: the bar's housing (`from`) grows into a search over applications, the home folder's files,
+// and settings, shown as a list, large icons, or small icons. "@" narrows to applications, "/" to files, and
+// ">" to settings; choosing a setting opens the control center at its section. Without a prefix, apps come
+// first, then files, then settings. Math answers above them all, and Enter copies it. While files are among
 // the results, a pane beside them previews the selection.
 Item {
     id: root
@@ -17,6 +19,9 @@ Item {
     property real notch: 0
     property string motion: "easeOut"
     property bool shown: false
+
+    // A settings result was chosen; the bar opens its control center on this section, on the same screen.
+    signal settingChosen(string section)
 
     readonly property real listW: 400
     readonly property real previewW: 270
@@ -50,16 +55,21 @@ Item {
     property alias housingItem: card
 
     property string query: ""
-    readonly property string mode: query.startsWith("@") ? "apps" : query.startsWith("/") ? "files" : "all"
+    readonly property string mode: query.startsWith("@") ? "apps" : query.startsWith("/") ? "files"
+        : query.startsWith(">") ? "settings" : "all"
     readonly property string term: mode === "all" ? query : query.slice(1)
     readonly property var calc: mode === "all" ? Calculator.evaluate(query) : null
-    readonly property var appResults: mode === "files" ? [] : AppSearch.search(term)
+    readonly property var appResults: mode === "apps" || mode === "all" ? AppSearch.search(term) : []
     // Mixed in once the query says something; one letter would match most of the home folder.
     readonly property string fileTerm: mode === "files" ? term.trim()
         : mode === "all" && !calc && term.trim().length >= 2 ? term.trim() : ""
     readonly property var fileResults: fileTerm === "" ? [] : FileSearch.results
+    // Mixed in once something is typed; an empty search would list every setting.
+    readonly property var settingResults: mode === "settings" || mode === "all" && !calc && term.trim() !== ""
+        ? SettingsModel.search(term) : []
     readonly property var results: appResults.map(entry => ({ kind: "app", entry: entry }))
         .concat(fileResults.map(file => ({ kind: "file", file: file })))
+        .concat(settingResults.map(hit => ({ kind: "setting", section: hit.section, control: hit.control })))
     readonly property var selected: calcSelected ? null : results[grid.currentIndex] || null
     // A result is selected when it appears, so Enter copies it; arrowing down moves into the apps.
     property bool calcFocused: true
@@ -96,8 +106,10 @@ Item {
         LauncherState.close()
         if (item.kind === "app")
             AppSearch.launch(item.entry)
-        else
+        else if (item.kind === "file")
             Quickshell.execDetached(["xdg-open", item.file.path])
+        else
+            settingChosen(item.section.id)
     }
 
     function setView(next) {
@@ -215,7 +227,7 @@ Item {
                         anchors.fill: input
                         visible: input.text.length === 0
                         verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Search  ·  @ for apps  ·  / for files")
+                        text: qsTr("Search  ·  @ apps  ·  / files  ·  > settings")
                         color: Theme.textSecondary
                         font: input.font
                     }
@@ -358,9 +370,12 @@ Item {
                             model: [
                                 { title: qsTr("Applications"), count: root.appResults.length,
                                   shown: root.mode === "apps" || (root.mode === "all"
-                                      && (root.appResults.length > 0 || root.fileResults.length === 0)) },
+                                      && (root.appResults.length > 0
+                                          || root.fileResults.length === 0 && root.settingResults.length === 0)) },
                                 { title: qsTr("Files"), count: root.fileResults.length,
-                                  shown: root.mode === "files" || root.fileResults.length > 0 }
+                                  shown: root.mode === "files" || root.fileResults.length > 0 },
+                                { title: qsTr("Settings"), count: root.settingResults.length,
+                                  shown: root.mode === "settings" || root.settingResults.length > 0 }
                             ].filter(section => section.shown)
 
                             Row {
@@ -454,11 +469,17 @@ Item {
                         required property int index
                         readonly property bool current: GridView.isCurrentItem
                         readonly property bool isApp: modelData.kind === "app"
-                        readonly property var file: isApp ? null : modelData.file
-                        readonly property string label: isApp ? modelData.entry.name : file.name
+                        readonly property bool isSetting: modelData.kind === "setting"
+                        readonly property var file: modelData.kind === "file" ? modelData.file : null
+                        readonly property string label: isApp ? modelData.entry.name
+                            : isSetting ? modelData.control.title : file.name
+                        // A setting reads where it lives and what it's set to: "Theme · Pill".
                         readonly property string comment: isApp
-                            ? (modelData.entry.genericName || modelData.entry.comment) : file.dir
-                        readonly property bool thumbnail: !isApp && FileSearch.kindOf(file) === "image"
+                            ? (modelData.entry.genericName || modelData.entry.comment)
+                            : isSetting ? [modelData.section.title, SettingsModel.valueLabel(modelData.control)]
+                                .filter(part => part !== "").join(" · ")
+                            : file.dir
+                        readonly property bool thumbnail: !!file && FileSearch.kindOf(file) === "image"
                         width: grid.cellWidth
                         height: grid.cellHeight
 
@@ -474,7 +495,7 @@ Item {
                             readonly property int size: root.listView ? 24 : root.view === "small" ? 26 : 38
                             implicitSize: size
                             asynchronous: true
-                            source: cell.thumbnail ? ""
+                            source: cell.thumbnail || cell.isSetting ? ""
                                 : cell.isApp ? AppSearch.icon(cell.modelData.entry) : FileSearch.icon(cell.file)
                             x: root.listView ? 10 : (cell.width - size) / 2
                             y: root.listView ? (cell.height - size) / 2 : root.view === "small" ? 11 : 13
@@ -488,20 +509,32 @@ Item {
                                 asynchronous: true
                             }
 
-                            // Whatever the icon theme can't find gets the app's initial or the file's extension.
+                            // Whatever the icon theme can't find gets the app's initial or the file's extension;
+                            // settings, which have no icon of their own, get the gear.
                             Rectangle {
                                 anchors.fill: parent
                                 visible: !cell.thumbnail && (icon.source == "" || icon.status === Image.Error)
                                 radius: width * 0.24
                                 color: Theme.ink
 
+                                StatusGlyph {
+                                    anchors.centerIn: parent
+                                    visible: cell.isSetting
+                                    width: parent.width * 0.6
+                                    height: width
+                                    icon: cell.isSetting ? cell.modelData.control.icon || cell.modelData.section.icon : ""
+                                    cutColor: Theme.ink
+                                }
+
                                 Text {
                                     anchors.centerIn: parent
+                                    visible: !cell.isSetting
                                     width: parent.width - 4
                                     horizontalAlignment: Text.AlignHCenter
                                     fontSizeMode: Text.HorizontalFit
                                     minimumPixelSize: 6
                                     text: cell.isApp ? cell.label.charAt(0).toUpperCase()
+                                        : cell.isSetting ? ""
                                         : (cell.file.ext || (cell.file.isDir ? "dir" : "file")).slice(0, 4).toUpperCase()
                                     color: Theme.textPrimary
                                     font.family: Theme.fontFamily
@@ -521,7 +554,7 @@ Item {
                             text: cell.label
                             color: Theme.textPrimary
                             horizontalAlignment: root.listView ? Text.AlignLeft : Text.AlignHCenter
-                            elide: cell.isApp ? Text.ElideRight : Text.ElideMiddle
+                            elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
                             font.pixelSize: root.listView ? 12 : 11
                             font.weight: Font.Medium
@@ -534,7 +567,7 @@ Item {
                             y: cell.height / 2 + 1
                             text: cell.comment
                             color: Theme.textSecondary
-                            elide: cell.isApp ? Text.ElideRight : Text.ElideMiddle
+                            elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
                         }

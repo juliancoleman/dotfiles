@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import "."
 import "Launcher"
+import "Settings"
 import "Status"
 
 ShellRoot {
@@ -13,8 +14,6 @@ ShellRoot {
             modelData: modelData
         }
     }
-
-    SettingsWindow {}
 
     // Niri binds Super+Space to `qs-shell ipc call launcher toggle`.
     IpcHandler {
@@ -30,6 +29,15 @@ ShellRoot {
 
         function close(): void {
             LauncherState.close()
+        }
+    }
+
+    // Niri binds Super+Comma to `qs-shell ipc call settings toggle`.
+    IpcHandler {
+        target: "settings"
+
+        function toggle(): void {
+            SettingsState.toggle()
         }
     }
 

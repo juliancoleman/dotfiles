@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import ".."
 import "../Common"
 
 Item {
@@ -81,12 +80,11 @@ Item {
     readonly property real restingThickness: (verticalEdge ? vFace.timeColumn : hFace.timeBox)
         + housing.baseOuter + housing.baseInner
     readonly property real headerH: 22
-    readonly property real footerH: 28
     readonly property real calendarWidth: monthGrid.implicitWidth
     readonly property real maxGridHeight: monthGrid.weekHeight + 6
         + 6 * monthGrid.cell + 5 * monthGrid.gap
-    readonly property real calendarHeight: headerH + 6 + monthGrid.implicitHeight + footerH
-    readonly property real maxCalendarHeight: headerH + 6 + maxGridHeight + footerH
+    readonly property real calendarHeight: headerH + 6 + monthGrid.implicitHeight
+    readonly property real maxCalendarHeight: headerH + 6 + maxGridHeight
     readonly property real sideDateGap: 8
     readonly property real sideDateColumn: Math.max(sideWeekLabel.implicitWidth,
                                                      sideDayLabel.implicitWidth,
@@ -239,11 +237,6 @@ Item {
         aimHover(true)
         aimOpen(true)
         Qt.callLater(function () { root.forceActiveFocus() })
-    }
-
-    function toggleSettings() {
-        closeCalendar()
-        ClockConfig.settingsOpen = !ClockConfig.settingsOpen
     }
 
     function shiftMonth(delta) {
@@ -662,13 +655,6 @@ Item {
                     x: (parent.width - width) / 2
                     y: root.headerH + 6
                 }
-
-                SettingsButton {
-                    opened: root.openP * root.calendarFade
-                    x: vSlot.x + vSlot.width - width
-                    y: vSlot.y + vSlot.height + root.footerH - height
-                    onActivated: root.toggleSettings()
-                }
             }
         }
 
@@ -679,9 +665,8 @@ Item {
             readonly property real dateReveal: Math.max(root.hoverP * (1 - Math.min(1, root.accessoryP)), root.openP)
             readonly property real headerShown: root.headerH * dateReveal
             readonly property real gridShown: monthGrid.implicitHeight * root.openP
-            readonly property real footerShown: root.footerH * root.openP
             readonly property real accessoryShown: root.accessoryHeight * root.accessoryP
-            readonly property real tail: headerShown + gridGap + gridShown + footerShown + accessoryShown
+            readonly property real tail: headerShown + gridGap + gridShown + accessoryShown
             readonly property real dateGap: 6 * root.reveal + 2 * root.expanded
             readonly property real timeSpan: hHead.shown + hDigits.implicitWidth + hTail.shown
             readonly property real rowSpan: root.leadSpan + timeSpan + root.trailSpan
@@ -782,13 +767,6 @@ Item {
                     opacity: root.openP * root.calendarFade
                     x: hFace.centerX - width / 2
                     y: hFace.gridY
-                }
-
-                SettingsButton {
-                    opened: root.openP * root.calendarFade
-                    x: hSlot.x + hSlot.width - width
-                    y: hSlot.y + hSlot.height + hFace.footerShown - height
-                    onActivated: root.toggleSettings()
                 }
 
                 Item {

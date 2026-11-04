@@ -1,0 +1,8 @@
+module Settings
+singleton SettingsModel 1.0 SettingsModel.qml
+SettingsPages 1.0 SettingsPages.qml
+SettingControl 1.0 SettingControl.qml
+Options 1.0 Options.qml
+Stepper 1.0 Stepper.qml
+Swatches 1.0 Swatches.qml
+singleton SettingsState 1.0 SettingsState.qml

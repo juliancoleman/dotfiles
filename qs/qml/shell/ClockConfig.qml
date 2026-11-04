@@ -12,7 +12,6 @@ Singleton {
         || (Quickshell.env("HOME") || "") + "/.config/qs/config.json"
 
     property bool loaded: false
-    property bool settingsOpen: false
     property var document: ({})
     property string placement: "right"
     property bool use24Hour: true

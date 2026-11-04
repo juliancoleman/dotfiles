@@ -43,12 +43,14 @@ Rectangle {
         onClicked: row.activated()
     }
 
+    // Rows without an icon, like settings' sections, start their text where the icon would.
     StatusGlyph {
         id: glyph
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        width: 16
+        visible: row.icon !== ""
+        width: row.icon !== "" ? 16 : 0
         height: 16
         icon: row.icon
         wifiBars: row.wifiBars
@@ -58,7 +60,7 @@ Rectangle {
 
     Column {
         anchors.left: glyph.right
-        anchors.leftMargin: 10
+        anchors.leftMargin: row.icon !== "" ? 10 : 0
         anchors.right: mark.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
