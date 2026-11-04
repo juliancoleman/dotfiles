@@ -63,7 +63,10 @@ Item {
     readonly property real pad: lent ? 0 : Theme.panelPad
     readonly property real panelWidth: 290 + pad * 2
     readonly property real panelHeight: panel.implicitHeight
-    readonly property real reserveHeight: panelHeight + 40
+    // What the open panel needs with any circle up to 40 across and a full gutter. Only the forecast's own
+    // content moves it, never the circle or the docking, so the window isn't resized while those animate.
+    readonly property real reserveHeight: 40 + panel.contentHeight + Theme.panelPad + 40
+    readonly property real reserveWidth: 290 + Theme.panelPad * 2
     readonly property real restWidth: alongY ? diameter : body + endPad
     readonly property real restHeight: alongY ? diameter + endPad : diameter
 

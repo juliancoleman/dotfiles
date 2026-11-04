@@ -124,8 +124,10 @@ Item {
             openSettings("")
     }
 
-    // Tallest the panel gets, so the bar can reserve room for the spring's overshoot.
+    // Most the panel takes, so the bar can reserve room for the spring's overshoot. Constants: the window is
+    // sized from these, and a layer-shell resize mid-animation drops a frame.
     readonly property real reserveHeight: 420
+    readonly property real reserveWidth: gridWidth + Theme.panelPad * 2
 
     // Pad past the circle along the edge, grown in while fusing so docking into the clock lands flush.
     property real endPad: 0

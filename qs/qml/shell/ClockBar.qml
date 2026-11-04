@@ -108,10 +108,12 @@ PanelWindow {
         : (placement === "top" ? axis : height - axis) - diameter / 2
 
     screen: modelData
-    // The bar spans its whole screen edge so the clock stays centered and the panel has room to open.
-    implicitWidth: vertical ? Math.max(clock.width, clock.edgeGap
-        + Math.max(controls.panelWidth, weather.panelWidth, secure.openW, launcher.maxW) * clock.springRoom) : 0
-    implicitHeight: vertical ? 0 : Math.max(clock.height, clock.edgeGap
+    // The bar spans its whole screen edge so the clock stays centered and the panel has room to open. Its
+    // size comes from resting constants only: a layer-shell resize reallocates the buffer and drops a frame,
+    // so nothing animated (the housing's edge gap, the circle size, docking) may feed it.
+    implicitWidth: vertical ? Math.max(clock.width, Theme.floatMargin
+        + Math.max(controls.reserveWidth, weather.reserveWidth, secure.openW, launcher.maxW) * clock.springRoom) : 0
+    implicitHeight: vertical ? 0 : Math.max(clock.height, Theme.floatMargin
         + Math.max(controls.reserveHeight, notes.reserveHeight, weather.reserveHeight, launcher.maxH)
         * clock.springRoom)
     exclusiveZone: ClockConfig.presentation === "notch"

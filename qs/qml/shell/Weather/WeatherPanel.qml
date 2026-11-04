@@ -29,6 +29,7 @@ Item {
     readonly property var today: WeatherService.daily.length > 0 ? WeatherService.daily[0] : null
 
     implicitHeight: placeRow.height + scroller.height + Math.max(pad, footRoom)
+    readonly property real contentHeight: content.implicitHeight
 
     function degrees(celsius) {
         return celsius === null || celsius === undefined || isNaN(celsius) ? "–" : WeatherService.toUnits(celsius) + "°"

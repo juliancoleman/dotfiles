@@ -89,7 +89,10 @@ Item {
             easing.overshoot: Theme.springOvershoot
         }
     }
-    readonly property real reserveHeight: diameter + Theme.panelHeaderGap + listMax + pad + 40
+    // Tallest the panel gets, with any circle up to 40 across: a constant, since the window is sized from
+    // it and a layer-shell resize mid-animation drops a frame.
+    readonly property real reserveHeight: 40 + Theme.panelHeaderGap + listMax + Theme.panelPad + 40
+    readonly property real reserveWidth: 298 + Theme.panelPad * 2
 
     readonly property real restWidth: diameter + (alongY ? 0 : endPad)
     readonly property real restHeight: diameter + (alongY ? endPad : 0)
