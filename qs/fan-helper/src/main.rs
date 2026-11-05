@@ -105,11 +105,14 @@ fn controller(options: &Options) -> Result<Controller> {
     let Some(root) = &options.dev_root else {
         return Ok(Controller::new(config::load()?, Sysfs::system()));
     };
+    let state_dir = root.join("run");
+    fs::create_dir_all(&state_dir)?;
     Ok(Controller::new(
         config::parse(&fs::read(root.join("policy.json"))?)?,
         Sysfs {
             hwmon: root.join("class/hwmon"),
             devices: fs::canonicalize(root.join("devices"))?,
+            state_dir: Some(state_dir),
             require_root_owner: false,
         },
     ))

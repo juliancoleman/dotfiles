@@ -49,10 +49,13 @@ qs.nixosModules.default
 | `fanControl.users` | listOf str | `[ ]` — added to group `qs-fans` |
 | `fanControl.leaseSeconds` | ints.between 2 30 | `5` |
 | `fanControl.renewalSeconds` | ints.positive | `2` (asserted `< leaseSeconds`) |
-| `fanControl.devices` | listOf device | `[ ]` (asserted non-empty when enabled) |
+| `fanControl.defaultMinimumPercent` | ints.between 0 100 | `0` — floor for discovered fans |
+| `fanControl.thermal.warningCelsius` / `.criticalCelsius` | number | `85` / `95` (asserted warning < critical) |
+| `fanControl.devices` | listOf device | `[ ]` — empty means discover |
 
-Each `fanControl.devices.*` entry: `identity` (enum `"nct6797"`), `channels` (non-empty list of
-`{ name: str; channel: 1–16; minimumPercent: 1–100 }`), `thermalSensors` (non-empty list of
+With `devices = [ ]` the helper discovers the hardware itself (see *Fan control*). Each explicit
+`fanControl.devices.*` entry instead names `identity` (the hwmon `name`), `channels` (non-empty list of
+`{ name: str; channel: 1–16; minimumPercent: 0–100 }`), `thermalSensors` (non-empty list of
 `{ identity: str; input: 1–64; warningCelsius: number; criticalCelsius: number }`, warning asserted below
 critical). The module also enables `services.upower` and adds a udev rule making
 `/sys/class/backlight/*/brightness` group‑writable by `video`.
@@ -136,6 +139,16 @@ yourself). The shell's `FanControl` singleton connects only while the fans page 
 is held; the lease is the open connection, renewed with `status` every `renewalSeconds`; disconnecting,
 `leaseSeconds` of silence, or a sensor reaching `criticalCelsius` returns every fan to firmware control.
 Policy is written to `/etc/qs/fan-policy.json` and changes restart the helper.
+
+Discovery (`devices = [ ]`): every hwmon `pwmN` with a writable `pwmN_enable` and a spinning `fanN_input`
+becomes a fan (label from `fanN_label`, else `Fan N`); headers reading 0 rpm at startup are skipped as
+unpopulated. "Auto" is whatever `pwmN_enable` held before the helper touched the channel — recorded per
+channel in `/run/qs-fan-helper/baseline.json` so `--restore` after a crash puts the same value back; a
+channel that was already manual with no record is returned to full duty instead. Manual control is
+guarded by every in-range input on `k10temp`, `coretemp`, `zenpower`, `cpu_thermal`, `soc_thermal`,
+`amdgpu`; with none present the helper reports unavailable and the shell stays read-only. Any manual
+write enters manual mode first, then sets the duty: nct6775-class chips reject `pwmN` writes while
+automatic (EBUSY).
 
 ## Secure prompt
 

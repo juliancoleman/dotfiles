@@ -22,8 +22,8 @@ let
   '';
 
   policy = {
-    schemaVersion = 2;
-    inherit (fans) leaseSeconds renewalSeconds devices;
+    schemaVersion = 3;
+    inherit (fans) leaseSeconds renewalSeconds defaultMinimumPercent thermal devices;
   };
 
   channelType = types.submodule {
@@ -37,7 +37,7 @@ let
         description = "One-based hwmon PWM channel number.";
       };
       minimumPercent = mkOption {
-        type = types.ints.between 1 100;
+        type = types.ints.between 0 100;
         description = "Lowest manual duty cycle allowed for this channel.";
       };
     };
@@ -67,8 +67,8 @@ let
   deviceType = types.submodule {
     options = {
       identity = mkOption {
-        type = types.enum [ "nct6797" ];
-        description = "Stable hwmon identity of the fan controller, never a raw sysfs path.";
+        type = types.str;
+        description = "Stable hwmon identity (`/sys/class/hwmon/*/name`) of the fan controller, never a raw sysfs path.";
       };
       channels = mkOption {
         type = types.nonEmptyListOf channelType;
@@ -129,10 +129,33 @@ in
         description = "Interval at which the shell renews its lease.";
       };
 
+      defaultMinimumPercent = mkOption {
+        type = types.ints.between 0 100;
+        default = 0;
+        description = "Lowest manual duty cycle for discovered fans. 0 lets a fan be stopped.";
+      };
+
+      thermal = {
+        warningCelsius = mkOption {
+          type = types.number;
+          default = 85;
+          description = "Temperature on any discovered CPU/GPU sensor at which the helper logs a warning.";
+        };
+        criticalCelsius = mkOption {
+          type = types.number;
+          default = 95;
+          description = "Temperature on any discovered CPU/GPU sensor at which every fan returns to firmware control.";
+        };
+      };
+
       devices = mkOption {
         type = types.listOf deviceType;
         default = [ ];
-        description = "Per-host hwmon allowlist and thermal safety policy.";
+        description = ''
+          Explicit per-host allowlist. Empty (the default) means the helper discovers every hwmon PWM
+          channel with a spinning fan, remembers each channel's firmware mode as its "auto", and guards
+          manual control with every k10temp/coretemp/zenpower/cpu_thermal/soc_thermal/amdgpu input.
+        '';
       };
     };
   };
@@ -195,12 +218,12 @@ in
     (mkIf fans.enable {
       assertions = [
         {
-          assertion = fans.devices != [ ];
-          message = "services.qs.fanControl.devices must not be empty when fanControl is enabled";
-        }
-        {
           assertion = fans.renewalSeconds < fans.leaseSeconds;
           message = "services.qs.fanControl.renewalSeconds must be shorter than leaseSeconds";
+        }
+        {
+          assertion = fans.thermal.warningCelsius < fans.thermal.criticalCelsius;
+          message = "services.qs.fanControl.thermal.warningCelsius must be below criticalCelsius";
         }
         {
           assertion = lib.all (device: lib.all (sensor: sensor.warningCelsius < sensor.criticalCelsius) device.thermalSensors) fans.devices;
@@ -243,6 +266,10 @@ in
           Restart = "on-failure";
           RestartSec = "2s";
           UMask = "0077";
+          # Remembers each channel's firmware mode so `--restore` after a crash can put it back.
+          RuntimeDirectory = "qs-fan-helper";
+          RuntimeDirectoryMode = "0700";
+          RuntimeDirectoryPreserve = true;
 
           AmbientCapabilities = "";
           CapabilityBoundingSet = "";

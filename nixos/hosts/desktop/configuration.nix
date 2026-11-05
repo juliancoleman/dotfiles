@@ -24,6 +24,9 @@ in
   boot.kernelPackages = pkgs.linuxPackages_6_18;
   # Expose the sensor/controller to QS's privileged, policy-gated fan helper.
   boot.kernelModules = [ "nct6775" ];
+  # Bind nvidia-drm before userspace. Otherwise greetd can start niri while simpledrm (card0) is still
+  # the only GPU; nvidia then replaces it and niri is left with no renderer (blank session).
+  boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
   # ── Networking ──
   networking.hostName = "hyprland-btw";

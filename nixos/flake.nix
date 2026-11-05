@@ -50,6 +50,11 @@
           services.qs = {
             enable = true;
             wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+            # Discovery mode: the helper finds the nct6797 headers itself and guards with k10temp.
+            fanControl = {
+              enable = true;
+              users = [ "julian" ];
+            };
           };
           home-manager.users.julian = {
             imports = [ qs.homeManagerModules.default ];

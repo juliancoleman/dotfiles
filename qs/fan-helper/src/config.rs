@@ -12,13 +12,36 @@ use crate::error::{Error, Result};
 const POLICY_PATH: &str = "/etc/qs/fan-policy.json";
 const MAX_POLICY_BYTES: u64 = 64 * 1024;
 
+/// Root-owned policy. With an empty `devices` list the helper discovers controllable fans and guard
+/// sensors itself; a non-empty list is an explicit allowlist that replaces discovery entirely.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Policy {
     pub schema_version: u32,
     pub lease_seconds: u32,
     pub renewal_seconds: u32,
+    #[serde(default)]
+    pub default_minimum_percent: u8,
+    #[serde(default)]
+    pub thermal: ThermalDefaults,
+    #[serde(default)]
     pub devices: Vec<DevicePolicy>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ThermalDefaults {
+    pub warning_celsius: f64,
+    pub critical_celsius: f64,
+}
+
+impl Default for ThermalDefaults {
+    fn default() -> Self {
+        Self {
+            warning_celsius: 85.0,
+            critical_celsius: 95.0,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -83,8 +106,12 @@ pub fn parse(bytes: &[u8]) -> Result<Policy> {
 }
 
 impl Policy {
+    pub fn discovers(&self) -> bool {
+        self.devices.is_empty()
+    }
+
     fn validate(&self) -> Result<()> {
-        if self.schema_version != 2 {
+        if self.schema_version != 3 {
             return Err(Error::policy(format!(
                 "unsupported policy schema version {}",
                 self.schema_version
@@ -98,19 +125,14 @@ impl Policy {
                 "renewalSeconds must be positive and shorter than leaseSeconds",
             ));
         }
-        if self.devices.is_empty() {
-            return Err(Error::policy("at least one fan device is required"));
+        if self.default_minimum_percent > 100 {
+            return Err(Error::policy("defaultMinimumPercent must be between 0 and 100"));
         }
+        validate_thresholds(self.thermal.warning_celsius, self.thermal.critical_celsius)?;
 
         let mut device_identities = HashSet::new();
         for device in &self.devices {
-            // Only chips whose pwmN_enable semantics (1 manual, 5 firmware auto) are known.
-            if device.identity != "nct6797" {
-                return Err(Error::policy(format!(
-                    "unsupported fan device identity {}",
-                    device.identity
-                )));
-            }
+            validate_identity(&device.identity)?;
             if !device_identities.insert(device.identity.as_str()) {
                 return Err(Error::policy(format!(
                     "duplicate fan device identity {}",
@@ -134,8 +156,8 @@ impl Policy {
                         "fan channels must be unique and between 1 and 16",
                     ));
                 }
-                if fan.minimum_percent == 0 || fan.minimum_percent > 100 {
-                    return Err(Error::policy("minimumPercent must be between 1 and 100"));
+                if fan.minimum_percent > 100 {
+                    return Err(Error::policy("minimumPercent must be between 0 and 100"));
                 }
             }
 
@@ -149,37 +171,26 @@ impl Policy {
                         "thermal sensor identity/input pairs must be unique and inputs 1 to 64",
                     ));
                 }
-                if !sensor.warning_celsius.is_finite()
-                    || !sensor.critical_celsius.is_finite()
-                    || !(-40.0..=150.0).contains(&sensor.warning_celsius)
-                    || !(-40.0..=150.0).contains(&sensor.critical_celsius)
-                    || sensor.warning_celsius >= sensor.critical_celsius
-                {
-                    return Err(Error::policy("thermal sensor thresholds are invalid"));
-                }
+                validate_thresholds(sensor.warning_celsius, sensor.critical_celsius)?;
             }
         }
         Ok(())
     }
 }
 
-impl DevicePolicy {
-    pub fn fan_id(&self, fan: &FanChannel) -> String {
-        format!("{}:pwm{}", self.identity, fan.channel)
+fn validate_thresholds(warning: f64, critical: f64) -> Result<()> {
+    if !warning.is_finite()
+        || !critical.is_finite()
+        || !(-40.0..=150.0).contains(&warning)
+        || !(-40.0..=150.0).contains(&critical)
+        || warning >= critical
+    {
+        return Err(Error::policy("thermal thresholds are invalid"));
     }
+    Ok(())
 }
 
-impl ThermalSensor {
-    pub fn warning_millidegrees(&self) -> i64 {
-        (self.warning_celsius * 1000.0).round() as i64
-    }
-
-    pub fn critical_millidegrees(&self) -> i64 {
-        (self.critical_celsius * 1000.0).round() as i64
-    }
-}
-
-fn validate_identity(identity: &str) -> Result<()> {
+pub fn validate_identity(identity: &str) -> Result<()> {
     if identity.is_empty()
         || identity.len() > 64
         || !identity
@@ -197,9 +208,20 @@ fn validate_identity(identity: &str) -> Result<()> {
 pub(crate) mod tests {
     use super::parse;
 
-    pub fn policy_json(identity: &str, warning: f64, critical: f64) -> String {
+    pub fn discovery_json() -> String {
         serde_json::json!({
-            "schemaVersion": 2,
+            "schemaVersion": 3,
+            "leaseSeconds": 5,
+            "renewalSeconds": 2,
+            "defaultMinimumPercent": 0,
+            "thermal": { "warningCelsius": 75.0, "criticalCelsius": 90.0 }
+        })
+        .to_string()
+    }
+
+    pub fn explicit_json(identity: &str, warning: f64, critical: f64) -> String {
+        serde_json::json!({
+            "schemaVersion": 3,
             "leaseSeconds": 5,
             "renewalSeconds": 2,
             "devices": [{
@@ -221,25 +243,32 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn accepts_emitted_nix_schema() {
-        let policy = parse(policy_json("nct6797", 75.0, 90.0).as_bytes()).unwrap();
-        let device = &policy.devices[0];
-        assert_eq!(device.fan_id(&device.channels[0]), "nct6797:pwm1");
+    fn discovery_policy_uses_defaults() {
+        let policy = parse(
+            br#"{"schemaVersion":3,"leaseSeconds":5,"renewalSeconds":2}"#,
+        )
+        .unwrap();
+        assert!(policy.discovers());
+        assert_eq!(policy.default_minimum_percent, 0);
+        assert_eq!(policy.thermal.critical_celsius, 95.0);
     }
 
     #[test]
-    fn rejects_non_nct_control_device() {
-        assert!(parse(policy_json("macsmc_hwmon", 75.0, 90.0).as_bytes()).is_err());
+    fn explicit_policy_accepts_any_hwmon_identity() {
+        assert!(parse(explicit_json("macsmc_hwmon", 75.0, 90.0).as_bytes()).is_ok());
+        assert!(parse(explicit_json("../etc", 75.0, 90.0).as_bytes()).is_err());
     }
 
     #[test]
     fn rejects_inverted_thermal_thresholds() {
-        assert!(parse(policy_json("nct6797", 95.0, 90.0).as_bytes()).is_err());
+        assert!(parse(explicit_json("nct6797", 95.0, 90.0).as_bytes()).is_err());
+        let json = discovery_json().replace("90.0", "70.0");
+        assert!(parse(json.as_bytes()).is_err());
     }
 
     #[test]
     fn rejects_unknown_fields() {
-        let json = policy_json("nct6797", 75.0, 90.0).replace(
+        let json = explicit_json("nct6797", 75.0, 90.0).replace(
             "\"leaseSeconds\"",
             "\"authorizedUsers\":[],\"leaseSeconds\"",
         );

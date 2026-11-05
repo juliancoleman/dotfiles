@@ -26,36 +26,37 @@ Item {
         width: parent.width
         spacing: 6
 
+        // Rows are ListModels updated in place; a fresh array here would rebuild every tile per reply.
         Repeater {
-            model: FanControl.ready ? FanControl.fans : []
+            model: FanControl.ready ? FanControl.rows : null
 
             FanTile {
-                required property var modelData
+                required property var model
                 width: content.width
                 motion: page.motion
                 controllable: page.controllable
-                title: modelData.label
-                rpmText: FanSource.rpmText(modelData.rpm)
-                manual: modelData.mode === "manual"
-                percent: modelData.percent
-                minimum: modelData.minimumPercent
-                onAutoRequested: FanControl.setAuto(modelData.id)
-                onPercentRequested: next => FanControl.setPercent(modelData.id, next)
+                title: model.label
+                rpmText: FanSource.rpmText(model.rpm)
+                manual: model.mode === "manual"
+                percent: model.percent
+                minimum: model.minimumPercent
+                onAutoRequested: FanControl.setAuto(model.id)
+                onPercentRequested: next => FanControl.setPercent(model.id, next)
             }
         }
 
+        // No helper: read-only rows, but the ring still shows the duty sysfs reports.
         Repeater {
-            model: FanControl.ready ? [] : FanSource.fans
+            model: FanControl.ready ? null : FanSource.rows
 
-            ToggleTile {
-                required property var modelData
+            FanTile {
+                required property var model
                 width: content.width
                 motion: page.motion
-                opens: false
-                toggleable: false
-                icon: "fan"
-                title: modelData.label
-                subtitle: I18n.tr("Auto") + " · " + FanSource.rpmText(modelData.rpm)
+                controllable: false
+                title: model.label
+                rpmText: FanSource.rpmText(model.rpm)
+                percent: model.percent
             }
         }
 

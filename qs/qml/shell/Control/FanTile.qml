@@ -3,7 +3,8 @@ import "../Clock"
 import "../Common"
 import "../Status"
 
-// One controllable fan: the knob flips Auto/Manual; Manual rings the knob with the duty and reveals a lane.
+// One fan: the knob flips Auto/Manual and its ring is the duty the chip reports right now, in either
+// mode. Manual reveals a lane whose fill is the setpoint; the ring catches up as the readback lands.
 Tile {
     id: tile
 
@@ -11,17 +12,20 @@ Tile {
     property string rpmText: ""
     property bool manual: false
     property bool controllable: true
+    // Duty the driver reports (0–100); negative when unknown, which draws no ring.
     property real percent: 0
     property real minimum: 0
     signal autoRequested()
     signal percentRequested(real next)
 
     property real dragPercent: -1
-    readonly property real shownPercent: dragPercent >= 0 ? dragPercent : percent
+    readonly property real shownPercent: dragPercent >= 0 ? dragPercent : Math.max(0, percent)
+    readonly property real reading: percent < 0 ? NaN : Math.max(0, Math.min(1, percent / 100))
     readonly property real fraction: Math.max(0, Math.min(1, shownPercent / 100))
 
     implicitHeight: Theme.rowHeight + lane.height
     clip: true
+    lifted: body.containsMouse && tile.controllable
     activeFocusOnTab: visible
     Accessible.role: manual ? Accessible.Slider : Accessible.Button
     Accessible.name: title
@@ -47,6 +51,19 @@ Tile {
         onTriggered: tile.dragPercent = -1
     }
 
+    // The whole header row flips Auto/Manual, like a ToggleTile's body; the knob above it does the same.
+    MouseArea {
+        id: body
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: Theme.rowHeight
+        hoverEnabled: true
+        enabled: tile.controllable
+        cursorShape: Qt.PointingHandCursor
+        onClicked: tile.toggle()
+    }
+
     Knob {
         id: knob
         x: Theme.knobInset
@@ -54,7 +71,7 @@ Tile {
         motion: tile.motion
         icon: "fan"
         on: tile.manual
-        level: tile.manual ? tile.fraction : NaN
+        level: tile.reading
         interactive: tile.controllable
         onClicked: tile.toggle()
     }

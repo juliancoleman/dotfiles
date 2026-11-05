@@ -152,10 +152,12 @@ files and could spoof a prompt. Over SSH the helper refuses to use the graphical
 **Fan socket**. `/run/qs-fan-helper.sock` is `root:qs-fans 0660`; group membership is the whole
 authorisation. The helper never trusts the client beyond that: the request schema is `status | set | auto |
 release` (`deny_unknown_fields`), at most 8 clients and 4 KiB per request, one lease holder at a time, the
-device/channel allowlist and `minimumPercent` come from root‑owned `/etc/qs/fan-policy.json`, and a
-200 ms watchdog revokes manual control on lease expiry, disconnect, or a thermal sensor at
-`criticalCelsius`. The service runs with an empty capability set under a strict systemd sandbox and
-`ExecStopPost --restore`.
+policy (discovery defaults or an explicit device/channel allowlist with `minimumPercent`) comes from
+root‑owned `/etc/qs/fan-policy.json`, and a 200 ms watchdog revokes manual control on lease expiry,
+disconnect, or a thermal sensor at `criticalCelsius`. "Auto" is the `pwmN_enable` value the firmware had
+before the helper first touched a channel, remembered in `/run/qs-fan-helper/baseline.json`
+(`RuntimeDirectoryPreserve`) so `ExecStopPost --restore` after a crash can put it back. The service runs
+with an empty capability set under a strict systemd sandbox.
 
 **Backlight**. The NixOS udev rule `chgrp video` + `chmod g+w` on `/sys/class/backlight/*/brightness`
 lets the shell (a `video` member) write brightness directly; no helper is involved.
@@ -171,7 +173,9 @@ lets the shell (a `video` member) write brightness directly; no helper is involv
 - The secure prompt is same‑uid trust (above). Neither socket uses `SO_PEERCRED`: the fan helper relies on
   filesystem group permissions and the shell relies on the client‑supplied `pid` plus `/proc`.
 - Secrets are prompted on `Quickshell.screens[0]` only.
-- `fanControl.devices.*.identity` accepts only `nct6797`.
+- Discovery guards manual control only with sensors from a fixed driver list (`k10temp`, `coretemp`,
+  `zenpower`, `cpu_thermal`, `soc_thermal`, `amdgpu`); a host with none of them is read-only unless
+  `fanControl.devices` names its sensors explicitly.
 - The config file is reloaded on every change but a parse error leaves the previous document in place and
   logs `qs config: <error>`.
 

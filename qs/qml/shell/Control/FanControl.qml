@@ -21,6 +21,9 @@ Singleton {
     property string reason: ""
     property string error: ""
     property var fans: []
+    // The same fans as persistent rows, updated in place so tile delegates (and their animations
+    // and drags) survive each status reply. Pages bind Repeaters to this, never to `fans`.
+    readonly property alias rows: rows
     property int renewalMs: 2000
 
     readonly property bool ready: connected && available && fans.length > 0
@@ -77,6 +80,7 @@ Singleton {
         error = reply.ok ? "" : (reply.error || "")
         renewalMs = Math.max(500, (reply.renewalSeconds || 2) * 1000)
         fans = reply.fans || []
+        syncRows(rows, fans)
     }
 
     function reset() {
@@ -84,7 +88,30 @@ Singleton {
         holding = false
         busy = false
         fans = []
+        rows.clear()
         pending = {}
+    }
+
+    // Reconcile `list` to `next` (objects with a stable `id`) without recreating untouched rows.
+    function syncRows(list, next) {
+        for (let i = 0; i < next.length; ++i) {
+            let j = i
+            while (j < list.count && list.get(j).id !== next[i].id)
+                ++j
+            if (j === list.count) {
+                list.insert(i, next[i])
+            } else {
+                if (j !== i)
+                    list.move(j, i, 1)
+                list.set(i, next[i])
+            }
+        }
+        while (list.count > next.length)
+            list.remove(next.length)
+    }
+
+    ListModel {
+        id: rows
     }
 
     onWantedChanged: {
