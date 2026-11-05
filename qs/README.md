@@ -1,7 +1,7 @@
 # qs
 
 A Quickshell desktop shell for Niri. One bar per screen holds a clock that opens into a calendar, a status
-circle that opens into a control centre (Wi‑Fi, Bluetooth, audio, power, fans, settings), a notification
+circle that opens into a control center (Wi‑Fi, Bluetooth, audio, power, fans, settings), a notification
 circle, a weather circle, an application/file/calculator launcher, and a secure prompt that answers sudo,
 ssh, git, gpg and polkit requests. It is QML running inside Quickshell plus two small Rust helpers; there is
 no user daemon.
@@ -12,7 +12,7 @@ no user daemon.
   the Niri keybinds below).
 - [Quickshell](https://quickshell.outfoxxed.me/) 0.3.x (the Home Manager module installs `pkgs.quickshell`).
 - NixOS + Home Manager for the packaged install. The `qs-shell` wrapper also expects `curl`, `fd`, `nmcli`,
-  `pdftoppm`, `wl-copy`, `systemctl`, `xdg-open` on `PATH`; `nix/package.nix` provides them.
+  `pdftoppm`, `wl-copy`, `systemctl`, `xdg-open`, `matugen` on `PATH`; `nix/package.nix` provides them.
 
 ## Install (flake)
 
@@ -75,8 +75,9 @@ critical). The module also enables `services.upower` and adds a udev rule making
 | `secureInput.gpg` | bool | `config.services.gpg-agent.enable` — `services.gpg-agent.pinentry.package` |
 | `paths.configFile` | absolute str | `${xdg.configHome}/qs/config.json` |
 
-Enabling installs the package, `quickshell`, `swaybg`, `ibm-plex`, `plemoljp-nf`; defines the
-`qs-shell` user service (`PartOf graphical-session.target`, `QS_CONFIG_FILE` set); exports
+Enabling installs the package, `quickshell`, `swaybg`, `ibm-plex`, `plemoljp-nf`; defines the `qs-shell`
+user service (`PartOf graphical-session.target`, `QS_CONFIG_FILE` set, and `QS_WALLPAPER` when `wallpaper`
+is set — the `matugen` palette generates its colors from it, falling back to `/etc/qs/wallpaper`); exports
 `QS_CONFIG_FILE` and the askpass variables to both the login shell and `systemd --user`; and seeds
 `paths.configFile` from `default.json` (mode 0600) only if the file does not exist.
 
@@ -112,6 +113,8 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 
 | Key | Accepted | Default | Meaning |
 | --- | --- | --- | --- |
+| `theme.colors` | `pens` `matugen` | `pens` | Colors for every function: the shell's own pens, or generated from the wallpaper by matugen (see `docs/ARCHITECTURE.md`, *Color*) |
+| `theme.appearance` | `dark` `light` | `dark` | The Night (dark) or Paper (light) page |
 | `bar.placement` | `top` `right` `bottom` `left` | `right` | Screen edge the bar sits on |
 | `bar.shadow` | bool | `true` | Drop shadow under the bar |
 | `bar.scale` | number 0.75–2 | `1` | Multiplies every size token (`Theme.scale`); 0.05 steps. Output scale stays the compositor's job |

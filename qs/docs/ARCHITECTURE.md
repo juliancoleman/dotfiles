@@ -1,6 +1,7 @@
 # Architecture
 
-Everything below is read from the source tree as it is; nothing is planned behaviour.
+Everything below is read from the source tree as it is; nothing is planned behavior.
+Prose (comments, docs, log messages, UI strings) is American English: "color", "center", "behavior".
 
 ## Process topology
 
@@ -25,7 +26,7 @@ Three processes exist:
 - `LocationServices` — system-wide GeoClue switch via `systemctl start qs-location-on/off.service`.
 
 **`Common`**
-- `Theme` — colours, metrics, and the motion vocabulary (`normalizeMotion`, `durationFor`, `easingFor`).
+- `Theme` — colors, metrics, and the motion vocabulary (`normalizeMotion`, `durationFor`, `easingFor`).
 - `I18n` — `tr()` keyed on `locale` (`en`/`jp`) so bindings retranslate live; `ja.js` holds strings.
 - `FocusedOutput` — the output Niri has focused, for "open on this screen" shortcuts.
 
@@ -68,7 +69,7 @@ Three processes exist:
 | State | Owner | Persistence |
 | --- | --- | --- |
 | All user settings | `ClockConfig` | `$QS_CONFIG_FILE` / `~/.config/qs/config.json`; read with `FileView { watchChanges: true }`, written with `FileView { atomicWrites: true }` from `save()` |
-| Per-screen panel state (calendar, control centre, notes, weather open) | each `ClockBar` instance | none |
+| Per-screen panel state (calendar, control center, notes, weather open) | each `ClockBar` instance | none |
 | Launcher open + screen | `LauncherState` | none |
 | Launcher app usage counts | `AppSearch` | `$XDG_CACHE_HOME/qs-launcher.json` (else `~/.cache/`) |
 | File preview renders | `FilePreview` | `$XDG_RUNTIME_DIR/qs-preview/<md5>.png` (else `/tmp`) |
@@ -77,38 +78,58 @@ Three processes exist:
 | Location on/off | NixOS oneshots | `/var/lib/qs/location-off` marker, read by `LocationServices` |
 
 Config write path: a Settings control calls its `set` → assigns a `ClockConfig` property → `ClockConfig.save()`
-serialises the whole document (preserving unknown keys it read) and writes atomically. `apply()` runs on every
+serializes the whole document (preserving unknown keys it read) and writes atomically. `apply()` runs on every
 file change; a value failing validation logs `qs config: invalid <key>` and keeps the in-memory value, so a
-hand‑typed mistake is never rewritten into the file. `Theme.motionDuration`, `Theme.springOvershoot`, and
-`I18n.locale` mirror `ClockConfig` so `Common` never imports the shell module.
+hand‑typed mistake is never rewritten into the file. `Theme.motionDuration`, `Theme.springOvershoot`,
+`Theme.palette`/`dark`, and `I18n.locale` mirror `ClockConfig` so `Common` never imports the shell module.
 
 ## Design language
 
-The bar's instruments are the identity; panels are built from the same parts rather than their own.
+One language, the notebook: a ruled instrument, a page with gauges on it. Two pages — Night (black) and
+Paper (`paper`, ePaper-like) — written in pens. Every component is built from the shared parts below, so a
+panel never mixes idioms. Principles kept from the platform HIGs: one primary reading per panel, content
+over chrome, 44px targets, every state visible (hover, press, focus, on).
 
-- **Reel digits.** Any number that can change is a `Clock/TickerNumber` (built on `DigitTicker`), so a
-  percentage, temperature, or count rolls the way the time does. Static text stays `Text`.
-- **Ring readouts.** A 0..1 reading is drawn as `Status/StatusArc` around its glyph (the status circle,
-  weather circle, `Status/Knob` with `level`). A ring always shows something *live* — a meter, a usage, a
-  battery — never the setpoint its own row's slider already shows (Ableton's meter beside the fader).
-  Where a row has a slider but no live signal (brightness), the knob has no ring; the glyph's own fill
-  (`StatusGlyph.level`) carries the coarse level.
-- **Colour by function class.** Readings `textPrimary`; labels and captions `textSecondary`; one `today`
-  per surface for the active/armed state (an "on" knob, a mic being listened to); `bordeaux`/`danger`
-  only for destructive or warning states. Never colour for decoration.
+### Color
+
+- **By function.** Each color has one job. Readings `textPrimary`; labels, captions and functions
+  `textSecondary`; `today` for the one active/armed state per surface (an "on" knob, today's date, a chosen
+  option's underline, a mic being listened to) with `todayInk` for content on it; `danger`/`dangerMark` only
+  for destructive or warning states; `charging` for charging and good air. Never color for decoration.
+- **Palettes** (`theme.colors`) fill those functions. `pens` is the shell's own: Uni-ball Signo's colored
+  blacks, lightened for Night — Blue Black is `today`, Bordeaux is `danger`, Green Black is `charging` —
+  with graphite and pencil on Paper. `matugen` fills the same slots from roles generated from the wallpaper
+  (`Common/Matugen`: primary → `today`, error → `danger`, tertiary → `charging`, surface/on-surface → the
+  page and its writing), regenerated each time it's chosen and cached in `$XDG_CACHE_HOME/qs-matugen.json`;
+  until a scheme exists the pens stand in. Another engine is a new set in `Theme` filling the same slots.
+- **Light and dark.** `theme.appearance` flips every slot; nothing assumes a black surface (overlays are
+  `lift`/`press`, never literal white).
+
+### Rules
+
+- **Tokens, not literals.** Colors come only from `Theme`'s semantic slots (`surface`, `textPrimary`/
+  `textSecondary`, `rule`/`stroke`/`edge`, `track`, `statusTrack`/`statusDim`, `lift`/`press`/`clear`,
+  `today`/`todayInk`/`todayDim`, `danger`/`dangerMark`/`dangerInk`, `charging`, `aqi*`); faces from
+  `fontFamily`/`latinFontFamily`/`fontWeightStrong`; shape from
+  `radius` (housings), `radiusInput` (rows, fields, hover boxes), `knobSize`, `rowHeight`, `tileGap`; lines
+  from `line`/`lineStrong` (a 0.38 pen's line and a fader's track); sizes via `Theme.px`.
+- **Shared parts.** `Common/SectionHeader`, `Common/Rule`, `Common/Field`, `Status/Knob`, `Control/Tile`/
+  `ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/`Stepper`, `Clock/BackButton`/`SettingsButton`/
+  `MonthArrow`.
+- **Page, not cards.** Groups are separated by `Rule`s; side-by-side cells by a vertical rule. No filled
+  containers. Rows take `lift`/`press` and a `line` outline in `today` on focus.
 - **Knob, then row.** Every actionable row starts with a `Status/Knob`: clicking it acts at once (mute,
-  disable Wi‑Fi, flip a fan to manual); clicking the rest of the row goes deeper. `on` fills it with
-  `Theme.today`.
-- **One flat fill, one hairline.** Containers (`Control/Tile`) are `Theme.track` with a 1px `Theme.edge`
-  border that turns `Theme.today` on focus. No tonal elevation stacks, no blur. Hover tints with
-  `Theme.lift`; knobs use `knobFill`/`knobLift`.
-- **Tokens over literals.** `Theme` holds the type ramp (`textCaption` 10 … `textDisplay` 22, with
-  `textTitle` = the clock's `horizontalDigit`), shape (`radius` 12 for containers, `radiusInput` 6 for
-  rows and lanes inside them, `knobSize`/`knobInset`/`knobGap`, `rowHeight`, `tileGap`), and the overlay
-  colours above. New components take these; `Control` and `Weather` are converted, other panels still
-  carry literal sizes and `Qt.rgba` overlays to be swept. Digits always set in `latinFontFamily`
-  (`DigitTicker`), so a locale switch to the JP face doesn't resize numbers.
+  disable Wi‑Fi, flip a fan to manual); clicking the rest of the row goes deeper. Off an unfilled `stroke`
+  circle, on a `today` disc.
+- **Faders are rulers** (`lineStrong` track, quarter ticks, no thumb); **scales are graph paper** (gridlines
+  at round values, spans with end ticks, the current value a short tick); **fields are written on a line**
+  (`Field` underline, `today` on focus). AQI bands appear as a marker, never a gradient.
+- **Reel digits.** Any number that can change is a `Clock/TickerNumber`, so values roll the way the time
+  does. Digits set in `latinFontFamily`, so a locale switch doesn't resize numbers.
+- **Ring readouts.** A live 0..1 reading (meter, usage, battery) may ring its glyph (`Status/StatusArc`);
+  never the setpoint its own slider already shows.
 - **Drawn glyphs.** Icons are `StatusGlyph` stroke paths (Lucide), never an icon font.
+- **Type.** IBM Plex; sentence-case captions on their rule.
 
 ## Motion system
 
@@ -136,7 +157,7 @@ The bar's instruments are the identity; panels are built from the same parts rat
   mapped `2 × Theme.motionDuration` after something opens (`dismissReady`) and only while no panel has the
   pointer down; any click on it calls `closeAll()`. It is unmapped as soon as closing starts so the
   compositor doesn't blend a screen‑sized layer during the animation.
-- Switching `clock.presentation` while the control centre is open folds the panel first, moves the housing,
+- Switching `clock.presentation` while the control center is open folds the panel first, moves the housing,
   then reopens the same page (`reopenPage`).
 
 ## Trust boundaries
@@ -150,7 +171,7 @@ is **same‑user trust**, not a privilege boundary: a malicious same‑uid proce
 files and could spoof a prompt. Over SSH the helper refuses to use the graphical prompt.
 
 **Fan socket**. `/run/qs-fan-helper.sock` is `root:qs-fans 0660`; group membership is the whole
-authorisation. The helper never trusts the client beyond that: the request schema is `status | set | auto |
+authorization. The helper never trusts the client beyond that: the request schema is `status | set | auto |
 release` (`deny_unknown_fields`), at most 8 clients and 4 KiB per request, one lease holder at a time, the
 policy (discovery defaults or an explicit device/channel allowlist with `minimumPercent`) comes from
 root‑owned `/etc/qs/fan-policy.json`, and a 200 ms watchdog revokes manual control on lease expiry,

@@ -94,8 +94,9 @@ Item {
     Column {
         id: content
         width: parent.width
-        spacing: 6
+        spacing: Theme.tileGap
 
+        // The switch row, then the networks, ruled apart.
         ToggleTile {
             width: parent.width
             motion: page.motion
@@ -108,51 +109,50 @@ Item {
             onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
         }
 
-        MomentumFlickable {
+        Rule {
             width: parent.width
-            height: Math.min(page.maxListHeight, list.implicitHeight)
             visible: Networking.wifiEnabled
-            contentHeight: list.implicitHeight
+        }
 
-            Column {
-                id: list
-                width: parent.width
+        ListGroup {
+            width: parent.width
+            maxHeight: page.maxListHeight
+            visible: Networking.wifiEnabled && page.networks.length > 0
 
-                Repeater {
-                    model: page.networks
+            Repeater {
+                model: page.networks
 
-                    ListRow {
-                        id: entry
-                        required property var modelData
-                        width: list.width
-                        motion: page.motion
-                        icon: "wifi"
-                        wifiBars: page.bars(modelData)
-                        title: modelData.name
-                        subtitle: page.status(modelData)
-                        current: modelData.connected
-                        busy: modelData.stateChanging
-                        trailing: modelData.connected ? "check"
-                            : page.secured(modelData) && !modelData.known ? "lock" : ""
-                        onActivated: page.activate(modelData)
+                ListRow {
+                    id: entry
+                    required property var modelData
+                    width: parent.width
+                    motion: page.motion
+                    icon: "wifi"
+                    wifiBars: page.bars(modelData)
+                    title: modelData.name
+                    subtitle: page.status(modelData)
+                    current: modelData.connected
+                    busy: modelData.stateChanging
+                    trailing: modelData.connected ? "check"
+                        : page.secured(modelData) && !modelData.known ? "lock" : ""
+                    onActivated: page.activate(modelData)
 
-                        Connections {
-                            target: entry.modelData
-                            function onConnectionFailed(reason) {
-                                if (page.joining !== entry.modelData.name || !page.secured(entry.modelData))
-                                    return
-                                const text = page.failureText(reason)
-                                if (page.asking)
-                                    SecureInput.fail(text)
-                                else if (reason === ConnectionFailReason.NoSecrets
-                                         || reason === ConnectionFailReason.WifiAuthTimeout)
-                                    page.askPassword(entry.modelData, text)
-                            }
-                            function onConnectedChanged() {
-                                if (entry.modelData.connected && page.joining === entry.modelData.name) {
-                                    page.joining = ""
-                                    SecureInput.finish(page)
-                                }
+                    Connections {
+                        target: entry.modelData
+                        function onConnectionFailed(reason) {
+                            if (page.joining !== entry.modelData.name || !page.secured(entry.modelData))
+                                return
+                            const text = page.failureText(reason)
+                            if (page.asking)
+                                SecureInput.fail(text)
+                            else if (reason === ConnectionFailReason.NoSecrets
+                                     || reason === ConnectionFailReason.WifiAuthTimeout)
+                                page.askPassword(entry.modelData, text)
+                        }
+                        function onConnectedChanged() {
+                            if (entry.modelData.connected && page.joining === entry.modelData.name) {
+                                page.joining = ""
+                                SecureInput.finish(page)
                             }
                         }
                     }

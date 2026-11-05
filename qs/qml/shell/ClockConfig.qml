@@ -34,11 +34,22 @@ Singleton {
     // { name, region, latitude, longitude } chosen in Settings, or null.
     property var weatherLocation: null
     property bool weatherAlerts: true
+    // "pens" (the shell's own inks) or "matugen" (generated from the wallpaper).
+    property string themePalette: "pens"
+    // "dark" or "light" (the Night and Paper pages).
+    property string themeAppearance: "dark"
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
     onScaleChanged: Theme.scale = scale
     onLocaleChanged: I18n.locale = locale
+    onThemePaletteChanged: {
+        Theme.palette = themePalette
+        // Recomputed on every switch to matugen, so a changed wallpaper is picked up then.
+        if (themePalette === "matugen")
+            Matugen.regenerate()
+    }
+    onThemeAppearanceChanged: Theme.dark = themeAppearance === "dark"
 
     function oneOf(...allowed) {
         return raw => allowed.indexOf(raw) >= 0
@@ -67,8 +78,11 @@ Singleton {
         const notifications = parsed && parsed.notifications ? parsed.notifications : {}
         const launcher = parsed && parsed.launcher ? parsed.launcher : {}
         const weather = parsed && parsed.weather ? parsed.weather : {}
+        const theme = parsed && parsed.theme ? parsed.theme : {}
         const flag = oneOf(true, false)
         document = parsed || {}
+        themePalette = pick("theme.colors", theme.colors, oneOf("pens", "matugen"), "pens", themePalette)
+        themeAppearance = pick("theme.appearance", theme.appearance, oneOf("dark", "light"), "dark", themeAppearance)
         doNotDisturb = pick("notifications.doNotDisturb", notifications.doNotDisturb, flag, false, doNotDisturb)
         weatherEnabled = pick("weather.enabled", weather.enabled, flag, true, weatherEnabled)
         weatherUnits = pick("weather.units", weather.units, oneOf("imperial", "metric"), "imperial", weatherUnits)
@@ -124,6 +138,9 @@ Singleton {
             location: weatherLocation,
             alerts: weatherAlerts
         }
+        next.theme = Object.assign({}, next.theme, { colors: themePalette, appearance: themeAppearance })
+        delete next.theme.style
+        delete next.theme.ink
         next.bar.placement = placement
         next.bar.shadow = shadow
         next.bar.scale = scale

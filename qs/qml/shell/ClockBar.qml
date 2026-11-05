@@ -278,18 +278,35 @@ PanelWindow {
     // Floats over the desktop: one shadow from everything's combined outline, drawn beneath the real
     // scene so the fused circles cast a single shape and the text keeps its own rendering. The effect
     // covers the whole window on purpose: cropping it to what's drawn means resizing its texture as things
-    // move, and each resize draws a stale copy of the scene a frame behind the real one.
+    // move, and each resize draws a stale copy of the scene a frame behind the real one. Its own copy of the
+    // scene, and the shadow under it, are masked away wherever the scene draws, so neither doubles up under
+    // the scene's antialiased edges and rings them. The drop is close and dark.
     Loader {
         active: ClockConfig.shadow
         anchors.fill: scene
-        sourceComponent: MultiEffect {
-            source: scene
-            shadowEnabled: true
-            shadowColor: "black"
-            shadowOpacity: 0.45
-            shadowBlur: 0.8
-            blurMax: 32
-            shadowVerticalOffset: 4
+        sourceComponent: Item {
+            ShaderEffectSource {
+                id: sceneTexture
+                anchors.fill: parent
+                sourceItem: scene
+                visible: false
+            }
+            MultiEffect {
+                anchors.fill: parent
+                source: sceneTexture
+                // Unpadded, so the mask lines up with the copy it removes; the effect already spans the
+                // window, and nothing casts a shadow past its edges.
+                autoPaddingEnabled: false
+                maskEnabled: true
+                maskInverted: true
+                maskSource: sceneTexture
+                shadowEnabled: true
+                shadowColor: "black"
+                shadowOpacity: 0.45
+                shadowBlur: 0.8
+                blurMax: 32
+                shadowVerticalOffset: 4
+            }
         }
     }
 

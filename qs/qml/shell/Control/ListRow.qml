@@ -2,6 +2,7 @@ import QtQuick
 import "../Common"
 import "../Status"
 
+// One entry in a list: a glyph, a title over a subtitle, a trailing mark.
 Rectangle {
     id: row
 
@@ -15,11 +16,11 @@ Rectangle {
     signal activated()
     property string motion: "spring"
 
-    implicitHeight: 40
+    implicitHeight: Theme.px(40)
     radius: Theme.radiusInput
-    // Fade white's alpha only; animating from "transparent" (black) passes through grey.
-    color: hit.containsMouse || activeFocus ? Theme.lift : Qt.rgba(1, 1, 1, 0)
-    border.width: activeFocus ? 1 : 0
+    // Fade the layer's alpha only; animating from "transparent" (black) passes through gray.
+    color: hit.pressed ? Theme.press : hit.containsMouse || activeFocus ? Theme.lift : Theme.clear
+    border.width: activeFocus ? Theme.line : 0
     border.color: Theme.today
     activeFocusOnTab: visible
     Accessible.role: Accessible.Button
@@ -48,20 +49,19 @@ Rectangle {
     StatusGlyph {
         id: glyph
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: Theme.px(10)
         anchors.verticalCenter: parent.verticalCenter
         visible: row.icon !== ""
-        width: row.icon !== "" ? 16 : 0
-        height: 16
+        width: row.icon !== "" ? Theme.px(16) : 0
+        height: Theme.px(16)
         icon: row.icon
         wifiBars: row.wifiBars
         ink: row.current ? Theme.today : Theme.textPrimary
-        cutColor: Theme.track
     }
 
     Column {
         anchors.left: glyph.right
-        anchors.leftMargin: row.icon !== "" ? 10 : 0
+        anchors.leftMargin: row.icon !== "" ? Theme.px(10) : 0
         anchors.right: mark.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
@@ -74,7 +74,7 @@ Rectangle {
             elide: Text.ElideRight
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: row.current ? Font.Medium : Font.Normal
+            font.weight: row.current ? Theme.fontWeightStrong : Font.Normal
         }
 
         Text {
@@ -91,7 +91,7 @@ Rectangle {
     StatusGlyph {
         id: mark
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: Theme.px(10)
         anchors.verticalCenter: parent.verticalCenter
         width: row.trailing !== "" ? 14 : 0
         height: 14

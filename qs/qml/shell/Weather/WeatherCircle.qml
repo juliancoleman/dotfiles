@@ -151,7 +151,7 @@ Item {
 
     Rectangle {
         id: housing
-        readonly property real round: root.diameter / 2 * (1 - Math.min(1, root.openP)) + 14 * root.openP
+        readonly property real round: root.diameter / 2 * (1 - Math.min(1, root.openP)) + Theme.radius * root.openP
         readonly property real square: round * (1 - Math.max(0, Math.min(1, root.attach)))
         // Screen-edge corners and the ones facing the clock square off as the circle fuses into the notch.
         function corner(outer, facingClock) {
@@ -218,8 +218,6 @@ Item {
             Accessible.name: root.opened ? I18n.tr("Close weather") : WeatherService.condition + ", " + root.reading
 
             // In the notch, opening weather replaces its cloud and temperature with the close action.
-
-
             Item {
                 opacity: root.closeActionInFace ? 0 : 1
                 Behavior on opacity {
@@ -249,7 +247,6 @@ Item {
                 shown: root.closeActionInFace
                 motion: root.motion
             }
-
 
             TickerNumber {
                 id: label

@@ -1,7 +1,8 @@
 import QtQuick
 import "../Common"
 
-// A calendar header's previous/next month button, widening in as the calendar opens.
+// A calendar header's previous/next month button, widening in as the calendar opens: a guillemet in a
+// hover box.
 Item {
     id: arrow
 
@@ -22,18 +23,19 @@ Item {
     }
 
     Rectangle {
-        anchors.fill: parent
-        anchors.margins: 1
+        anchors.centerIn: parent
+        width: parent.width - 2
+        height: parent.height - 2
         radius: Theme.radiusInput
-        color: arrow.activeFocus ? Qt.alpha(Theme.today, 0.16) : "transparent"
-        border.width: arrow.activeFocus ? 1 : 0
+        color: hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
+        border.width: arrow.activeFocus ? Theme.line : 0
         border.color: Theme.today
     }
 
     Text {
         anchors.centerIn: parent
         text: arrow.delta < 0 ? "‹" : "›"
-        color: hit.pressed || arrow.activeFocus ? Theme.today : Theme.textPrimary
+        color: Theme.textPrimary
         font.family: Theme.fontFamily
         font.pixelSize: Theme.textTitle
         font.weight: Font.Medium
@@ -47,6 +49,7 @@ Item {
         id: hit
         anchors.fill: parent
         enabled: arrow.opened > 0.45
+        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: arrow.activate()
     }

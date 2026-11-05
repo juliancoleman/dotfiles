@@ -25,6 +25,7 @@ Item {
     }
 
     Item {
+        id: titleBox
         anchors.centerIn: parent
         width: Math.max(0, header.width - 2 * Theme.px(28) * header.opened)
         height: header.height
@@ -42,13 +43,14 @@ Item {
         }
 
         Text {
-            anchors.centerIn: parent
+            anchors.verticalCenter: parent.verticalCenter
+            x: (parent.width - width) / 2
             opacity: header.opened
             text: header.clock.monthTitle
             color: Theme.textPrimary
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
     }
 
@@ -60,5 +62,14 @@ Item {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         KeyNavigation.backtab: prevArrow
+    }
+
+    // The page rule the month title is set above.
+    Rule {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        opacity: header.opened
+        visible: opacity > 0
     }
 }

@@ -91,7 +91,7 @@ Tile {
             elide: Text.ElideRight
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
 
         Text {
@@ -144,6 +144,16 @@ Tile {
         height: tile.manual ? 22 : 0
         opacity: tile.manual ? 1 : 0
 
+        // The setpoint as drawn: follows a drag at once, eases to anything else.
+        property real shown: tile.fraction
+        Behavior on shown {
+            enabled: !drag.pressed
+            NumberAnimation {
+                duration: tile.motionDuration
+                easing.type: Easing.OutCubic
+            }
+        }
+
         Behavior on height {
             NumberAnimation {
                 duration: tile.motionDuration
@@ -158,31 +168,41 @@ Tile {
             }
         }
 
-        Rectangle {
+        Item {
             id: track
             x: 16
             width: parent.width - 32
-            y: 9
-            height: 3
-            radius: 1.5
+            y: 8
+            height: Theme.lineStrong
+        }
+
+        // The same ruler as a SliderTile's fader: quarter ticks, the set part inked, no thumb.
+        Rectangle {
+            anchors.fill: track
+            radius: height / 2
             color: Theme.statusTrack
+        }
+
+        Repeater {
+            model: 3
+
+            Rectangle {
+                required property int index
+                x: track.x + Math.round(track.width * (index + 1) / 4)
+                y: track.y + track.height + 2
+                width: Theme.line
+                height: 3
+                color: Theme.statusTrack
+            }
         }
 
         Rectangle {
             x: track.x
             y: track.y
-            height: 3
-            radius: 1.5
-            width: Math.max(height, track.width * tile.fraction)
+            height: track.height
+            radius: height / 2
+            width: Math.max(height, track.width * lane.shown)
             color: Theme.textPrimary
-
-            Behavior on width {
-                enabled: !drag.pressed
-                NumberAnimation {
-                    duration: tile.motionDuration
-                    easing.type: Easing.OutCubic
-                }
-            }
         }
 
         MouseArea {

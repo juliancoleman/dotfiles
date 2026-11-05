@@ -171,8 +171,7 @@ Item {
 
     // Corners on the screen edge, and those facing the clock, square off as the circle fuses into the notch.
     function corner(outer, facingClock) {
-        // 14 is the fused housing's corner, shared with the weather circle's housing; not a container radius.
-        const radius = diameter / 2 * (1 - Math.min(1, openP)) + 14 * openP
+        const radius = diameter / 2 * (1 - Math.min(1, openP)) + Theme.radius * openP
         return outer || facingClock ? radius * (1 - Math.max(0, Math.min(1, attach))) : radius
     }
 
@@ -328,7 +327,7 @@ Item {
                         color: Theme.textPrimary
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.textStrong
-                        font.weight: Font.Medium
+                        font.weight: Theme.fontWeightStrong
                     }
 
                     Text {
@@ -369,7 +368,7 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         radius: Theme.radiusInput
-                        color: clearHit.containsMouse || clear.activeFocus ? Theme.track : "transparent"
+                        color: clearHit.pressed ? Theme.press : clearHit.containsMouse ? Theme.lift : Theme.clear
                         border.width: clear.activeFocus ? 1 : 0
                         border.color: Theme.today
                     }
@@ -378,7 +377,7 @@ Item {
                         id: clearLabel
                         anchors.centerIn: parent
                         text: I18n.tr("Clear all")
-                        color: clearHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
+                        color: Theme.textPrimary
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.textLabel
                         font.weight: Font.Medium
@@ -406,12 +405,13 @@ Item {
                 Column {
                     id: list
                     width: parent.width
-                    spacing: Theme.tileGap
 
                     Repeater {
                         model: NotificationService.model
 
                         NotificationRow {
+                            required property int index
+                            ruled: index > 0
                             width: list.width
                             motion: root.motion
                         }
@@ -438,10 +438,10 @@ Item {
                 width: badge.face
                 height: badge.face
                 radius: width / 2
-                color: Theme.ink
-                // A critical arrival rings the circle in lightened danger: a warning state, not decoration.
+                color: Theme.track
+                // A critical arrival rings the circle in the danger mark: a warning state, not decoration.
                 border.width: NotificationService.newestCritical ? 1.5 : 0
-                border.color: Qt.lighter(Theme.danger, 1.8)
+                border.color: Theme.dangerMark
                 opacity: 1
                 clip: true
 

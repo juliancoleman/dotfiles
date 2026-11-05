@@ -27,6 +27,28 @@ Singleton {
             title: "Theme",
             controls: [
                 {
+                    key: "themePalette",
+                    title: "Palette",
+                    keywords: "colour color ink pen signo wallpaper matugen scheme generated",
+                    choices: [
+                        { label: "Pens", value: "pens" },
+                        { label: "Matugen", value: "matugen" }
+                    ],
+                    get: () => ClockConfig.themePalette,
+                    set: next => ClockConfig.themePalette = next
+                },
+                {
+                    key: "themeAppearance",
+                    title: "Appearance",
+                    keywords: "dark light mode black white",
+                    choices: [
+                        { label: "Night", value: "dark" },
+                        { label: "Paper", value: "light" }
+                    ],
+                    get: () => ClockConfig.themeAppearance,
+                    set: next => ClockConfig.themeAppearance = next
+                },
+                {
                     key: "locale",
                     title: "Locale",
                     // Each language names itself, so the dictionary deliberately has no entry for these.
@@ -79,12 +101,6 @@ Singleton {
                     suffix: "×",
                     get: () => ClockConfig.scale,
                     set: next => ClockConfig.scale = next
-                },
-                {
-                    key: "palette",
-                    kind: "palette",
-                    title: "Palette",
-                    keywords: "color colour ink pen bordeaux green blue black purple"
                 }
             ]
         },

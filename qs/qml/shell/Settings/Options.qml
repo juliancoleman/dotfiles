@@ -1,7 +1,8 @@
 import QtQuick
 import "../Common"
 
-// A titled row of mutually exclusive choices; the highlight slides to the picked one.
+// A titled row of mutually exclusive choices written on a ruled line: cells split by hairlines, the
+// picked one set in primary text and underlined in ink, the underline sliding to the next pick.
 Item {
     id: options
 
@@ -11,17 +12,24 @@ Item {
     signal picked(string next)
     property string motion: "spring"
 
+    readonly property int fade: Theme.durationFor(motion) * 0.56
+
     implicitHeight: Theme.px(58)
     activeFocusOnTab: visible
+    Accessible.role: Accessible.PageTabList
     Accessible.name: title
     Accessible.description: labelFor(value)
 
-    function indexFor(selected) {
+    function indexOf(selected) {
         for (var i = 0; i < choices.length; ++i) {
             if (choices[i].value === selected)
                 return i
         }
-        return 0
+        return -1
+    }
+
+    function indexFor(selected) {
+        return Math.max(0, indexOf(selected))
     }
 
     function labelFor(selected) {
@@ -45,79 +53,105 @@ Item {
     Keys.onRightPressed: step(1)
 
     Text {
+        anchors.left: parent.left
+        anchors.right: parent.right
         text: options.title
+        elide: Text.ElideRight
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.textLabel
-        font.letterSpacing: 1.15
-        font.capitalization: Font.AllUppercase
+        font.pixelSize: Theme.textCaption
+        font.weight: Font.Normal
     }
 
-    Rectangle {
-        id: track
+    // The ruled line.
+    Item {
+        id: line
         anchors.bottom: parent.bottom
         width: parent.width
         height: Theme.px(36)
-        radius: Theme.radius
-        color: Theme.track
-        border.width: 1
-        border.color: options.activeFocus ? Theme.today : Theme.edge
 
-        readonly property int inset: Theme.px(3)
-        // Hairline between cells.
-        readonly property int gap: 2
-        readonly property real cell: choices.length > 0
-            ? (width - 2 * inset - (choices.length - 1) * gap) / choices.length : 0
+        // One hairline between cells; the cells share what is left.
+        readonly property real cell: choices.length > 0 ? (width - (choices.length - 1) * Theme.line) / choices.length : 0
+        readonly property real chosenX: options.indexFor(options.value) * (cell + Theme.line)
+
+        Rule {
+            anchors.bottom: parent.bottom
+            width: parent.width
+        }
+
+        Row {
+            anchors.fill: parent
+
+            Repeater {
+                model: options.choices
+
+                Row {
+                    id: slot
+                    required property var modelData
+                    required property int index
+                    readonly property bool chosen: modelData.value === options.value
+
+                    Rule {
+                        vertical: true
+                        visible: slot.index > 0
+                        height: Theme.px(16)
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Rectangle {
+                        width: line.cell
+                        height: line.height
+                        radius: Theme.radiusInput
+                        // Fade the layer's alpha only; animating from "transparent" (black) passes through gray.
+                        color: hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
+                        border.width: slot.chosen && options.activeFocus ? Theme.line : 0
+                        border.color: Theme.today
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: options.fade
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        Text {
+                            anchors.fill: parent
+                            anchors.leftMargin: Theme.px(4)
+                            anchors.rightMargin: Theme.px(4)
+                            text: slot.modelData.label
+                            color: slot.chosen ? Theme.textPrimary : Theme.textSecondary
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.textBody
+                            font.weight: slot.chosen ? Font.Medium : Font.Normal
+                        }
+
+                        MouseArea {
+                            id: hit
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: options.picked(slot.modelData.value)
+                        }
+                    }
+                }
+            }
+        }
 
         Rectangle {
-            radius: Theme.radiusInput
-            x: track.inset + options.indexFor(options.value) * (track.cell + track.gap)
-            y: track.inset
-            width: track.cell
-            height: track.height - 2 * track.inset
+            anchors.bottom: parent.bottom
+            x: line.chosenX
+            width: line.cell
+            height: Theme.lineStrong
+            visible: options.choices.length > 0
             color: Theme.today
 
             Behavior on x {
                 NumberAnimation {
                     duration: Theme.durationFor(options.motion) * 0.88
                     easing.type: Easing.OutCubic
-                }
-            }
-        }
-
-        Row {
-            anchors.fill: parent
-            anchors.margins: track.inset
-            spacing: track.gap
-
-            Repeater {
-                model: options.choices
-
-                Item {
-                    id: cell
-                    required property var modelData
-                    width: track.cell
-                    height: track.height - 2 * track.inset
-
-                    Text {
-                        anchors.fill: parent
-                        anchors.leftMargin: Theme.px(4)
-                        anchors.rightMargin: Theme.px(4)
-                        text: cell.modelData.label
-                        color: cell.modelData.value === options.value ? Theme.todayInk : Theme.textSecondary
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.textBody
-                        font.weight: cell.modelData.value === options.value ? Font.DemiBold : Font.Normal
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: options.picked(cell.modelData.value)
-                    }
                 }
             }
         }

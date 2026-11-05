@@ -3,15 +3,19 @@ import Quickshell.Io
 import ".."
 import "../Common"
 
-// The chosen place (or what location services found) and, for an exact place, a city search.
+// The chosen place (or what location services found) and, for an exact place, a city search whose results
+// sit on the page.
 Column {
     id: root
 
     property var results: []
     property bool searching: false
     readonly property bool exact: !WeatherService.automatic
+    // Where text starts inside the field: on its line, just off the margin.
+    readonly property real fieldInset: Theme.px(2)
+    readonly property real rowInset: Theme.px(12)
 
-    spacing: 8
+    spacing: Theme.px(8)
 
     function describe(spot) {
         return spot.region ? spot.name + ", " + spot.region : spot.name
@@ -70,14 +74,15 @@ Column {
         elide: Text.ElideRight
     }
 
-    Rectangle {
+    Item {
         visible: root.exact
         width: parent.width
-        height: visible ? 34 : 0
-        radius: Theme.radiusInput
-        color: Theme.track
-        border.width: 1
-        border.color: field.activeFocus ? Theme.today : Theme.edge
+        height: visible ? Theme.px(34) : 0
+
+        Field {
+            anchors.fill: parent
+            focused: field.activeFocus
+        }
 
         Text {
             anchors.fill: field
@@ -92,8 +97,8 @@ Column {
         TextInput {
             id: field
             anchors.fill: parent
-            anchors.leftMargin: 12
-            anchors.rightMargin: 12
+            anchors.leftMargin: root.fieldInset
+            anchors.rightMargin: root.fieldInset
             clip: true
             color: Theme.textPrimary
             selectionColor: Theme.today
@@ -110,38 +115,45 @@ Column {
         }
     }
 
-    Repeater {
-        model: root.exact ? root.results : []
+    Column {
+        id: resultColumn
+        visible: rows.count > 0
+        width: root.width
 
-        Rectangle {
-            id: row
-            required property var modelData
-            width: root.width
-            height: 30
-            radius: Theme.radiusInput
-            color: rowHit.containsMouse ? Theme.lift : "transparent"
+        Repeater {
+            id: rows
+            model: root.exact ? root.results : []
 
-            Text {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.describe(row.modelData)
-                color: Theme.textPrimary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.textBody
-                elide: Text.ElideRight
-            }
+            Rectangle {
+                id: row
+                required property var modelData
+                width: resultColumn.width
+                height: Theme.px(32)
+                radius: Theme.radiusInput
+                color: rowHit.pressed ? Theme.press : rowHit.containsMouse ? Theme.lift : Theme.clear
 
-            MouseArea {
-                id: rowHit
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                Accessible.role: Accessible.Button
-                Accessible.name: root.describe(row.modelData)
-                onClicked: root.choose(row.modelData)
+                Text {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: root.rowInset
+                    anchors.rightMargin: root.rowInset
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.describe(row.modelData)
+                    color: Theme.textPrimary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.textBody
+                    elide: Text.ElideRight
+                }
+
+                MouseArea {
+                    id: rowHit
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    Accessible.role: Accessible.Button
+                    Accessible.name: root.describe(row.modelData)
+                    onClicked: root.choose(row.modelData)
+                }
             }
         }
     }

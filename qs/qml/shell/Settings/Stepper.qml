@@ -40,19 +40,21 @@ Item {
         text: field.title
         color: Theme.textSecondary
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.textLabel
-        font.letterSpacing: 1.15
-        font.capitalization: Font.AllUppercase
+        font.pixelSize: Theme.textCaption
+        font.weight: Font.Normal
     }
 
-    Rectangle {
+    // Written on a field's line, the − and + either side of the value as hover boxes.
+    Item {
         anchors.bottom: parent.bottom
         width: parent.width
         height: Theme.px(36)
-        radius: Theme.radius
-        color: Theme.track
-        border.width: 1
-        border.color: field.activeFocus ? Theme.today : Theme.edge
+
+        Field {
+            anchors.fill: parent
+            focused: field.activeFocus
+            motion: field.motion
+        }
 
         // Whole numbers roll on the clock's tickers; the ticker has no fraction column, so decimals stay text.
         TickerNumber {
@@ -90,8 +92,8 @@ Item {
                 radius: Theme.radiusInput
                 x: modelData.side === "left" ? field.inset : parent.width - width - field.inset
                 y: field.inset
-                color: pressed.pressed ? Theme.knobFill
-                     : pressed.containsMouse ? Theme.lift : "transparent"
+                color: pressed.pressed ? Theme.press
+                     : pressed.containsMouse ? Theme.lift : Theme.clear
 
                 Text {
                     anchors.centerIn: parent

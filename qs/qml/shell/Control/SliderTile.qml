@@ -3,8 +3,9 @@ import "../Clock"
 import "../Common"
 import "../Status"
 
-// A setpoint: the lane drags it, the digits roll with it, a click on the knob mutes it. The knob's
-// ring is the signal actually flowing (`meter`, NaN for none), as a mixer's meter beside its fader.
+// A setpoint: a ruler beside a knob. The lane drags it, the digits roll with it, a click on the knob mutes
+// it, and the knob's ring is the signal actually flowing (`meter`, NaN for none), as a mixer's meter beside
+// its fader.
 Tile {
     id: tile
 
@@ -22,7 +23,10 @@ Tile {
     signal opened()
 
     readonly property real shown: muted ? 0 : Math.max(0, Math.min(1, value))
+    readonly property bool dragging: drag.pressed
+    readonly property bool ringed: !isNaN(meter)
 
+    implicitHeight: Theme.rowHeight
     activeFocusOnTab: visible
     Accessible.role: Accessible.Slider
     Accessible.name: title
@@ -57,25 +61,40 @@ Tile {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
+        // A ruler: a line in the pen's strong weight with ticks at the quarters; the set part inks over it.
+        // No thumb — the reel digits beside it carry the value.
         Rectangle {
             id: track
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
-            height: 3
-            radius: 1.5
+            height: Theme.lineStrong
+            radius: height / 2
             color: Theme.statusTrack
+        }
+
+        Repeater {
+            model: 3
+
+            Rectangle {
+                required property int index
+                x: Math.round(track.width * (index + 1) / 4)
+                y: track.y + track.height + 2
+                width: Theme.line
+                height: 3
+                color: Theme.statusTrack
+            }
         }
 
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter
-            height: 3
-            radius: 1.5
+            height: Theme.lineStrong
+            radius: height / 2
             width: Math.max(height, track.width * tile.shown)
             visible: tile.shown > 0.002
             color: Theme.textPrimary
 
             Behavior on width {
-                enabled: !drag.pressed
+                enabled: !tile.dragging
                 NumberAnimation {
                     duration: tile.motionDuration
                     easing.type: Easing.OutCubic
@@ -98,10 +117,12 @@ Tile {
         }
     }
 
+    // The chevron's column is kept even when hidden, so faders stacked in a group end on one line and their
+    // ticks and digits align.
     Item {
         id: readout
-        anchors.right: tile.opens ? chevron.left : parent.right
-        anchors.rightMargin: tile.opens ? 6 : 12
+        anchors.right: chevron.left
+        anchors.rightMargin: 6
         anchors.verticalCenter: parent.verticalCenter
         width: 26
         height: digits.implicitHeight
@@ -110,7 +131,7 @@ Tile {
             id: digits
             anchors.right: parent.right
             value: Math.round(tile.shown * 100)
-            motion: drag.pressed ? "none" : tile.motion
+            motion: tile.dragging ? "none" : tile.motion
             color: Theme.textSecondary
             fontPixelSize: Theme.textLabel
             fontWeight: Font.Normal

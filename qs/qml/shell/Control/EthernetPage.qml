@@ -83,7 +83,7 @@ Item {
             color: Theme.textPrimary
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
 
         Row {
@@ -116,35 +116,46 @@ Item {
         width: parent.width
         spacing: Theme.tileGap
 
-        Throughput {
+        // Throughput, then the facts, ruled apart.
+        Column {
             width: parent.width
-            icon: "arrow-down"
-            title: I18n.tr("Download")
-            parts: page.down
-            level: page.share(WiredSource.downRate)
+            spacing: Theme.tileGap
+
+            Throughput {
+                width: parent.width
+                icon: "arrow-down"
+                title: I18n.tr("Download")
+                parts: page.down
+                level: page.share(WiredSource.downRate)
+            }
+
+            Throughput {
+                width: parent.width
+                icon: "arrow-up"
+                title: I18n.tr("Upload")
+                parts: page.up
+                level: page.share(WiredSource.upRate)
+            }
         }
 
-        Throughput {
+        Rule { width: parent.width }
+
+        Column {
             width: parent.width
-            icon: "arrow-up"
-            title: I18n.tr("Upload")
-            parts: page.up
-            level: page.share(WiredSource.upRate)
-        }
+            spacing: Theme.tileGap
 
-        Item { width: 1; height: Theme.px(4) }
-
-        Detail { label: I18n.tr("Connection"); value: WiredSource.connection }
-        Detail { label: I18n.tr("Interface"); value: WiredSource.device }
-        Detail { label: I18n.tr("Address"); value: WiredSource.address + WiredSource.prefix }
-        Detail { label: I18n.tr("Router"); value: WiredSource.gateway }
-        Detail { label: I18n.tr("DNS"); value: WiredSource.dns.join(", ") }
-        Detail {
-            label: I18n.tr("Link")
-            value: WiredSource.linkSpeed >= 1000 ? I18n.tr("%1 Gbit/s").arg(WiredSource.linkSpeed / 1000)
-                : WiredSource.linkSpeed > 0 ? I18n.tr("%1 Mbit/s").arg(WiredSource.linkSpeed) : ""
+            Detail { label: I18n.tr("Connection"); value: WiredSource.connection }
+            Detail { label: I18n.tr("Interface"); value: WiredSource.device }
+            Detail { label: I18n.tr("Address"); value: WiredSource.address + WiredSource.prefix }
+            Detail { label: I18n.tr("Router"); value: WiredSource.gateway }
+            Detail { label: I18n.tr("DNS"); value: WiredSource.dns.join(", ") }
+            Detail {
+                label: I18n.tr("Link")
+                value: WiredSource.linkSpeed >= 1000 ? I18n.tr("%1 Gbit/s").arg(WiredSource.linkSpeed / 1000)
+                    : WiredSource.linkSpeed > 0 ? I18n.tr("%1 Mbit/s").arg(WiredSource.linkSpeed) : ""
+            }
+            Detail { label: I18n.tr("Hardware"); value: WiredSource.hardwareAddress }
         }
-        Detail { label: I18n.tr("Hardware"); value: WiredSource.hardwareAddress }
 
         Text {
             width: parent.width

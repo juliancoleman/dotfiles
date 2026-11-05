@@ -40,7 +40,7 @@ Item {
         && (batteryPercentage === "always" || batteryLow)
     readonly property color arcColor: control !== "" ? Theme.textPrimary
         : battery.charging ? Theme.charging
-        : batteryLow ? Theme.danger
+        : batteryLow ? Theme.dangerMark
         : Theme.textPrimary
 
     // Opening the panel replaces the full status indicator with a centered close action.

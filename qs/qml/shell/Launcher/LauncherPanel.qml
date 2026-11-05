@@ -77,6 +77,10 @@ Item {
     // Opens in the default from settings; the toggles switch it for this time only.
     property string view: ClockConfig.launcherView
     readonly property bool listView: view === "list"
+    // The selected result is outlined in ink over a lift.
+    readonly property color pickFill: Theme.lift
+    readonly property color pickInk: Theme.textPrimary
+    readonly property color pickSubInk: Theme.textSecondary
 
     x: edge === "right" ? from.x + from.width - width
         : edge === "left" ? from.x
@@ -89,7 +93,7 @@ Item {
     visible: p > 0.001
 
     function corner(outer) {
-        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + Theme.px(18) * pc
+        const radius = Math.min(from.width, from.height) / 2 * (1 - pc) + Theme.radius * pc
         return outer ? radius * (1 - notch) : radius
     }
 
@@ -200,27 +204,29 @@ Item {
                 width: root.listW
                 height: parent.height
 
-                Rectangle {
+                Item {
                     id: field
                     x: Theme.panelPad
                     y: Theme.panelPad
                     width: parent.width - Theme.panelPad * 2
                     height: Theme.px(34)
-                    radius: Theme.radius
-                    color: Theme.track
-                    border.width: 1
-                    border.color: input.activeFocus ? Theme.today : Theme.edge
+
+                    // The query is written on a line.
+                    Field {
+                        anchors.fill: parent
+                        focused: input.activeFocus
+                        motion: root.motion
+                    }
 
                     StatusGlyph {
                         id: leader
                         anchors.left: parent.left
-                        anchors.leftMargin: Theme.px(11)
+                        anchors.leftMargin: Theme.px(4)
                         anchors.verticalCenter: parent.verticalCenter
                         width: Theme.px(13)
-                        height: Theme.px(13)
+                        height: width
                         icon: "search"
                         ink: Theme.textSecondary
-                        cutColor: field.color
                     }
 
                     Text {
@@ -230,7 +236,8 @@ Item {
                         elide: Text.ElideRight
                         text: I18n.tr("Search  ·  @ apps  ·  / files  ·  > settings")
                         color: Theme.textSecondary
-                        font: input.font
+                        font.family: input.font.family
+                        font.pixelSize: input.font.pixelSize
                     }
 
                     TextInput {
@@ -291,23 +298,24 @@ Item {
                     }
                 }
 
+                // The answer is a row on the page, read like the hero; the whole row copies it.
                 Rectangle {
                     id: answer
-                    x: Theme.panelPad
+                    x: Theme.panelPad - 2
                     y: field.y + field.height + (visible ? Theme.px(8) : 0)
-                    width: parent.width - Theme.panelPad * 2
+                    width: parent.width - (Theme.panelPad - 2) * 2
                     height: visible ? Theme.px(60) : 0
                     visible: root.calc !== null
-                    radius: Theme.radius
-                    color: root.calcSelected ? Theme.ink : Theme.track
-                    border.width: 1
-                    border.color: Theme.edge
+                    radius: Theme.radiusInput
+                    color: answerHit.pressed ? Theme.press : root.calcSelected ? root.pickFill : Theme.clear
+                    border.width: root.calcSelected ? 1 : 0
+                    border.color: Theme.today
                     Accessible.role: Accessible.Button
                     Accessible.name: root.calc ? I18n.tr("Copy %1").arg(root.calc.text) : ""
 
                     Column {
                         anchors.left: parent.left
-                        anchors.leftMargin: Theme.px(14)
+                        anchors.leftMargin: Theme.px(12)
                         anchors.right: hint.left
                         anchors.rightMargin: Theme.px(10)
                         anchors.verticalCenter: parent.verticalCenter
@@ -317,7 +325,7 @@ Item {
                             width: parent.width
                             text: root.query.trim()
                             elide: Text.ElideRight
-                            color: Theme.textSecondary
+                            color: root.calcSelected ? root.pickSubInk : Theme.textSecondary
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.textLabel
                         }
@@ -326,7 +334,7 @@ Item {
                             width: parent.width
                             text: root.calc ? root.calc.text : ""
                             elide: Text.ElideRight
-                            color: Theme.textPrimary
+                            color: root.calcSelected ? root.pickInk : Theme.textPrimary
                             font.family: Theme.latinFontFamily
                             font.pixelSize: Theme.textDisplay
                             font.weight: Font.Light
@@ -337,22 +345,29 @@ Item {
                     Text {
                         id: hint
                         anchors.right: parent.right
-                        anchors.rightMargin: Theme.px(14)
+                        anchors.rightMargin: Theme.px(12)
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: root.calcSelected
-                        text: I18n.tr("Enter to copy")
-                        color: Theme.textSecondary
+                        text: root.calcSelected ? I18n.tr("Enter to copy") : I18n.tr("Copy")
+                        color: root.calcSelected ? root.pickInk : Theme.textSecondary
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.textLabel
                     }
 
                     MouseArea {
+                        id: answerHit
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onEntered: root.calcFocused = true
                         onClicked: root.copyResult()
                     }
+                }
+
+                Rule {
+                    x: Theme.panelPad
+                    y: answer.y + answer.height + Theme.px(3)
+                    width: parent.width - Theme.panelPad * 2
+                    visible: answer.visible && header.visible
                 }
 
                 Item {
@@ -422,7 +437,7 @@ Item {
                                 width: Theme.px(26)
                                 height: Theme.px(24)
                                 radius: Theme.radiusInput
-                                color: chosen ? Theme.ink : toggleHit.containsMouse ? Theme.track : "transparent"
+                                color: toggleHit.pressed ? Theme.press : toggleHit.containsMouse ? Theme.lift : Theme.clear
                                 Accessible.role: Accessible.Button
                                 Accessible.name: modelData.name
 
@@ -432,6 +447,16 @@ Item {
                                     height: Theme.px(14)
                                     icon: modelData.icon
                                     ink: chosen ? Theme.textPrimary : Theme.textSecondary
+                                }
+
+                                // The chosen view is underlined in ink.
+                                Rectangle {
+                                    visible: chosen
+                                    anchors.bottom: parent.bottom
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: Theme.px(14)
+                                    height: 2
+                                    color: Theme.today
                                 }
 
                                 MouseArea {
@@ -484,11 +509,30 @@ Item {
                         width: grid.cellWidth
                         height: grid.cellHeight
 
+                        readonly property bool on: current && !root.calcSelected
+
+                        // A new kind of result starts below a rule, like a new section on the page.
+                        Rule {
+                            visible: root.listView && cell.index > 0
+                                && root.results[cell.index - 1].kind !== cell.modelData.kind
+                            x: Theme.px(10)
+                            width: cell.width - Theme.px(20)
+                        }
+
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: 2
                             radius: Theme.radiusInput
-                            color: cell.current && !root.calcSelected ? Theme.ink : "transparent"
+                            color: cell.on ? root.pickFill : Theme.clear
+                            border.width: cell.on ? 1 : 0
+                            border.color: Theme.today
+
+                            // Hover and press state layers over the row, selected or not.
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                color: cellHit.pressed ? Theme.press : cellHit.containsMouse && !cell.on ? Theme.lift : Theme.clear
+                            }
                         }
 
                         IconImage {
@@ -516,7 +560,9 @@ Item {
                                 anchors.fill: parent
                                 visible: !cell.thumbnail && (icon.source == "" || icon.status === Image.Error)
                                 radius: width * 0.24
-                                color: Theme.ink
+                                color: Theme.clear
+                                border.width: 1
+                                border.color: Theme.stroke
 
                                 StatusGlyph {
                                     anchors.centerIn: parent
@@ -524,7 +570,6 @@ Item {
                                     width: parent.width * 0.6
                                     height: width
                                     icon: cell.isSetting ? cell.modelData.control.icon || cell.modelData.section.icon : ""
-                                    cutColor: Theme.ink
                                 }
 
                                 Text {
@@ -553,7 +598,7 @@ Item {
                                 ? (cell.comment ? cell.height / 2 - implicitHeight + 1 : (cell.height - implicitHeight) / 2)
                                 : icon.y + icon.size + Theme.px(6)
                             text: cell.label
-                            color: Theme.textPrimary
+                            color: cell.on ? root.pickInk : Theme.textPrimary
                             horizontalAlignment: root.listView ? Text.AlignLeft : Text.AlignHCenter
                             elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
@@ -567,13 +612,14 @@ Item {
                             width: name.width
                             y: cell.height / 2 + 1
                             text: cell.comment
-                            color: Theme.textSecondary
+                            color: cell.on ? root.pickSubInk : Theme.textSecondary
                             elide: cell.file ? Text.ElideMiddle : Text.ElideRight
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.textLabel
                         }
 
                         MouseArea {
+                            id: cellHit
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor

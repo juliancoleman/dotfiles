@@ -1,4 +1,8 @@
 {
+  "theme": {
+    "colors": "pens",
+    "appearance": "dark"
+  },
   "bar": {
     "placement": "right",
     "shadow": true,

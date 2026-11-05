@@ -35,8 +35,9 @@ Item {
     Column {
         id: content
         width: parent.width
-        spacing: 6
+        spacing: Theme.tileGap
 
+        // The fader, then the devices, ruled apart.
         SliderTile {
             width: parent.width
             motion: page.motion
@@ -57,28 +58,28 @@ Item {
             onToggled: page.source.sink.audio.muted = !page.source.muted
         }
 
-        MomentumFlickable {
+        Rule {
             width: parent.width
-            height: Math.min(page.maxListHeight, list.implicitHeight)
-            contentHeight: list.implicitHeight
+            visible: !!page.source && page.source.available
+        }
 
-            Column {
-                id: list
-                width: parent.width
+        ListGroup {
+            width: parent.width
+            maxHeight: page.maxListHeight
+            visible: page.devices.length > 0
 
-                Repeater {
-                    model: page.devices
+            Repeater {
+                model: page.devices
 
-                    ListRow {
-                        required property var modelData
-                        width: list.width
-                        motion: page.motion
-                        icon: page.input ? "microphone" : "volume"
-                        title: page.label(modelData)
-                        current: modelData === page.current
-                        trailing: current ? "check" : ""
-                        onActivated: page.choose(modelData)
-                    }
+                ListRow {
+                    required property var modelData
+                    width: parent.width
+                    motion: page.motion
+                    icon: page.input ? "microphone" : "volume"
+                    title: page.label(modelData)
+                    current: modelData === page.current
+                    trailing: current ? "check" : ""
+                    onActivated: page.choose(modelData)
                 }
             }
         }

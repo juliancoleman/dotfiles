@@ -16,8 +16,6 @@ Loader {
         switch (SettingsModel.kindOf(control)) {
         case "stepper":
             return stepperRow
-        case "palette":
-            return paletteRow
         case "location":
             return placeRow
         case "note":
@@ -53,15 +51,6 @@ Loader {
             step: row.control.step
             decimals: row.control.decimals
             onEdited: next => SettingsModel.apply(row.key, next)
-        }
-    }
-
-    Component {
-        id: paletteRow
-
-        Swatches {
-            title: I18n.tr(row.control.title)
-            swatches: Theme.palette.map(swatch => ({ name: I18n.tr(swatch.name), color: swatch.color }))
         }
     }
 

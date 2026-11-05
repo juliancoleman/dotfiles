@@ -133,6 +133,17 @@ Item {
         height: grid.rows * grid.cell + (grid.rows - 1) * grid.gap
         clip: true
 
+        // Planner lines between weeks; they stay put while the days slide across them.
+        Repeater {
+            model: Math.max(0, grid.rows - 1)
+
+            Rule {
+                required property int index
+                width: parent.width
+                y: (index + 1) * (grid.cell + grid.gap) - grid.gap / 2 - height / 2
+            }
+        }
+
         Item {
             x: grid.slideX
             width: parent.width
@@ -150,11 +161,21 @@ Item {
                     width: grid.cell
                     height: grid.cell
 
+                    // Today: an ink disc.
+                    Rectangle {
+                        visible: modelData.today
+                        anchors.centerIn: parent
+                        width: Math.min(Theme.knobSize, grid.cell - grid.gap)
+                        height: width
+                        radius: width / 2
+                        color: Theme.today
+                    }
+
                     Text {
                         anchors.centerIn: parent
                         text: modelData.day
-                        color: modelData.today ? Theme.today
-                             : modelData.inMonth ? Theme.textPrimary : Theme.textSecondary
+                        color: modelData.today ? Theme.todayInk
+                             : modelData.inMonth ? Theme.textPrimary : Theme.statusDim
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.family: Theme.latinFontFamily

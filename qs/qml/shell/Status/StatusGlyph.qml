@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
+import QtQuick.Effects
 import "../Common"
 
 // Icon paths are from Lucide v1.64.0 (https://lucide.dev).
@@ -15,7 +16,6 @@ Item {
     property real level: 0
     property color ink: Theme.textPrimary
     property color dim: Theme.statusDim
-    property color cutColor: Theme.surface
     property real stroke: 2
 
     readonly property var spec: build(icon, wifiBars, level)
@@ -264,7 +264,41 @@ Item {
         return out
     }
 
-    Shape {
+    readonly property bool cuts: spec.cut !== ""
+
+    // The slash's gap is cut out of the strokes beneath it, not painted over in a surface color, so it reads
+    // on any fill: the page, a tile, an on knob.
+    Item {
+        anchors.fill: parent
+        layer.enabled: root.cuts
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskInverted: true
+            maskSource: cutMask
+        }
+
+        Frame {
+            Stroke { strokeColor: root.dim; d: root.spec.dim }
+            Stroke { strokeColor: root.ink; d: root.spec.lit }
+        }
+    }
+
+    Item {
+        id: cutMask
+        anchors.fill: parent
+        visible: false
+        layer.enabled: root.cuts
+
+        Frame {
+            Stroke { strokeColor: root.ink; strokeWidth: root.stroke * 2.6; capStyle: ShapePath.FlatCap; d: root.spec.cut }
+        }
+    }
+
+    Frame {
+        Stroke { strokeColor: root.ink; d: root.spec.over }
+    }
+
+    component Frame: Shape {
         anchors.centerIn: parent
         // Centering normally snaps to whole logical pixels, which pushes the glyph off the middle of a ring
         // whose size isn't whole; the curve renderer antialiases a fractional position cleanly.
@@ -273,36 +307,15 @@ Item {
         height: 24
         scale: Math.min(root.width, root.height) / 24
         preferredRendererType: Shape.CurveRenderer
+    }
 
-        ShapePath {
-            strokeColor: root.dim
-            strokeWidth: root.stroke
-            fillColor: "transparent"
-            capStyle: ShapePath.RoundCap
-            joinStyle: ShapePath.RoundJoin
-            PathSvg { path: root.spec.dim }
-        }
-        ShapePath {
-            strokeColor: root.ink
-            strokeWidth: root.stroke
-            fillColor: "transparent"
-            capStyle: ShapePath.RoundCap
-            joinStyle: ShapePath.RoundJoin
-            PathSvg { path: root.spec.lit }
-        }
-        ShapePath {
-            strokeColor: root.cutColor
-            strokeWidth: root.stroke * 2.6
-            fillColor: "transparent"
-            capStyle: ShapePath.FlatCap
-            PathSvg { path: root.spec.cut }
-        }
-        ShapePath {
-            strokeColor: root.ink
-            strokeWidth: root.stroke
-            fillColor: "transparent"
-            capStyle: ShapePath.RoundCap
-            PathSvg { path: root.spec.over }
-        }
+    component Stroke: ShapePath {
+        id: stroke
+        property string d
+        strokeWidth: root.stroke
+        fillColor: "transparent"
+        capStyle: ShapePath.RoundCap
+        joinStyle: ShapePath.RoundJoin
+        PathSvg { path: stroke.d }
     }
 }

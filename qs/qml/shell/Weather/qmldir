@@ -3,4 +3,6 @@ singleton WeatherService 1.0 WeatherService.qml
 singleton WeatherAlerts 1.0 WeatherAlerts.qml
 WeatherCircle 1.0 WeatherCircle.qml
 WeatherPanel 1.0 WeatherPanel.qml
+HourlyTrace 1.0 HourlyTrace.qml
 LocationPicker 1.0 LocationPicker.qml
+WeatherBody 1.0 WeatherBody.qml

@@ -12,6 +12,7 @@ Item {
     property string motion: "easeOut"
     property bool shown: false
 
+    readonly property bool ready: !SecureInput.busy && input.text.length >= SecureInput.minLength
     readonly property real openW: Theme.px(288)
     readonly property real openH: Theme.px(98)
     readonly property real pad: Theme.panelPad
@@ -37,7 +38,7 @@ Item {
     }
 
     function submit() {
-        if (SecureInput.busy || input.text.length < SecureInput.minLength)
+        if (!ready)
             return
         const secret = input.text
         input.text = ""
@@ -95,6 +96,20 @@ Item {
         NumberAnimation { target: root; property: "shake"; to: 0; duration: Theme.durationFor(root.motion) * 0.22; easing.type: Easing.OutQuad }
     }
 
+    // A busy check pulses whichever control submitted it.
+    QtObject {
+        id: pulse
+        property real value: 1
+    }
+
+    SequentialAnimation {
+        running: SecureInput.busy && root.shown
+        loops: Animation.Infinite
+        onStopped: pulse.value = 1
+        NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: 500; easing.type: Easing.InOutSine }
+        NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: 500; easing.type: Easing.InOutSine }
+    }
+
     Rectangle {
         id: card
         anchors.fill: parent
@@ -122,6 +137,7 @@ Item {
                 : (parent.height - height) / 2
             opacity: Math.max(0, (root.pc - 0.35) / 0.65)
 
+            // The request's mark: an off knob; a failure fills it with danger.
             Rectangle {
                 id: knob
                 x: root.pad
@@ -129,7 +145,10 @@ Item {
                 width: Theme.knobSize
                 height: Theme.knobSize
                 radius: width / 2
-                color: SecureInput.error !== "" ? Theme.danger : Theme.knobFill
+                readonly property bool failed: SecureInput.error !== ""
+                color: failed ? Theme.danger : Theme.clear
+                border.width: failed ? 0 : 1
+                border.color: Theme.stroke
 
                 Behavior on color {
                     ColorAnimation {
@@ -154,7 +173,7 @@ Item {
                     height: Theme.buttonIconSize
                     visible: SecureInput.image === ""
                     icon: SecureInput.glyph
-                    cutColor: knob.color
+                    ink: Theme.textPrimary
                 }
             }
 
@@ -173,7 +192,7 @@ Item {
                     elide: Text.ElideMiddle
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.textBody
-                    font.weight: Font.Medium
+                    font.weight: Theme.fontWeightStrong
                 }
 
                 Text {
@@ -188,28 +207,29 @@ Item {
                 }
             }
 
-            Rectangle {
+            Item {
                 id: field
                 x: root.pad
                 y: knob.y + knob.height + Theme.px(10)
                 width: parent.width - root.pad * 2
                 height: Theme.px(34)
-                radius: Theme.radiusInput
-                color: Theme.track
-                border.width: 1
-                border.color: input.activeFocus ? Theme.today : Theme.edge
+
+                Field {
+                    anchors.fill: parent
+                    focused: input.activeFocus
+                    motion: root.motion
+                }
 
                 StatusGlyph {
                     id: leader
                     anchors.left: parent.left
-                    anchors.leftMargin: Theme.px(10)
+                    anchors.leftMargin: Theme.px(2)
                     anchors.verticalCenter: parent.verticalCenter
                     width: visible ? Theme.px(13) : 0
                     height: Theme.px(13)
                     visible: !SecureInput.echo
                     icon: "lock"
                     ink: Theme.textSecondary
-                    cutColor: field.color
                 }
 
                 Text {
@@ -226,7 +246,7 @@ Item {
                     id: input
                     anchors.left: leader.right
                     anchors.right: go.left
-                    anchors.leftMargin: leader.visible ? Theme.px(7) : 2
+                    anchors.leftMargin: leader.visible ? Theme.px(7) : Theme.px(2)
                     anchors.rightMargin: Theme.px(8)
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height - Theme.px(8)
@@ -254,41 +274,30 @@ Item {
 
                 Rectangle {
                     id: go
-                    readonly property bool ready: !SecureInput.busy && input.text.length >= SecureInput.minLength
                     anchors.right: parent.right
-                    anchors.rightMargin: Theme.px(4)
+                    anchors.rightMargin: 0
                     anchors.verticalCenter: parent.verticalCenter
                     width: Theme.px(26)
                     height: Theme.px(26)
                     radius: width / 2
-                    color: ready ? Theme.today : Theme.lift
+                    // Ready reads like an on knob: an ink disc; otherwise the off knob's outline.
+                    color: root.ready ? Theme.today : goHit.pressed ? Theme.press : Theme.clear
+                    border.width: root.ready ? 0 : 1
+                    border.color: Theme.stroke
                     opacity: SecureInput.busy ? 0.45 + 0.55 * pulse.value : 1
-
-                    QtObject {
-                        id: pulse
-                        property real value: 1
-                    }
-
-                    SequentialAnimation {
-                        running: SecureInput.busy && root.shown
-                        loops: Animation.Infinite
-                        onStopped: pulse.value = 1
-                        NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: 500; easing.type: Easing.InOutSine }
-                        NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: 500; easing.type: Easing.InOutSine }
-                    }
 
                     StatusGlyph {
                         anchors.centerIn: parent
                         width: Theme.px(14)
                         height: Theme.px(14)
                         icon: "chevron-right"
-                        ink: go.ready ? Theme.todayInk : Theme.textSecondary
-                        cutColor: go.color
+                        ink: root.ready ? Theme.todayInk : Theme.textSecondary
                     }
 
                     MouseArea {
+                        id: goHit
                         anchors.fill: parent
-                        enabled: go.ready
+                        enabled: root.ready
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.submit()
                     }

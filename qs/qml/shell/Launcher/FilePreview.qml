@@ -96,9 +96,11 @@ Item {
         y: 0
         width: parent.width
         height: Math.min(parent.height - details.height - Theme.px(12), width * 1.05)
-        radius: Theme.radius
-        color: Theme.track
-        border.width: 1
+        readonly property bool boxed: root.kind === "image" || root.kind === "pdf"
+        // Only an image is boxed, in a ruled frame. Text and icons sit straight on the panel.
+        radius: Theme.radiusInput
+        color: Theme.clear
+        border.width: boxed ? 1 : 0
         border.color: Theme.edge
         clip: true
 

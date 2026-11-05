@@ -2,6 +2,8 @@ import QtQuick
 import "../Common"
 import "../Status"
 
+// A bare glyph in a header. Hover lays a small box behind it, press deepens it. A toggle that is `on`
+// becomes the filled accent disc a Knob uses.
 Item {
     id: button
 
@@ -14,10 +16,10 @@ Item {
     property string motion: "spring"
 
     readonly property color fill: on ? Theme.today
-        : hit.containsMouse || activeFocus ? Theme.track : Theme.surface
+        : hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
 
     implicitWidth: Theme.px(24)
-    implicitHeight: Theme.px(24)
+    implicitHeight: implicitWidth
     opacity: Math.max(opened, activeFocus ? 1 : 0)
     activeFocusOnTab: opened > 0.85
     Accessible.role: Accessible.Button
@@ -31,9 +33,9 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: width / 2
+        radius: button.on ? width / 2 : Theme.radiusInput
         color: button.fill
-        border.width: button.activeFocus ? 1 : 0
+        border.width: button.activeFocus ? Theme.line : 0
         border.color: button.on ? Theme.textPrimary : Theme.today
 
         Behavior on color {
@@ -47,7 +49,7 @@ Item {
     StatusGlyph {
         anchors.centerIn: parent
         width: Theme.buttonIconSize
-        height: Theme.buttonIconSize
+        height: width
         icon: button.icon
         ink: button.on ? Theme.todayInk : Theme.textPrimary
     }
@@ -55,6 +57,8 @@ Item {
     MouseArea {
         id: hit
         anchors.fill: parent
+        // Reaches into the gap between neighboring header buttons, so the target outgrows the glyph.
+        anchors.margins: -3
         enabled: button.opened > 0.45
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor

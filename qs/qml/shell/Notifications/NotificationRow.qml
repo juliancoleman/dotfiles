@@ -4,15 +4,17 @@ import Quickshell.Services.Notifications
 import "../Common"
 import "../Status"
 
-Rectangle {
+Item {
     id: row
 
     required property var handle
     required property int notificationId
     property string motion: "easeOut"
     property bool expanded: false
-    // Alone in the pop-up the panel is the card, so the row drops its own; stacked in the list it keeps one.
+    // Alone in the pop-up the row is the panel's whole page, so it takes no hover box of its own.
     property bool bare: false
+    // Stacked in the list, every row but the first draws the rule above it.
+    property bool ruled: false
     readonly property real inset: Theme.px(10)
 
     readonly property bool critical: !!handle && handle.urgency === NotificationUrgency.Critical
@@ -21,12 +23,8 @@ Rectangle {
     readonly property bool hovered: hit.containsMouse || close.hovered || actionHover.hovered
     readonly property string media: NotificationService.mediaFor(handle)
 
+
     implicitHeight: content.implicitHeight + inset * 2
-    radius: Theme.radius
-    color: bare ? "transparent" : hovered || activeFocus ? Qt.tint(Theme.track, Theme.lift) : Theme.track
-    // Critical rows keep a lightened danger hairline: it is a warning state, not a hover tint.
-    border.width: activeFocus || !bare ? 1 : 0
-    border.color: activeFocus ? Theme.today : critical ? Qt.lighter(Theme.danger, 1.6) : Theme.edge
     activeFocusOnTab: visible
     Accessible.role: Accessible.Button
     Accessible.name: handle ? handle.summary : ""
@@ -44,11 +42,37 @@ Rectangle {
             NotificationService.invoke(notificationId, "default")
     }
 
-    Behavior on color {
-        ColorAnimation {
-            duration: Theme.durationFor(row.motion) * 0.56
-            easing.type: Easing.OutCubic
+    Rule {
+        visible: row.ruled && !row.bare
+        width: parent.width
+    }
+
+    // The hover box.
+    Rectangle {
+        anchors.fill: parent
+        anchors.topMargin: row.ruled ? 1 : 0
+        radius: Theme.radiusInput
+        color: row.bare ? Theme.clear : hit.pressed ? Theme.press : row.hovered ? Theme.lift : Theme.clear
+        border.width: row.activeFocus ? 1 : 0
+        border.color: Theme.today
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.durationFor(row.motion) * 0.56
+                easing.type: Easing.OutCubic
+            }
         }
+    }
+
+    // Critical is a warning state: a danger tick at the leading edge, not a tinted row. The mark is the
+    // danger color made to read as a 2px line on the page.
+    Rectangle {
+        visible: row.critical
+        x: 0
+        y: row.inset
+        width: Theme.px(2)
+        height: row.height - row.inset * 2
+        color: Theme.dangerMark
     }
 
     MouseArea {
@@ -59,6 +83,7 @@ Rectangle {
         onClicked: row.activate()
     }
 
+    // The app's mark: an off knob's outline, filled by the app's picture when there is one.
     Rectangle {
         id: badge
         x: Theme.knobInset
@@ -66,7 +91,9 @@ Rectangle {
         width: Theme.knobSize
         height: Theme.knobSize
         radius: width / 2
-        color: Theme.ink
+        color: Theme.clear
+        border.width: picture.visible ? 0 : 1
+        border.color: Theme.stroke
         clip: true
 
         Image {
@@ -85,6 +112,7 @@ Rectangle {
             height: Theme.buttonIconSize
             visible: !picture.visible
             icon: "bell"
+            ink: Theme.textPrimary
         }
     }
 
@@ -97,8 +125,8 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: row.handle ? row.handle.appName : ""
             visible: text !== ""
+            text: row.handle ? row.handle.appName : ""
             color: Theme.textSecondary
             elide: Text.ElideRight
             font.family: Theme.fontFamily
@@ -113,7 +141,7 @@ Rectangle {
             maximumLineCount: 1
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
 
         Text {
@@ -133,7 +161,7 @@ Rectangle {
 
         Text {
             id: more
-            visible: body.truncated || row.expanded
+            visible: (body.truncated || row.expanded)
             text: row.expanded ? I18n.tr("Show less") : I18n.tr("Show more")
             color: moreHit.containsMouse ? Theme.textPrimary : Theme.today
             font.family: Theme.fontFamily
@@ -161,13 +189,14 @@ Rectangle {
             Repeater {
                 model: row.namedActions
 
+                // A hover box.
                 Rectangle {
                     id: action
                     required property var modelData
                     width: label.implicitWidth + Theme.px(20)
                     height: Theme.px(24)
                     radius: Theme.radiusInput
-                    color: actionHit.containsMouse || activeFocus ? Theme.knobLift : Theme.lift
+                    color: actionHit.pressed ? Theme.press : actionHit.containsMouse ? Theme.lift : Theme.clear
                     border.width: activeFocus ? 1 : 0
                     border.color: Theme.today
                     activeFocusOnTab: true
@@ -183,6 +212,7 @@ Rectangle {
                         color: Theme.textPrimary
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.textLabel
+                        font.weight: Font.Normal
                     }
 
                     MouseArea {
@@ -206,7 +236,9 @@ Rectangle {
         width: Theme.px(22)
         height: Theme.px(22)
         radius: width / 2
-        color: hovered || activeFocus ? Theme.knobLift : "transparent"
+        color: closeHit.pressed ? Theme.press : hovered ? Theme.lift : Theme.clear
+        border.width: activeFocus ? 1 : 0
+        border.color: Theme.today
         opacity: row.hovered || activeFocus || row.activeFocus ? 1 : 0.55
         activeFocusOnTab: true
         Accessible.role: Accessible.Button

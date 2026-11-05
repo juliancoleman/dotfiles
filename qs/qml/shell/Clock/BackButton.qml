@@ -2,7 +2,8 @@ import QtQuick
 import "../Common"
 import "../Status"
 
-// A subpage's header: a chevron and the page's title, returning to the page it came from.
+// A subpage's header: a chevron and the page's title, returning to the page it came from. Hover lifts a box
+// behind both.
 Item {
     id: back
 
@@ -20,8 +21,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.radiusInput
-        color: hit.containsMouse || back.activeFocus ? Theme.track : "transparent"
-        border.width: back.activeFocus ? 1 : 0
+        color: hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
+        border.width: back.activeFocus ? Theme.line : 0
         border.color: Theme.today
     }
 
@@ -34,7 +35,7 @@ Item {
         StatusGlyph {
             anchors.verticalCenter: parent.verticalCenter
             width: Theme.px(14)
-            height: Theme.px(14)
+            height: width
             icon: "chevron-left"
         }
 
@@ -44,7 +45,7 @@ Item {
             color: Theme.textPrimary
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textStrong
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
     }
 

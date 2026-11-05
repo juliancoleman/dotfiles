@@ -80,8 +80,9 @@ Item {
     Column {
         id: content
         width: parent.width
-        spacing: 6
+        spacing: Theme.tileGap
 
+        // The switch row, then the devices, ruled apart.
         ToggleTile {
             width: parent.width
             motion: page.motion
@@ -94,38 +95,37 @@ Item {
             onToggled: page.adapter.enabled = !page.adapter.enabled
         }
 
-        MomentumFlickable {
+        Rule {
             width: parent.width
-            height: Math.min(page.maxListHeight, list.implicitHeight)
             visible: page.powered
-            contentHeight: list.implicitHeight
+        }
 
-            Column {
-                id: list
-                width: parent.width
+        ListGroup {
+            width: parent.width
+            maxHeight: page.maxListHeight
+            visible: page.powered && page.devices.length > 0
 
-                Repeater {
-                    model: page.devices
+            Repeater {
+                model: page.devices
 
-                    ListRow {
-                        id: entry
-                        required property var modelData
-                        width: list.width
-                        motion: page.motion
-                        icon: "bluetooth"
-                        title: modelData.name
-                        subtitle: page.status(modelData)
-                        current: modelData.connected
-                        busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
-                            || modelData.state === BluetoothDeviceState.Disconnecting
-                        trailing: modelData.connected ? "check" : busy ? "bluetooth" : ""
-                        onActivated: page.activate(modelData)
+                ListRow {
+                    id: entry
+                    required property var modelData
+                    width: parent.width
+                    motion: page.motion
+                    icon: "bluetooth"
+                    title: modelData.name
+                    subtitle: page.status(modelData)
+                    current: modelData.connected
+                    busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
+                        || modelData.state === BluetoothDeviceState.Disconnecting
+                    trailing: modelData.connected ? "check" : busy ? "bluetooth" : ""
+                    onActivated: page.activate(modelData)
 
-                        Connections {
-                            target: entry.modelData
-                            function onPairedChanged() {
-                                page.settle(entry.modelData)
-                            }
+                    Connections {
+                        target: entry.modelData
+                        function onPairedChanged() {
+                            page.settle(entry.modelData)
                         }
                     }
                 }

@@ -2,7 +2,7 @@ import QtQuick
 import "Common"
 
 // The strip of surface holding one bar circle to the next along the bar. It runs from `start` for `span`
-// along the bar and sits centred on the circle lane at `lane` across it. Its thickness across the bar is
+// along the bar and sits centered on the circle lane at `lane` across it. Its thickness across the bar is
 // the circle diameter, thinning away over the second half of `release` (the water-drop neck letting go of a
 // circle as it opens) and widening back as `join` fuses the circles into the notch.
 Rectangle {

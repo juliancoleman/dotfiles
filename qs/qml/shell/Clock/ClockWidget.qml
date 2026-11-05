@@ -163,7 +163,7 @@ Item {
             ? (vFace.timeColumn + Theme.padX * 2) / 2
             : (Math.max(hFace.glyphHeight, hFace.notchLineHeight) + Theme.padY * 2) / 2
         const hovered = capsule * (verticalEdge ? 1 - Math.min(1, hoverP) * (1 - Math.min(1, expanded)) * 0.45 : 1)
-        const radius = hovered * (1 - Math.min(1, expanded)) + 14 * Math.min(1, expanded)
+        const radius = hovered * (1 - Math.min(1, expanded)) + Theme.radius * Math.min(1, expanded)
         return outer ? radius * (1 - notchAmount) : radius
     }
 
@@ -346,7 +346,6 @@ Item {
             : root.edge === "top" ? root.edgeGap
             : root.height - height - root.edgeGap
         color: Theme.surface
-        border.width: 0
         clip: true
         topLeftRadius: root.corner(root.edge === "top" || root.edge === "left", false, true)
         topRightRadius: root.corner(root.edge === "top" || root.edge === "right", !root.verticalEdge, root.verticalEdge)

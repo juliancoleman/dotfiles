@@ -18,12 +18,13 @@ let
       # ssh only uses askpass without a terminal unless asked to prefer it; git follows SSH_ASKPASS.
       SSH_ASKPASS_REQUIRE = "prefer";
     };
+  wallpaperPath = if cfg.wallpaper == null then ""
+    else if builtins.isPath cfg.wallpaper then "${cfg.wallpaper}"
+    else cfg.wallpaper;
   wallpaperCommand = lib.escapeShellArgs [
     "${pkgs.swaybg}/bin/swaybg"
     "-i"
-    (if cfg.wallpaper == null then ""
-     else if builtins.isPath cfg.wallpaper then "${cfg.wallpaper}"
-     else cfg.wallpaper)
+    wallpaperPath
     "-m"
     cfg.wallpaperMode
   ];
@@ -125,7 +126,9 @@ in
       };
       Service = restartPolicy // {
         ExecStart = "${cfg.package}/bin/qs-shell";
-        Environment = [ "QS_CONFIG_FILE=${cfg.paths.configFile}" ];
+        # The matugen palette generates its colors from the wallpaper.
+        Environment = [ "QS_CONFIG_FILE=${cfg.paths.configFile}" ]
+          ++ lib.optional (cfg.wallpaper != null) "QS_WALLPAPER=${wallpaperPath}";
       };
     };
 

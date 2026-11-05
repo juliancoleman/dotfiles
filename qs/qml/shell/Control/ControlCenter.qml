@@ -129,8 +129,8 @@ Item {
             openSettings("")
     }
 
-    // Most the panel takes, so the bar can reserve room for the spring's overshoot. Constants: the window is
-    // sized from these, and a layer-shell resize mid-animation drops a frame.
+    // Most the panel takes, so the bar can reserve room for the spring's overshoot. A constant: the window is
+    // sized from it, and a layer-shell resize mid-animation drops a frame.
     readonly property real reserveHeight: 420
     readonly property real reserveWidth: gridWidth + Theme.panelPad * 2
 
@@ -182,7 +182,7 @@ Item {
 
     // Corners on the screen edge, and those facing the clock, square off as the circle fuses into the notch.
     function corner(outer, facingClock) {
-        const radius = Math.min(status.width, status.height) / 2 * (1 - Math.min(1, openP)) + 14 * openP
+        const radius = Math.min(status.width, status.height) / 2 * (1 - Math.min(1, openP)) + Theme.radius * openP
         return outer || facingClock ? radius * (1 - Math.max(0, Math.min(1, attach))) : radius
     }
 
@@ -352,6 +352,7 @@ Item {
                         }
                     }
 
+                    // Settings, power and Do Not Disturb live in the header, beside the battery.
                     SettingsButton {
                         id: settings
                         opened: root.openP
@@ -550,109 +551,144 @@ Item {
                 width: root.gridWidth
                 height: grid.height
 
-                Flow {
+                // One page, groups split by hairlines: links, faders, usage, fans. Rules take a gap either
+                // side so each sits midway between its groups.
+                Column {
                     id: grid
                     width: root.gridWidth
                     spacing: root.gap
 
-                    ToggleTile {
-                        width: root.column * 2 + root.gap
-                        motion: root.motion
-                        visible: !!root.wifiDevice
-                        icon: Networking.wifiEnabled ? "wifi" : "wifi-off"
-                        wifiBars: root.status.network.wifi ? root.status.network.bars : 3
-                        on: Networking.wifiEnabled
-                        title: I18n.tr("Wi-Fi")
-                        subtitle: !Networking.wifiEnabled ? I18n.tr("Off")
-                            : root.status.network.wifiNetwork ? root.status.network.wifiNetwork.name
-                            : I18n.tr("Not connected")
-                        onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-                        onOpened: root.page = "wifi"
-                    }
+                    Item {
+                        id: links
+                        width: parent.width
+                        height: Theme.rowHeight
+                        readonly property real cell: (width - Theme.line - root.gap * 2) / 2
 
-                    // Without a Wi-Fi card, the same place holds the wired link: the knob is the kill switch
-                    // for all networking, the row opens the link's details and throughput.
-                    ToggleTile {
-                        width: root.column * 2 + root.gap
-                        motion: root.motion
-                        visible: !root.wifiDevice
-                        icon: WiredSource.on && WiredSource.address !== "" ? "ethernet" : "ethernet-off"
-                        on: WiredSource.on
-                        title: I18n.tr("Ethernet")
-                        subtitle: !WiredSource.on ? I18n.tr("Off")
-                            : WiredSource.address === "" ? I18n.tr("Not connected")
-                            : WiredSource.address
-                        onToggled: WiredSource.toggle()
-                        onOpened: root.page = "ethernet"
-                    }
-
-                    ToggleTile {
-                        width: root.column * 2 + root.gap
-                        motion: root.motion
-                        visible: !!root.adapter
-                        readonly property bool enabledNow: !!root.adapter && root.adapter.enabled
-                        icon: enabledNow ? "bluetooth" : "bluetooth-off"
-                        on: enabledNow
-                        title: I18n.tr("Bluetooth")
-                        subtitle: !enabledNow ? I18n.tr("Off")
-                            : root.connectedDevices.length === 1 ? root.connectedDevices[0].name
-                            : root.connectedDevices.length > 1 ? I18n.tr("%1 devices").arg(root.connectedDevices.length)
-                            : I18n.tr("On")
-                        onToggled: root.adapter.enabled = !root.adapter.enabled
-                        onOpened: root.page = "bluetooth"
-                    }
-                    SliderTile {
-                        width: root.gridWidth
-                        motion: root.motion
-                        visible: root.status.output.available
-                        title: I18n.tr("Volume")
-                        icon: root.status.output.muted || root.status.output.level <= 0.005 ? "volume-muted" : "volume"
-                        value: root.status.output.level
-                        muted: root.status.output.muted
-                        meter: Meter.output
-                        onMoved: next => {
-                            const audio = root.status.output.sink.audio
-                            audio.muted = false
-                            audio.volume = next
+                        ToggleTile {
+                            width: links.cell
+                            motion: root.motion
+                            visible: !!root.wifiDevice
+                            icon: Networking.wifiEnabled ? "wifi" : "wifi-off"
+                            wifiBars: root.status.network.wifi ? root.status.network.bars : 3
+                            on: Networking.wifiEnabled
+                            title: I18n.tr("Wi-Fi")
+                            subtitle: !Networking.wifiEnabled ? I18n.tr("Off")
+                                : root.status.network.wifiNetwork ? root.status.network.wifiNetwork.name
+                                : I18n.tr("Not connected")
+                            onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                            onOpened: root.page = "wifi"
                         }
-                        onToggled: root.status.output.sink.audio.muted = !root.status.output.muted
-                        opens: true
-                        onOpened: root.page = "output"
-                    }
 
-                    SliderTile {
-                        width: root.gridWidth
-                        motion: root.motion
-                        visible: root.status.input.available
-                        title: I18n.tr("Microphone")
-                        icon: root.status.input.muted || root.status.input.level <= 0.005 ? "microphone-muted" : "microphone"
-                        value: root.status.input.level
-                        muted: root.status.input.muted
-                        meter: Meter.input
-                        meterActive: Meter.inputInUse
-                        onMoved: next => {
-                            const audio = root.status.input.sink.audio
-                            audio.muted = false
-                            audio.volume = next
+                        // Without a Wi-Fi card, the same place holds the wired link: the knob is the kill switch
+                        // for all networking, the row opens the link's details and throughput.
+                        ToggleTile {
+                            width: links.cell
+                            motion: root.motion
+                            visible: !root.wifiDevice
+                            icon: WiredSource.on && WiredSource.address !== "" ? "ethernet" : "ethernet-off"
+                            on: WiredSource.on
+                            title: I18n.tr("Ethernet")
+                            subtitle: !WiredSource.on ? I18n.tr("Off")
+                                : WiredSource.address === "" ? I18n.tr("Not connected")
+                                : WiredSource.address
+                            onToggled: WiredSource.toggle()
+                            onOpened: root.page = "ethernet"
                         }
-                        onToggled: root.status.input.sink.audio.muted = !root.status.input.muted
-                        opens: true
-                        onOpened: root.page = "input"
+
+                        Rule {
+                            vertical: true
+                            x: links.cell + root.gap
+                            height: Theme.knobSize
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: bluetooth.visible
+                        }
+
+                        ToggleTile {
+                            id: bluetooth
+                            readonly property bool enabledNow: !!root.adapter && root.adapter.enabled
+                            x: links.width - width
+                            width: links.cell
+                            motion: root.motion
+                            visible: !!root.adapter
+                            icon: enabledNow ? "bluetooth" : "bluetooth-off"
+                            on: enabledNow
+                            title: I18n.tr("Bluetooth")
+                            subtitle: !enabledNow ? I18n.tr("Off")
+                                : root.connectedDevices.length === 1 ? root.connectedDevices[0].name
+                                : root.connectedDevices.length > 1 ? I18n.tr("%1 devices").arg(root.connectedDevices.length)
+                                : I18n.tr("On")
+                            onToggled: root.adapter.enabled = !root.adapter.enabled
+                            onOpened: root.page = "bluetooth"
+                        }
                     }
 
-                    SliderTile {
-                        width: root.gridWidth
-                        motion: root.motion
-                        visible: Brightness.available
-                        title: I18n.tr("Brightness")
-                        icon: "brightness"
-                        toggleable: false
-                        value: Brightness.level
-                        onMoved: next => Brightness.set(next)
+                    Rule { width: parent.width }
+
+                    Column {
+                        id: faders
+                        width: parent.width
+                        spacing: root.gap
+                        visible: root.status.output.available || root.status.input.available || Brightness.available
+
+                        SliderTile {
+                            width: parent.width
+                            motion: root.motion
+                            visible: root.status.output.available
+                            title: I18n.tr("Volume")
+                            icon: root.status.output.muted || root.status.output.level <= 0.005 ? "volume-muted" : "volume"
+                            value: root.status.output.level
+                            muted: root.status.output.muted
+                            meter: Meter.output
+                            onMoved: next => {
+                                const audio = root.status.output.sink.audio
+                                audio.muted = false
+                                audio.volume = next
+                            }
+                            onToggled: root.status.output.sink.audio.muted = !root.status.output.muted
+                            opens: true
+                            onOpened: root.page = "output"
+                        }
+
+                        SliderTile {
+                            width: parent.width
+                            motion: root.motion
+                            visible: root.status.input.available
+                            title: I18n.tr("Microphone")
+                            icon: root.status.input.muted || root.status.input.level <= 0.005 ? "microphone-muted" : "microphone"
+                            value: root.status.input.level
+                            muted: root.status.input.muted
+                            meter: Meter.input
+                            meterActive: Meter.inputInUse
+                            onMoved: next => {
+                                const audio = root.status.input.sink.audio
+                                audio.muted = false
+                                audio.volume = next
+                            }
+                            onToggled: root.status.input.sink.audio.muted = !root.status.input.muted
+                            opens: true
+                            onOpened: root.page = "input"
+                        }
+
+                        SliderTile {
+                            width: parent.width
+                            motion: root.motion
+                            visible: Brightness.available
+                            title: I18n.tr("Brightness")
+                            icon: "brightness"
+                            toggleable: false
+                            value: Brightness.level
+                            onMoved: next => Brightness.set(next)
+                        }
+                    }
+
+                    Rule {
+                        width: parent.width
+                        visible: faders.visible
                     }
 
                     UsageTile {
-                        width: root.gridWidth
+                        width: parent.width
+                        motion: root.motion
                         readings: [
                             { icon: "memory", name: I18n.tr("Memory"), value: SystemSource.memory },
                             { icon: "cpu", name: I18n.tr("CPU"), value: SystemSource.cpu },
@@ -660,8 +696,14 @@ Item {
                         ]
                     }
 
+                    Rule {
+                        width: parent.width
+                        visible: fans.visible
+                    }
+
                     ToggleTile {
-                        width: root.gridWidth
+                        id: fans
+                        width: parent.width
                         motion: root.motion
                         visible: FanSource.available || FanControl.ready
                         icon: "fan"

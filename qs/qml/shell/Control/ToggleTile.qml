@@ -2,7 +2,8 @@ import QtQuick
 import "../Common"
 import "../Status"
 
-// Knob kills or revives the whole function in one click; the row opens its page.
+// Knob kills or revives the whole function in one click; the row opens its page. A knob beside a title,
+// straight on the page.
 Tile {
     id: tile
 
@@ -17,6 +18,7 @@ Tile {
     signal opened()
 
     lifted: body.containsMouse && body.enabled
+    pressed: body.pressed
     activeFocusOnTab: visible && (opens || toggleable)
     Accessible.role: Accessible.Button
     Accessible.name: title
@@ -62,7 +64,7 @@ Tile {
             elide: Text.ElideRight
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textBody
-            font.weight: Font.Medium
+            font.weight: Theme.fontWeightStrong
         }
 
         Text {
