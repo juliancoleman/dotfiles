@@ -13,6 +13,9 @@ Rectangle {
     property string trailing: ""
     property bool current: false
     property bool busy: false
+    // A reading in 0..1 (a device's battery) ringed around the glyph, as the bar rings its own; NaN for none.
+    property real level: NaN
+    property color levelColor: Theme.textPrimary
     signal activated()
     // Optional glyph buttons left of the trailing mark, each `{ id, icon, label }`; their own clicks, not the
     // row's.
@@ -49,18 +52,43 @@ Rectangle {
         onClicked: row.activated()
     }
 
-    // Rows without an icon start their text where the icon would.
-    StatusGlyph {
+    // Rows without an icon start their text where the icon would. A ringed glyph shrinks inside its ring;
+    // the slot keeps its width so every row's text starts on one line.
+    Item {
         id: glyph
+        readonly property bool ringed: !isNaN(row.level)
         anchors.left: parent.left
         anchors.leftMargin: Theme.px(10)
         anchors.verticalCenter: parent.verticalCenter
         visible: row.icon !== ""
         width: row.icon !== "" ? Theme.px(16) : 0
         height: Theme.px(16)
-        icon: row.icon
-        wifiBars: row.wifiBars
-        ink: row.current ? Theme.today : Theme.textPrimary
+
+        StatusArc {
+            anchors.centerIn: parent
+            width: Theme.px(24)
+            height: width
+            visible: glyph.ringed
+            lineWidth: Theme.lineStrong
+            value: glyph.ringed ? row.level : 0
+            fillColor: row.levelColor
+
+            Behavior on value {
+                NumberAnimation {
+                    duration: Theme.durationFor(row.motion)
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
+
+        StatusGlyph {
+            anchors.centerIn: parent
+            width: glyph.ringed ? Theme.px(11) : Theme.px(16)
+            height: width
+            icon: row.icon
+            wifiBars: row.wifiBars
+            ink: row.current ? Theme.today : Theme.textPrimary
+        }
     }
 
     Column {

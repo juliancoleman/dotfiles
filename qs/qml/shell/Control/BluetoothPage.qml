@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Bluetooth
+import Quickshell.Services.UPower
 import "../Common"
 
 Item {
@@ -86,6 +87,19 @@ Item {
         return device.paired && !device.bonded
     }
 
+    // BlueZ only knows batteries it reads over Bluetooth itself (the GATT battery service, headset reports);
+    // HID controllers like the DualSense report theirs to the kernel, which UPower lists with the address in
+    // its native path. Returns { level, charging } or null.
+    readonly property var batteries: UPower.devices ? UPower.devices.values : []
+
+    function battery(device) {
+        if (device.batteryAvailable)
+            return { level: device.battery, charging: false }
+        const address = device.address.toLowerCase()
+        const source = batteries.find(b => b && String(b.nativePath).toLowerCase().indexOf(address) >= 0)
+        return source ? { level: source.percentage, charging: source.state === UPowerDeviceState.Charging } : null
+    }
+
     function status(device) {
         if (device.pairing)
             return I18n.tr("Pairing…")
@@ -97,9 +111,10 @@ Item {
         }
         if (page.unsaved(device))
             return I18n.tr("Not saved · forget and pair again")
-        if (device.connected)
-            return device.batteryAvailable
-                ? I18n.tr("Connected · %1%").arg(Math.round(device.battery * 100)) : I18n.tr("Connected")
+        if (device.connected) {
+            const power = page.battery(device)
+            return power ? I18n.tr("Connected · %1%").arg(Math.round(power.level * 100)) : I18n.tr("Connected")
+        }
         return device.paired ? I18n.tr("Paired") : ""
     }
 
@@ -190,6 +205,14 @@ Item {
                     busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
                         || modelData.state === BluetoothDeviceState.Disconnecting
                     trailing: current ? "check" : busy ? "bluetooth" : ""
+                    // The charge, ringed like the bar's own battery: green while charging, the warning ink at
+                    // 20% and below.
+                    readonly property var power: modelData.connected ? page.battery(modelData) : null
+                    level: power ? power.level : NaN
+                    levelColor: !power ? Theme.textPrimary
+                        : power.charging ? Theme.charging
+                        : power.level <= 0.2 ? Theme.dangerMark
+                        : Theme.textPrimary
                     actions: page.actions(modelData)
                     onActionTriggered: id => {
                         if (id === "lights")
