@@ -26,6 +26,11 @@ Item {
             .sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name))
     }
 
+    // Paired without a stored link key: BlueZ refuses HID from such devices, so it only looks connected.
+    function unsaved(device) {
+        return device.paired && !device.bonded
+    }
+
     function status(device) {
         if (device.pairing)
             return I18n.tr("Pairing…")
@@ -35,6 +40,8 @@ Item {
         case BluetoothDeviceState.Disconnecting:
             return I18n.tr("Disconnecting…")
         }
+        if (page.unsaved(device))
+            return I18n.tr("Not saved · forget and pair again")
         if (device.connected)
             return device.batteryAvailable
                 ? I18n.tr("Connected · %1%").arg(Math.round(device.battery * 100)) : I18n.tr("Connected")
@@ -73,6 +80,14 @@ Item {
     Binding {
         target: page.adapter
         property: "discovering"
+        value: page.active && page.powered
+        when: !!page.adapter
+    }
+
+    // A non-pairable adapter still pairs but keeps no link key, so open the window while the page is up.
+    Binding {
+        target: page.adapter
+        property: "pairable"
         value: page.active && page.powered
         when: !!page.adapter
     }
@@ -116,10 +131,10 @@ Item {
                     icon: "bluetooth"
                     title: modelData.name
                     subtitle: page.status(modelData)
-                    current: modelData.connected
+                    current: modelData.connected && !page.unsaved(modelData)
                     busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
                         || modelData.state === BluetoothDeviceState.Disconnecting
-                    trailing: modelData.connected ? "check" : busy ? "bluetooth" : ""
+                    trailing: current ? "check" : busy ? "bluetooth" : ""
                     // BlueZ keeps a record for trusted devices even after their pairing is lost; those need
                     // forgetting before they can pair again.
                     action: modelData.paired || modelData.bonded || modelData.trusted ? "close" : ""

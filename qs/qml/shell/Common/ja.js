@@ -72,6 +72,7 @@ var strings = {
     "Pairing…": "ペアリング中…",
     "Connected · %1%": "接続済み · %1%",
     "Paired": "ペアリング済み",
+    "Not saved · forget and pair again": "未保存 · 削除して再ペアリング",
     "Searching for devices": "デバイスを検索中",
     "No devices found": "デバイスが見つかりません",
     "Forget device": "デバイスを削除",
