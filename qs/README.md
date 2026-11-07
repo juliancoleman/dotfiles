@@ -76,8 +76,8 @@ critical). The module also enables `services.upower` and adds a udev rule making
 | `paths.configFile` | absolute str | `${xdg.configHome}/qs/config.json` |
 
 Enabling installs the package, `quickshell`, `swaybg`, `ibm-plex`, `plemoljp-nf`; defines the `qs-shell`
-user service (wanted by and ordered after `graphical-session.target`, so it starts once the compositor is
-ready — don't also `spawn-at-startup` it; `QS_CONFIG_FILE` set, and `QS_WALLPAPER` when `wallpaper`
+user service (`PartOf graphical-session.target`, not enabled — niri's `spawn-at-startup` launches the shell;
+`QS_CONFIG_FILE` set, and `QS_WALLPAPER` when `wallpaper`
 is set — the `matugen` palette generates its colors from it, falling back to `/etc/qs/wallpaper`); exports
 `QS_CONFIG_FILE` and the askpass variables to both the login shell and `systemd --user`; and seeds
 `paths.configFile` from `default.json` (mode 0600) only if the file does not exist.
@@ -93,6 +93,7 @@ is set — the `matugen` palette generates its colors from it, falling back to `
 | `status` | `next`, `previous`, `playPause`, `brightnessUp`, `brightnessDown` |
 
 ```kdl
+spawn-at-startup "qs-shell"
 binds {
     Super+Space { spawn "qs-shell" "ipc" "call" "launcher" "toggle"; }
     Super+Comma { spawn "qs-shell" "ipc" "call" "settings" "toggle"; }
