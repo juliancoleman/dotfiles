@@ -14,6 +14,10 @@ Rectangle {
     property bool current: false
     property bool busy: false
     signal activated()
+    // An optional secondary glyph button left of the trailing mark; its own click, not the row's.
+    property string action: ""
+    property string actionLabel: ""
+    signal actionTriggered()
     property string motion: "spring"
 
     implicitHeight: Theme.px(40)
@@ -62,7 +66,7 @@ Rectangle {
     Column {
         anchors.left: glyph.right
         anchors.leftMargin: row.icon !== "" ? Theme.px(10) : 0
-        anchors.right: mark.left
+        anchors.right: actionButton.visible ? actionButton.left : mark.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         spacing: 1
@@ -85,6 +89,36 @@ Rectangle {
             elide: Text.ElideRight
             font.family: Theme.fontFamily
             font.pixelSize: Theme.textCaption
+        }
+    }
+
+    Rectangle {
+        id: actionButton
+        anchors.right: mark.left
+        anchors.rightMargin: row.trailing !== "" ? Theme.px(6) : 0
+        anchors.verticalCenter: parent.verticalCenter
+        width: Theme.px(26)
+        height: Theme.px(26)
+        radius: Theme.radiusInput
+        visible: row.action !== ""
+        color: actionHit.pressed ? Theme.press : actionHit.containsMouse ? Theme.lift : Theme.clear
+        Accessible.role: Accessible.Button
+        Accessible.name: row.actionLabel
+
+        StatusGlyph {
+            anchors.centerIn: parent
+            width: Theme.px(12)
+            height: Theme.px(12)
+            icon: row.action
+            ink: actionHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
+        }
+
+        MouseArea {
+            id: actionHit
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: row.actionTriggered()
         }
     }
 

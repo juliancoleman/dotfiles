@@ -120,6 +120,9 @@ Item {
                     busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
                         || modelData.state === BluetoothDeviceState.Disconnecting
                     trailing: modelData.connected ? "check" : busy ? "bluetooth" : ""
+                    action: modelData.paired ? "close" : ""
+                    actionLabel: I18n.tr("Forget device")
+                    onActionTriggered: modelData.forget()
                     onActivated: page.activate(modelData)
 
                     Connections {

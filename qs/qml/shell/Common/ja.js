@@ -74,6 +74,7 @@ var strings = {
     "Paired": "ペアリング済み",
     "Searching for devices": "デバイスを検索中",
     "No devices found": "デバイスが見つかりません",
+    "Forget device": "デバイスを削除",
 
     // Audio
     "No input devices": "入力デバイスがありません",
