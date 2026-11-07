@@ -33,6 +33,9 @@ Three processes exist:
 **`Control`**
 - `FanControl` — client of the fan helper socket; holds the lease while fans are shown or manually set.
 - `FanSource` — fan RPM straight from sysfs when the helper isn't reporting them.
+- `Lightbars` — DualSense/DualShock 4 lightbars (`/sys/class/leds/inputN:rgb:indicator`, matched to the
+  Bluetooth address by `/sys/class/input/inputN/uniq`); paints each controller saved in `lights`, running its
+  effect at 25 fps and easing every change over 400 ms through `multi_intensity`.
 - `SystemSource` — CPU/memory usage samples for the usage tiles.
 - `WiredSource` — NetworkManager global switch and default route via `nmcli`/`ip`.
 
@@ -180,8 +183,9 @@ before the helper first touched a channel, remembered in `/run/qs-fan-helper/bas
 (`RuntimeDirectoryPreserve`) so `ExecStopPost --restore` after a crash can put it back. The service runs
 with an empty capability set under a strict systemd sandbox.
 
-**Backlight**. The NixOS udev rule `chgrp video` + `chmod g+w` on `/sys/class/backlight/*/brightness`
-lets the shell (a `video` member) write brightness directly; no helper is involved.
+**Backlight and lightbars**. The NixOS udev rules `chgrp video` + `chmod g+w` on
+`/sys/class/backlight/*/brightness`, and `chgrp users` + `chmod g+w` on hid-playstation's
+`inputN:rgb:indicator/multi_intensity`, let the shell write both directly; no helper is involved.
 
 **Location**. `LocationServices` can only `systemctl start qs-location-on/off.service`; the polkit rule in
 `nixos-module.nix` allows exactly those two units for a local, active session.

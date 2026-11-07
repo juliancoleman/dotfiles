@@ -57,8 +57,9 @@ With `devices = [ ]` the helper discovers the hardware itself (see *Fan control*
 `fanControl.devices.*` entry instead names `identity` (the hwmon `name`), `channels` (non-empty list of
 `{ name: str; channel: 1–16; minimumPercent: 0–100 }`), `thermalSensors` (non-empty list of
 `{ identity: str; input: 1–64; warningCelsius: number; criticalCelsius: number }`, warning asserted below
-critical). The module also enables `services.upower` and adds a udev rule making
-`/sys/class/backlight/*/brightness` group‑writable by `video`.
+critical). The module also enables `services.upower` and adds udev rules making
+`/sys/class/backlight/*/brightness` group‑writable by `video` and DualSense/DualShock 4 lightbars
+(`/sys/class/leds/input*:rgb:indicator/multi_intensity`) group‑writable by `users`.
 
 ### `programs.qs` (Home Manager, `nix/home-manager-module.nix`)
 
@@ -134,6 +135,7 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | `weather.locationMode` | `exact` `automatic` | `exact` | Fixed `weather.location` or GeoClue `where-am-i` |
 | `weather.location` | `null` or `{ name, region, latitude, longitude }` | `null` | Location picked in Settings (Open‑Meteo geocoding, US only) |
 | `weather.alerts` | bool | `true` | Fetch NWS active alerts |
+| `lights.<address>` | `{ on: bool, mode: solid\|breathe\|fade\|rainbow, color: "#rrggbb", brightness: 0–1, speed: slow\|medium\|fast }` | absent | A controller's lightbar, keyed by lowercase Bluetooth address (written from Bluetooth → ⚙). Controllers not listed keep the color their driver or Steam sets |
 
 ## Fan control
 
