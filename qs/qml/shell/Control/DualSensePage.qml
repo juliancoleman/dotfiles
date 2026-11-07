@@ -2,7 +2,7 @@ import QtQuick
 import "../Common"
 import "../Settings"
 
-// One controller's lightbar: on/off and brightness, the effect, the color it shows, and how fast it moves.
+// One DualSense's lightbar: on/off and brightness, the effect, the color it shows, and how fast it moves.
 Item {
     id: page
 
@@ -10,14 +10,14 @@ Item {
     property string motion: "easeOut"
 
     readonly property string address: device ? device.address : ""
-    readonly property var setting: Lightbars.settings(address)
+    readonly property var setting: DualSenseLights.settings(address)
     readonly property bool tinted: setting.mode === "solid" || setting.mode === "breathe"
     readonly property bool moving: setting.mode !== "solid"
-    readonly property bool present: !!device && device.connected && Lightbars.available(address)
+    readonly property bool present: !!device && device.connected && DualSenseLights.available(address)
     readonly property color chosen: setting.color
 
     function set(change) {
-        Lightbars.update(address, change)
+        DualSenseLights.update(address, change)
     }
 
     function pickHue(fraction) {
@@ -81,10 +81,10 @@ Item {
                 y: caption.height + Theme.px(6)
                 width: parent.width
                 height: Theme.px(26)
-                readonly property real cell: width / Lightbars.palette.length
+                readonly property real cell: width / DualSenseLights.palette.length
 
                 Repeater {
-                    model: Lightbars.palette
+                    model: DualSenseLights.palette
 
                     Item {
                         id: swatch
@@ -210,7 +210,7 @@ Item {
             leftPadding: 4
             rightPadding: leftPadding
             visible: !page.present
-            text: I18n.tr("Connect the controller to change its lights.")
+            text: I18n.tr("Connect the DualSense to change its lights.")
             wrapMode: Text.Wrap
             color: Theme.textSecondary
             font.family: Theme.fontFamily

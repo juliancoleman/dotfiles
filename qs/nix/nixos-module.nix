@@ -166,10 +166,10 @@ in
       # Battery state in the shell comes from UPower.
       services.upower.enable = true;
       # The shell writes the backlight directly; members of `video` may set it. It also paints DualSense and
-      # DualShock 4 lightbars (hid-playstation's `inputN:rgb:indicator`), which any local user may.
+      # DualSense Edge lightbars (hid-playstation's `inputN:rgb:indicator`), which any local user may.
       services.udev.extraRules = ''
         ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys%p/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys%p/brightness"
-        ACTION=="add", SUBSYSTEM=="leds", KERNEL=="input*:rgb:indicator", RUN+="${pkgs.coreutils}/bin/chgrp users /sys%p/multi_intensity", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys%p/multi_intensity"
+        ACTION=="add", SUBSYSTEM=="leds", KERNEL=="input*:rgb:indicator", KERNELS=="*:054C:0CE6.*|*:054C:0DF2.*", RUN+="${pkgs.coreutils}/bin/chgrp users /sys%p/multi_intensity", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys%p/multi_intensity"
       '';
       environment.etc."qs/wallpaper" = mkIf (cfg.wallpaper != null) {
         source = cfg.wallpaper;

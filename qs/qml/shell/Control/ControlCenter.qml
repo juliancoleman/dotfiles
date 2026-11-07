@@ -59,12 +59,12 @@ Item {
     readonly property string settingsPrefix: "settings/"
     readonly property bool onSettings: page === "settings" || page.startsWith(settingsPrefix)
     readonly property string settingsSection: page.startsWith(settingsPrefix) ? page.slice(settingsPrefix.length) : ""
-    // The Bluetooth device whose lights "bluetooth/lights" shows.
-    property var lightsDevice: null
+    // The DualSense whose lights "bluetooth/dualsense" shows.
+    property var dualSenseDevice: null
     readonly property real pageContent: page === "wifi" ? wifiPage.implicitHeight
         : page === "ethernet" ? ethernetPage.implicitHeight
         : page === "bluetooth" ? bluetoothPage.implicitHeight
-        : page === "bluetooth/lights" ? lightsPage.implicitHeight
+        : page === "bluetooth/dualsense" ? dualSensePage.implicitHeight
         : page === "fans" ? fansPage.implicitHeight
         : page === "output" ? outputPage.implicitHeight
         : page === "input" ? inputPage.implicitHeight
@@ -89,8 +89,8 @@ Item {
             return I18n.tr("Ethernet")
         case "bluetooth":
             return I18n.tr("Bluetooth")
-        case "bluetooth/lights":
-            return lightsDevice ? lightsDevice.name : I18n.tr("Lights")
+        case "bluetooth/dualsense":
+            return I18n.tr("%1 lights").arg(DualSenseLights.model(dualSenseDevice ? dualSenseDevice.address : ""))
         case "fans":
             return I18n.tr("Fans")
         case "output":
@@ -106,12 +106,12 @@ Item {
         return section ? I18n.tr(section.title) : ""
     }
 
-    // One level up: a settings section to the section list, a device's lights to Bluetooth, any other page to
-    // the grid.
+    // One level up: a settings section to the section list, a DualSense's lights to Bluetooth, any other page
+    // to the grid.
     function parentPage() {
         if (settingsSection !== "")
             return "settings"
-        return page === "bluetooth/lights" ? "bluetooth" : ""
+        return page === "bluetooth/dualsense" ? "bluetooth" : ""
     }
 
     // Escape steps back out one level: section to settings, page to grid, grid to closed.
@@ -253,25 +253,39 @@ Item {
         motion: root.motion
     }
 
-    // The sources are shared by every screen's panel; each one counts open panels and polls
-    // while any of them is watching. Wired only matters on machines without Wi-Fi.
-    readonly property bool wiredWatched: opened && !wifiDevice
-    onOpenedChanged: root.watch(opened)
-    onWiredWatchedChanged: WiredSource.watchers += wiredWatched ? 1 : -1
-    Component.onDestruction: {
-        if (opened)
-            root.watch(false)
-        if (wiredWatched)
-            WiredSource.watchers -= 1
-    }
-
-    function watch(on) {
-        const delta = on ? 1 : -1
-        FanSource.watchers += delta
-        FanControl.watchers += delta
+    // The sources are shared by every screen's panel; each counts the panels showing it and polls (or runs
+    // its meter taps) only while one does. A source is wanted only on the pages that show it: the grid has
+    // the meters, usage, brightness, fans and (without Wi-Fi) wired; the audio pages their meter; the fans
+    // and Ethernet pages their own.
+    readonly property bool gridShown: opened && page === ""
+    readonly property bool metersShown: gridShown || opened && (page === "output" || page === "input")
+    readonly property bool fansShown: gridShown || opened && page === "fans"
+    readonly property bool wiredWatched: !wifiDevice && (gridShown || opened && page === "ethernet")
+    onGridShownChanged: {
+        const delta = gridShown ? 1 : -1
         SystemSource.watchers += delta
         Brightness.watchers += delta
-        Meter.watchers += delta
+    }
+    onMetersShownChanged: Meter.watchers += metersShown ? 1 : -1
+    onFansShownChanged: {
+        const delta = fansShown ? 1 : -1
+        FanSource.watchers += delta
+        FanControl.watchers += delta
+    }
+    onWiredWatchedChanged: WiredSource.watchers += wiredWatched ? 1 : -1
+    Component.onDestruction: {
+        if (gridShown) {
+            SystemSource.watchers -= 1
+            Brightness.watchers -= 1
+        }
+        if (metersShown)
+            Meter.watchers -= 1
+        if (fansShown) {
+            FanSource.watchers -= 1
+            FanControl.watchers -= 1
+        }
+        if (wiredWatched)
+            WiredSource.watchers -= 1
     }
 
     Rectangle {
@@ -451,6 +465,8 @@ Item {
             PageLayer {
                 motion: root.motion
                 shown: root.page === "bluetooth"
+                // A DualSense's page goes deeper, so Bluetooth leaves the way the grid does.
+                behind: root.page === "bluetooth/dualsense"
                 x: root.pad
                 y: body.contentY
                 width: root.gridWidth
@@ -462,25 +478,25 @@ Item {
                     adapter: root.adapter
                     active: root.opened && root.page === "bluetooth"
                     motion: root.motion
-                    onLightsRequested: device => {
-                        root.lightsDevice = device
-                        root.page = "bluetooth/lights"
+                    onDualSenseRequested: device => {
+                        root.dualSenseDevice = device
+                        root.page = "bluetooth/dualsense"
                     }
                 }
             }
 
             PageLayer {
                 motion: root.motion
-                shown: root.page === "bluetooth/lights"
+                shown: root.page === "bluetooth/dualsense"
                 x: root.pad
                 y: body.contentY
                 width: root.gridWidth
-                height: lightsPage.implicitHeight
+                height: dualSensePage.implicitHeight
 
-                LightsPage {
-                    id: lightsPage
+                DualSensePage {
+                    id: dualSensePage
                     width: parent.width
-                    device: root.lightsDevice
+                    device: root.dualSenseDevice
                     motion: root.motion
                 }
             }

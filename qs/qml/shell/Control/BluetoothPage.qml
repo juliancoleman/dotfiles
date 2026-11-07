@@ -14,8 +14,8 @@ Item {
 
     // Addresses we started pairing from here; once paired they're trusted and connected.
     property var pairing: ({})
-    // The device's lights page was asked for (from its row's settings button).
-    signal lightsRequested(var device)
+    // A DualSense's lights page was asked for (from its row's settings button).
+    signal dualSenseRequested(var device)
 
     implicitHeight: content.implicitHeight
 
@@ -73,8 +73,9 @@ Item {
 
     function actions(device) {
         const list = []
-        if (device.connected && Lightbars.available(device.address))
-            list.push({ id: "lights", icon: "settings", label: I18n.tr("Lights") })
+        if (device.connected && DualSenseLights.available(device.address))
+            list.push({ id: "dualsense", icon: "settings",
+                        label: I18n.tr("%1 lights").arg(DualSenseLights.model(device.address)) })
         // BlueZ keeps a record for trusted devices even after their pairing is lost; those need forgetting
         // before they can pair again.
         if (device.paired || device.bonded || device.trusted)
@@ -215,8 +216,8 @@ Item {
                         : Theme.textPrimary
                     actions: page.actions(modelData)
                     onActionTriggered: id => {
-                        if (id === "lights")
-                            page.lightsRequested(modelData)
+                        if (id === "dualsense")
+                            page.dualSenseRequested(modelData)
                         else
                             modelData.forget()
                     }

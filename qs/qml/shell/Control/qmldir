@@ -17,5 +17,5 @@ singleton WiredSource 1.0 WiredSource.qml
 Tile 1.0 Tile.qml
 EthernetPage 1.0 EthernetPage.qml
 ListGroup 1.0 ListGroup.qml
-singleton Lightbars 1.0 Lightbars.qml
-LightsPage 1.0 LightsPage.qml
+singleton DualSenseLights 1.0 DualSenseLights.qml
+DualSensePage 1.0 DualSensePage.qml

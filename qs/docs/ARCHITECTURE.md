@@ -33,9 +33,10 @@ Three processes exist:
 **`Control`**
 - `FanControl` — client of the fan helper socket; holds the lease while fans are shown or manually set.
 - `FanSource` — fan RPM straight from sysfs when the helper isn't reporting them.
-- `Lightbars` — DualSense/DualShock 4 lightbars (`/sys/class/leds/inputN:rgb:indicator`, matched to the
-  Bluetooth address by `/sys/class/input/inputN/uniq`); paints each controller saved in `lights`, running its
-  effect at 25 fps and easing every change over 400 ms through `multi_intensity`.
+- `DualSenseLights` — DualSense/DualSense Edge lightbars (`/sys/class/leds/inputN:rgb:indicator` under a
+  `054C:0CE6`/`054C:0DF2` HID device, matched to the Bluetooth address by `/sys/class/input/inputN/uniq`, looked
+  up only when a gamepad connects); paints each controller saved in `dualsense`, running its effect at 25 fps
+  and easing every change over 400 ms through `multi_intensity`.
 - `SystemSource` — CPU/memory usage samples for the usage tiles.
 - `WiredSource` — NetworkManager global switch and default route via `nmcli`/`ip`.
 
@@ -50,14 +51,16 @@ Three processes exist:
 - `SettingsState` — `toggleRequested(screenName)` for Super+Comma on the focused output.
 
 **`Notifications`**
-- `NotificationService` — the session's only notification daemon; tracks and expires notifications.
+- `NotificationService` — the session's only notification daemon; tracks notifications and expires them on
+  one timer armed for the soonest countdown.
 
 **`Secure`**
 - `SecureInput` — serves `$XDG_RUNTIME_DIR/qs-secure.sock`, polkit agent flows, the prompt queue.
 - `SecureRequest` — turns requester metadata plus `/proc` lineage into prompt text, icon, kind.
 
 **`Status`**
-- `Brightness` — reads/writes `/sys/class/backlight/*/brightness` through `FileView`; polls because sysfs has no inotify.
+- `Brightness` — reads/writes `/sys/class/backlight/*/brightness` through `FileView`; sysfs has no inotify, so
+  it polls only while a slider shows it, and a key step reads the live value first.
 - `Media` — selects the active MPRIS player and emits `mediaEvent`.
 - `Meter` — live output/input signal (dB-scaled peak, 60 dB range) via `pw-record | qs-meter` taps that
   run while `watchers > 0`; `inputInUse` is true when a program other than the taps or a filter chain

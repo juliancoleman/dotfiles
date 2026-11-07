@@ -76,9 +76,9 @@ var strings = {
     "Searching for devices": "デバイスを検索中",
     "No devices found": "デバイスが見つかりません",
     "Forget device": "デバイスを削除",
-    "Lights": "ライト",
 
-    // Controller lights
+    // DualSense lights
+    "%1 lights": "%1 ライト",
     "Effect": "エフェクト",
     "Solid": "点灯",
     "Breathe": "呼吸",
@@ -90,7 +90,7 @@ var strings = {
     "Slow": "遅い",
     "Medium": "普通",
     "Fast": "速い",
-    "Connect the controller to change its lights.": "ライトを変更するにはコントローラーを接続してください。",
+    "Connect the DualSense to change its lights.": "ライトを変更するには DualSense を接続してください。",
 
     // Audio
     "No input devices": "入力デバイスがありません",

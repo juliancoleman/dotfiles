@@ -6,10 +6,10 @@ import Quickshell.Bluetooth
 import Quickshell.Io
 import ".."
 
-// Controller lightbars: the RGB indicator hid-playstation registers for a DualSense or DualShock 4
+// DualSense lightbars: the RGB indicator hid-playstation registers for a DualSense or DualSense Edge
 // (`/sys/class/leds/inputN:rgb:indicator`), matched to its Bluetooth address through the input device's
-// `uniq`. Each saved setting in `ClockConfig.lights` is painted here, effects included, by writing the LED's
-// `multi_intensity`; the NixOS module grants that attribute to `users`.
+// `uniq`. Each controller saved in `ClockConfig.dualsense` is painted here, effects included, by writing the
+// LED's `multi_intensity`; the NixOS module grants that attribute to `users`.
 Singleton {
     id: root
 
@@ -19,7 +19,7 @@ Singleton {
     readonly property var palette: ["#ffffff", "#ff0000", "#ff6000", "#ffd000", "#00ff40", "#00e0ff", "#0000ff",
         "#8000ff", "#ff00a0"]
 
-    // Lowercase address → LED directory, for every lightbar present now.
+    // Lowercase address → { directory, model } for every DualSense lightbar present now.
     property var found: ({})
     readonly property int frameMs: 40
     // A change of setting eases from what the bar shows to the new light over this long.
@@ -33,14 +33,20 @@ Singleton {
         return found[key(address)] !== undefined
     }
 
+    // "DualSense" or "DualSense Edge", from the controller's product id.
+    function model(address) {
+        const entry = found[key(address)]
+        return entry ? entry.model : "DualSense"
+    }
+
     function settings(address) {
-        return Object.assign({}, defaults, ClockConfig.lights[key(address)] || {})
+        return Object.assign({}, defaults, ClockConfig.dualsense[key(address)] || {})
     }
 
     function update(address, change) {
-        const next = Object.assign({}, ClockConfig.lights)
+        const next = Object.assign({}, ClockConfig.dualsense)
         next[key(address)] = Object.assign(settings(address), change)
-        ClockConfig.lights = next
+        ClockConfig.dualsense = next
         saver.restart()
     }
 
@@ -102,14 +108,16 @@ Singleton {
         return rgb.map(v => v * s.brightness)
     }
 
+    // Gamepads only: nothing else connecting can bring a lightbar.
     readonly property string connectedKey: {
         const list = Bluetooth.devices ? Bluetooth.devices.values : []
-        return list.filter(d => d && d.connected).map(d => key(d.address)).sort().join(" ")
+        return list.filter(d => d && d.connected && d.icon === "input-gaming").map(d => key(d.address)).sort().join(" ")
     }
     property int attempts: 0
 
     // A controller's LEDs register a moment after Bluetooth reports it connected, so a change is looked at
-    // again for a few seconds until every connected device that has a lightbar shows up.
+    // again for a few seconds until every connected gamepad that has a lightbar shows up. Nothing polls
+    // otherwise.
     onConnectedKeyChanged: {
         attempts = 0
         if (scan.running)
@@ -123,14 +131,16 @@ Singleton {
         running: true
         command: ["sh", "-c",
             "for l in /sys/class/leds/input*:rgb:indicator; do [ -e \"$l\" ] || continue; "
-            + "n=${l##*/}; n=${n%%:*}; printf '%s %s\\n' \"$(cat /sys/class/input/$n/uniq 2>/dev/null)\" \"$l\"; done"]
+            + "case $(readlink -f \"$l\") in */*:054C:0CE6.*/*) m=DualSense;; */*:054C:0DF2.*/*) m='DualSense Edge';; "
+            + "*) continue;; esac; "
+            + "n=${l##*/}; n=${n%%:*}; printf '%s|%s|%s\\n' \"$(cat /sys/class/input/$n/uniq 2>/dev/null)\" \"$m\" \"$l\"; done"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const next = {}
                 for (const line of text.split("\n")) {
-                    const space = line.indexOf(" ")
-                    if (space > 0)
-                        next[root.key(line.slice(0, space))] = line.slice(space + 1)
+                    const fields = line.split("|")
+                    if (fields.length === 3 && fields[0] !== "")
+                        next[root.key(fields[0])] = { model: fields[1], directory: fields[2] }
                 }
                 if (JSON.stringify(next) !== JSON.stringify(root.found))
                     root.found = next
@@ -157,12 +167,12 @@ Singleton {
 
     Instantiator {
         id: bars
-        model: Object.keys(root.found).filter(address => ClockConfig.lights[address] !== undefined)
+        model: Object.keys(root.found).filter(address => ClockConfig.dualsense[address] !== undefined)
 
         delegate: QtObject {
             id: bar
             required property string modelData
-            readonly property string directory: root.found[modelData] || ""
+            readonly property string directory: root.found[modelData] ? root.found[modelData].directory : ""
             readonly property var setting: root.settings(modelData)
             readonly property bool moving: setting.on && setting.mode !== "solid"
             property var shown: null

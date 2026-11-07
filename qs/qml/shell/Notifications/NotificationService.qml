@@ -69,11 +69,32 @@ Singleton {
                                           urgency: urgency, time: Date.now() }))
     }
 
+    // One wake-up for the soonest countdown to end, re-armed on every change; nothing ticks while no
+    // notification is counting down (all persistent, paused, or the panel open).
     Timer {
-        interval: 100
-        repeat: true
-        running: root.count > 0
-        onTriggered: root.settle(Date.now())
+        id: expiry
+        onTriggered: {
+            root.settle(Date.now())
+            root.schedule()
+        }
+    }
+
+    function schedule() {
+        let soonest = -1
+        if (!panelOpen) {
+            for (let i = 0; i < model.count; ++i) {
+                const entry = model.get(i)
+                if (entry.remaining >= 0 && !entry.paused && (soonest < 0 || entry.remaining < soonest))
+                    soonest = entry.remaining
+            }
+        }
+        if (soonest < 0) {
+            expiry.stop()
+            return
+        }
+        // `remaining` is as of the last settle.
+        expiry.interval = Math.max(1, soonest - (Date.now() - lastTick))
+        expiry.restart()
     }
 
     function timeoutFor(notification) {
@@ -113,6 +134,7 @@ Singleton {
         settle(Date.now())
         model.insert(0, { handle: notification, notificationId: notification.id,
                           remaining: timeoutFor(notification), paused: false })
+        schedule()
         const id = notification.id
         notification.closed.connect(function () { root.remove(id) })
         // replaces_id updates this same object, so any content change is a replacement.
@@ -134,6 +156,7 @@ Singleton {
         if (index > 0)
             model.move(index, 0, 1)
         model.setProperty(0, "remaining", timeoutFor(notification))
+        schedule()
         ++revision
         arrived()
     }
@@ -143,6 +166,7 @@ Singleton {
         if (index < 0)
             return
         model.remove(index, 1)
+        schedule()
         ++revision
     }
 
@@ -169,6 +193,7 @@ Singleton {
             for (let i = 0; i < model.count; ++i)
                 model.setProperty(i, "paused", false)
         }
+        schedule()
     }
 
     function setPaused(id, paused) {
@@ -177,6 +202,7 @@ Singleton {
             return
         settle(Date.now())
         model.setProperty(index, "paused", paused)
+        schedule()
     }
 
     function dismiss(id) {
