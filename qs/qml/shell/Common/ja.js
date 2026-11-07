@@ -76,6 +76,21 @@ var strings = {
     "Searching for devices": "デバイスを検索中",
     "No devices found": "デバイスが見つかりません",
     "Forget device": "デバイスを削除",
+    "Lights": "ライト",
+
+    // Controller lights
+    "Effect": "エフェクト",
+    "Solid": "点灯",
+    "Breathe": "呼吸",
+    "Fade": "フェード",
+    "Rainbow": "レインボー",
+    "Color": "色",
+    "Hue": "色相",
+    "Speed": "速さ",
+    "Slow": "遅い",
+    "Medium": "普通",
+    "Fast": "速い",
+    "Connect the controller to change its lights.": "ライトを変更するにはコントローラーを接続してください。",
 
     // Audio
     "No input devices": "入力デバイスがありません",

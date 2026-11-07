@@ -14,10 +14,10 @@ Rectangle {
     property bool current: false
     property bool busy: false
     signal activated()
-    // An optional secondary glyph button left of the trailing mark; its own click, not the row's.
-    property string action: ""
-    property string actionLabel: ""
-    signal actionTriggered()
+    // Optional glyph buttons left of the trailing mark, each `{ id, icon, label }`; their own clicks, not the
+    // row's.
+    property var actions: []
+    signal actionTriggered(string id)
     property string motion: "spring"
 
     implicitHeight: Theme.px(40)
@@ -66,7 +66,7 @@ Rectangle {
     Column {
         anchors.left: glyph.right
         anchors.leftMargin: row.icon !== "" ? Theme.px(10) : 0
-        anchors.right: actionButton.visible ? actionButton.left : mark.left
+        anchors.right: actionRow.visible ? actionRow.left : mark.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         spacing: 1
@@ -92,33 +92,42 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: actionButton
+    Row {
+        id: actionRow
         anchors.right: mark.left
         anchors.rightMargin: row.trailing !== "" ? Theme.px(6) : 0
         anchors.verticalCenter: parent.verticalCenter
-        width: Theme.px(26)
-        height: Theme.px(26)
-        radius: Theme.radiusInput
-        visible: row.action !== ""
-        color: actionHit.pressed ? Theme.press : actionHit.containsMouse ? Theme.lift : Theme.clear
-        Accessible.role: Accessible.Button
-        Accessible.name: row.actionLabel
+        visible: row.actions.length > 0
 
-        StatusGlyph {
-            anchors.centerIn: parent
-            width: Theme.px(12)
-            height: Theme.px(12)
-            icon: row.action
-            ink: actionHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
-        }
+        Repeater {
+            model: row.actions
 
-        MouseArea {
-            id: actionHit
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: row.actionTriggered()
+            Rectangle {
+                id: actionButton
+                required property var modelData
+                width: Theme.px(26)
+                height: Theme.px(26)
+                radius: Theme.radiusInput
+                color: actionHit.pressed ? Theme.press : actionHit.containsMouse ? Theme.lift : Theme.clear
+                Accessible.role: Accessible.Button
+                Accessible.name: modelData.label
+
+                StatusGlyph {
+                    anchors.centerIn: parent
+                    width: Theme.px(12)
+                    height: Theme.px(12)
+                    icon: actionButton.modelData.icon
+                    ink: actionHit.containsMouse ? Theme.textPrimary : Theme.textSecondary
+                }
+
+                MouseArea {
+                    id: actionHit
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: row.actionTriggered(actionButton.modelData.id)
+                }
+            }
         }
     }
 

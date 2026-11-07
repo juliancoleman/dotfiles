@@ -59,9 +59,12 @@ Item {
     readonly property string settingsPrefix: "settings/"
     readonly property bool onSettings: page === "settings" || page.startsWith(settingsPrefix)
     readonly property string settingsSection: page.startsWith(settingsPrefix) ? page.slice(settingsPrefix.length) : ""
+    // The Bluetooth device whose lights "bluetooth/lights" shows.
+    property var lightsDevice: null
     readonly property real pageContent: page === "wifi" ? wifiPage.implicitHeight
         : page === "ethernet" ? ethernetPage.implicitHeight
         : page === "bluetooth" ? bluetoothPage.implicitHeight
+        : page === "bluetooth/lights" ? lightsPage.implicitHeight
         : page === "fans" ? fansPage.implicitHeight
         : page === "output" ? outputPage.implicitHeight
         : page === "input" ? inputPage.implicitHeight
@@ -86,6 +89,8 @@ Item {
             return I18n.tr("Ethernet")
         case "bluetooth":
             return I18n.tr("Bluetooth")
+        case "bluetooth/lights":
+            return lightsDevice ? lightsDevice.name : I18n.tr("Lights")
         case "fans":
             return I18n.tr("Fans")
         case "output":
@@ -101,9 +106,12 @@ Item {
         return section ? I18n.tr(section.title) : ""
     }
 
-    // One level up: a settings section to the section list, any other page to the grid.
+    // One level up: a settings section to the section list, a device's lights to Bluetooth, any other page to
+    // the grid.
     function parentPage() {
-        return settingsSection !== "" ? "settings" : ""
+        if (settingsSection !== "")
+            return "settings"
+        return page === "bluetooth/lights" ? "bluetooth" : ""
     }
 
     // Escape steps back out one level: section to settings, page to grid, grid to closed.
@@ -453,6 +461,26 @@ Item {
                     width: parent.width
                     adapter: root.adapter
                     active: root.opened && root.page === "bluetooth"
+                    motion: root.motion
+                    onLightsRequested: device => {
+                        root.lightsDevice = device
+                        root.page = "bluetooth/lights"
+                    }
+                }
+            }
+
+            PageLayer {
+                motion: root.motion
+                shown: root.page === "bluetooth/lights"
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: lightsPage.implicitHeight
+
+                LightsPage {
+                    id: lightsPage
+                    width: parent.width
+                    device: root.lightsDevice
                     motion: root.motion
                 }
             }

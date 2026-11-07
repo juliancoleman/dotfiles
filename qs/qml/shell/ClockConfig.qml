@@ -38,6 +38,9 @@ Singleton {
     property string themePalette: "pens"
     // "dark" or "light" (the Night and Paper pages).
     property string themeAppearance: "dark"
+    // Controller lights by Bluetooth address (lowercase): { on, mode, color, brightness, speed }. Only
+    // controllers listed here are painted; the rest keep whatever their driver or Steam sets.
+    property var lights: ({})
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
@@ -69,6 +72,20 @@ Singleton {
             return raw
         console.warn("qs config: invalid " + key + " '" + raw + "', keeping " + current)
         return current
+    }
+
+    // One controller's light settings, field by field like `pick`, falling back to what's in memory.
+    function lightEntry(address, raw, current) {
+        const base = current || {}
+        const field = (key, valid, fallback) => pick("lights." + address + "." + key, raw[key], valid, fallback,
+                                                     base[key] === undefined ? fallback : base[key])
+        return {
+            on: field("on", oneOf(true, false), true),
+            mode: field("mode", oneOf("solid", "breathe", "fade", "rainbow"), "solid"),
+            color: field("color", value => typeof value === "string" && /^#[0-9a-f]{6}$/.test(value), "#0000ff"),
+            brightness: field("brightness", within(0, 1), 0.5),
+            speed: field("speed", oneOf("slow", "medium", "fast"), "medium")
+        }
     }
 
     function apply(parsed) {
@@ -115,6 +132,13 @@ Singleton {
         duration = Math.round(pick("clock.duration", clock.duration, within(50, 2000), 250, duration))
         springOvershoot = Math.round(pick("clock.springOvershoot", clock.springOvershoot, within(0, 4), 2,
                                           springOvershoot) * 10) / 10
+        const lightsRaw = parsed && parsed.lights && typeof parsed.lights === "object" ? parsed.lights : {}
+        const nextLights = {}
+        for (const address in lightsRaw) {
+            if (lightsRaw[address] && typeof lightsRaw[address] === "object")
+                nextLights[address] = lightEntry(address, lightsRaw[address], lights[address])
+        }
+        lights = nextLights
     }
 
     function save() {
@@ -152,6 +176,7 @@ Singleton {
         next.clock.presentation = presentation
         next.clock.duration = duration
         next.clock.springOvershoot = springOvershoot
+        next.lights = lights
         delete next.clock.presentationMotion
         document = next
         writer.setText(JSON.stringify(next, null, 2) + "\n")

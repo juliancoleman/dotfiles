@@ -13,6 +13,8 @@ Item {
 
     // Addresses we started pairing from here; once paired they're trusted and connected.
     property var pairing: ({})
+    // The device's lights page was asked for (from its row's settings button).
+    signal lightsRequested(var device)
 
     implicitHeight: content.implicitHeight
 
@@ -24,6 +26,59 @@ Item {
         const list = adapter && adapter.devices ? adapter.devices.values : []
         return list.filter(d => d && (d.paired || d.connected || d.deviceName !== ""))
             .sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name))
+    }
+
+    // BlueZ's freedesktop icon name (from the device class or LE appearance) picks the glyph.
+    readonly property var kinds: ({
+        "input-gaming": "gamepad",
+        "audio-headset": "headset",
+        "audio-headphones": "headphones",
+        "audio-card": "speaker",
+        "multimedia-player": "speaker",
+        "input-keyboard": "keyboard",
+        "input-mouse": "mouse",
+        "input-tablet": "tablet",
+        "phone": "phone",
+        "computer": "laptop",
+        "video-display": "tv",
+        "camera-video": "video",
+        "camera-photo": "camera",
+        "printer": "printer",
+        "scanner": "printer"
+    })
+    // Plenty of LE devices report no class at all; their names usually say what they are.
+    readonly property var namedKinds: [
+        { pattern: /controller|gamepad|dualsense|dualshock|xbox|joy-?con|8bitdo/i, kind: "gamepad" },
+        { pattern: /buds|airpods|headphone|earbud|\bwh-|\bwf-|beats/i, kind: "headphones" },
+        { pattern: /keyboard|keychron/i, kind: "keyboard" },
+        { pattern: /mouse|trackpad|mx master|mx anywhere/i, kind: "mouse" },
+        { pattern: /watch|band\b/i, kind: "watch" },
+        { pattern: /speaker|soundbar|soundlink|jbl/i, kind: "speaker" },
+        { pattern: /iphone|pixel|galaxy|phone/i, kind: "phone" },
+        { pattern: /macbook|laptop|thinkpad/i, kind: "laptop" },
+        { pattern: /\btv\b|bravia/i, kind: "tv" }
+    ]
+
+    function kind(device) {
+        const known = kinds[device.icon]
+        if (known)
+            return known
+        for (const entry of namedKinds) {
+            if (entry.pattern.test(device.name))
+                return entry.kind
+        }
+        return "bluetooth"
+    }
+
+    function actions(device) {
+        const list = []
+        if (device.connected && Lightbars.available(device.address))
+            list.push({ id: "lights", icon: "settings", label: I18n.tr("Lights") })
+        // BlueZ keeps a record for trusted devices even after their pairing is lost; those need forgetting
+        // before they can pair again.
+        if (device.paired || device.bonded || device.trusted)
+            list.push({ id: "forget", icon: "close", label: I18n.tr("Forget device") })
+        return list
     }
 
     // Paired without a stored link key: BlueZ refuses HID from such devices, so it only looks connected.
@@ -128,18 +183,20 @@ Item {
                     required property var modelData
                     width: parent.width
                     motion: page.motion
-                    icon: "bluetooth"
+                    icon: page.kind(modelData)
                     title: modelData.name
                     subtitle: page.status(modelData)
                     current: modelData.connected && !page.unsaved(modelData)
                     busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
                         || modelData.state === BluetoothDeviceState.Disconnecting
                     trailing: current ? "check" : busy ? "bluetooth" : ""
-                    // BlueZ keeps a record for trusted devices even after their pairing is lost; those need
-                    // forgetting before they can pair again.
-                    action: modelData.paired || modelData.bonded || modelData.trusted ? "close" : ""
-                    actionLabel: I18n.tr("Forget device")
-                    onActionTriggered: modelData.forget()
+                    actions: page.actions(modelData)
+                    onActionTriggered: id => {
+                        if (id === "lights")
+                            page.lightsRequested(modelData)
+                        else
+                            modelData.forget()
+                    }
                     onActivated: page.activate(modelData)
 
                     Connections {
