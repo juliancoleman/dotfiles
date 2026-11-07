@@ -116,11 +116,13 @@ in
       pkgs.plemoljp-nf
     ];
 
+    # graphical-session.target is reached only once niri reports ready with WAYLAND_DISPLAY imported;
+    # ordering after graphical-session-pre.target alone starts these alongside niri and races it.
     systemd.user.services.qs-shell = {
       Unit = {
         Description = "QS desktop shell";
         PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session-pre.target" ];
+        After = [ "graphical-session.target" ];
         StartLimitIntervalSec = 30;
         StartLimitBurst = 5;
       };
@@ -130,13 +132,14 @@ in
         Environment = [ "QS_CONFIG_FILE=${cfg.paths.configFile}" ]
           ++ lib.optional (cfg.wallpaper != null) "QS_WALLPAPER=${wallpaperPath}";
       };
+      Install.WantedBy = [ "graphical-session.target" ];
     };
 
     systemd.user.services.qs-wallpaper = mkIf (cfg.wallpaper != null) {
       Unit = {
         Description = "QS wallpaper";
         PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session-pre.target" ];
+        After = [ "graphical-session.target" ];
         StartLimitIntervalSec = 30;
         StartLimitBurst = 5;
       };
