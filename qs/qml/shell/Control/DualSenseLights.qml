@@ -199,21 +199,34 @@ Singleton {
                     rgb = root.mix(from, rgb, root.ease(elapsed / root.fadeMs))
                 shown = rgb
                 const text = rgb.map(v => Math.round(Math.max(0, Math.min(1, v)) * 255)).join(" ")
-                if (text !== written && directory !== "") {
+                if (text !== written && directory !== "" && pen.running) {
                     written = text
-                    writer.setText(text + "\n")
+                    pen.write(directory + "/multi_intensity " + text + "\n")
                 }
                 return moving || (from !== null && elapsed < root.fadeMs)
             }
+        }
+    }
 
-            // sysfs attributes can't be replaced by rename, so writes go straight to the file.
-            readonly property FileView writer: FileView {
-                path: bar.directory ? bar.directory + "/multi_intensity" : ""
-                atomicWrites: false
-                preload: false
-                onSaveFailed: error => console.log("qs lights: write failed", bar.directory,
-                                                   FileViewError.toString(error))
+    // One shell that takes "<attribute> <r g b>" lines and writes each straight to sysfs (attributes can't be
+    // replaced by rename). Handing it a line costs the shell a pipe write; a FileView save per frame cost a
+    // tenth of a core during an effect. It runs only while some controller is painted.
+    Process {
+        id: pen
+        running: bars.count > 0
+        stdinEnabled: true
+        command: ["sh", "-c", "while read -r f v; do printf '%s\\n' \"$v\" > \"$f\"; done"]
+        stderr: SplitParser {
+            onRead: line => console.log("qs lights:", line)
+        }
+        // Anything written before it started went nowhere; paint every bar again.
+        onStarted: {
+            for (let i = 0; i < bars.count; ++i) {
+                const bar = bars.objectAt(i)
+                if (bar)
+                    bar.written = ""
             }
+            ticker.start()
         }
     }
 

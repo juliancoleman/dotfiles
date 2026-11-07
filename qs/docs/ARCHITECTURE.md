@@ -36,7 +36,7 @@ Three processes exist:
 - `DualSenseLights` — DualSense/DualSense Edge lightbars (`/sys/class/leds/inputN:rgb:indicator` under a
   `054C:0CE6`/`054C:0DF2` HID device, matched to the Bluetooth address by `/sys/class/input/inputN/uniq`, looked
   up only when a gamepad connects); paints each controller saved in `dualsense`, running its effect at 25 fps
-  and easing every change over 400 ms through `multi_intensity`.
+  and easing every change over 400 ms, writing `multi_intensity` through one long-lived `sh` fed over stdin.
 - `SystemSource` — CPU/memory usage samples for the usage tiles.
 - `WiredSource` — NetworkManager global switch and default route via `nmcli`/`ip`.
 
