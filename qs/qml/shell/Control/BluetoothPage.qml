@@ -120,7 +120,9 @@ Item {
                     busy: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting
                         || modelData.state === BluetoothDeviceState.Disconnecting
                     trailing: modelData.connected ? "check" : busy ? "bluetooth" : ""
-                    action: modelData.paired ? "close" : ""
+                    // BlueZ keeps a record for trusted devices even after their pairing is lost; those need
+                    // forgetting before they can pair again.
+                    action: modelData.paired || modelData.bonded || modelData.trusted ? "close" : ""
                     actionLabel: I18n.tr("Forget device")
                     onActionTriggered: modelData.forget()
                     onActivated: page.activate(modelData)
