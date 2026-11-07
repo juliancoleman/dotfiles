@@ -4,8 +4,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 
-// The shell is the session's only notification daemon. It tracks active notifications, newest
-// first, and expires them itself so expiry can pause while the panel is open or a row is hovered.
+// The shell is the session's only notification daemon. It tracks active notifications, newest first,
+// and keeps each until it's dismissed, acted on, or closed by its app; the arrival toast is the
+// center's own peek and never removes anything.
 Singleton {
     id: root
 
@@ -20,10 +21,6 @@ Singleton {
     }
     readonly property bool newestCritical: !!newest && newest.urgency === NotificationUrgency.Critical
 
-    property int lowTimeout: 6000
-    property int normalTimeout: 12000
-    property bool panelOpen: false
-    property double lastTick: 0
     // Local notifications count down from -2: D-Bus ids are positive, and -1 is the pop-up's "no row" id.
     property int nextLocalId: -2
 
@@ -34,7 +31,8 @@ Singleton {
         actionsSupported: true
         imageSupported: true
         keepOnReload: false
-        persistenceSupported: false
+        // Notifications stay until the user dismisses them.
+        persistenceSupported: true
         bodyMarkupSupported: false
         bodyHyperlinksSupported: false
         bodyImagesSupported: false
@@ -42,7 +40,7 @@ Singleton {
     }
 
     // The shell's own notices (weather alerts, say) take the same row shape as D-Bus ones: the fields the
-    // rows read, the change signals accept() listens for, and close methods that end in `closed`.
+    // rows read, the change signals accept() listens for, and a dismiss that ends in `closed`.
     Component {
         id: local
 
@@ -57,53 +55,14 @@ Singleton {
             readonly property var actions: []
             readonly property string image: ""
             readonly property string appIcon: ""
-            readonly property int expireTimeout: -1
             signal closed()
             function dismiss() { closed(); destroy() }
-            function expire() { closed(); destroy() }
         }
     }
 
     function postLocal(appName, summary, body, urgency) {
         accept(local.createObject(root, { id: nextLocalId--, appName: appName, summary: summary, body: body,
                                           urgency: urgency, time: Date.now() }))
-    }
-
-    // One wake-up for the soonest countdown to end, re-armed on every change; nothing ticks while no
-    // notification is counting down (all persistent, paused, or the panel open).
-    Timer {
-        id: expiry
-        onTriggered: {
-            root.settle(Date.now())
-            root.schedule()
-        }
-    }
-
-    function schedule() {
-        let soonest = -1
-        if (!panelOpen) {
-            for (let i = 0; i < model.count; ++i) {
-                const entry = model.get(i)
-                if (entry.remaining >= 0 && !entry.paused && (soonest < 0 || entry.remaining < soonest))
-                    soonest = entry.remaining
-            }
-        }
-        if (soonest < 0) {
-            expiry.stop()
-            return
-        }
-        // `remaining` is as of the last settle.
-        expiry.interval = Math.max(1, soonest - (Date.now() - lastTick))
-        expiry.restart()
-    }
-
-    function timeoutFor(notification) {
-        // Quickshell 0.3.1 forwards the D-Bus timeout in milliseconds, though its docs say seconds.
-        if (notification.expireTimeout > 0)
-            return Math.round(notification.expireTimeout)
-        if (notification.expireTimeout === 0 || notification.urgency === NotificationUrgency.Critical)
-            return -1
-        return notification.urgency === NotificationUrgency.Low ? lowTimeout : normalTimeout
     }
 
     // Image data or path first, then the app's themed icon. Missing theme icons resolve to "" so callers
@@ -131,10 +90,7 @@ Singleton {
 
     function accept(notification) {
         notification.tracked = true
-        settle(Date.now())
-        model.insert(0, { handle: notification, notificationId: notification.id,
-                          remaining: timeoutFor(notification), paused: false })
-        schedule()
+        model.insert(0, { handle: notification, notificationId: notification.id })
         const id = notification.id
         notification.closed.connect(function () { root.remove(id) })
         // replaces_id updates this same object, so any content change is a replacement.
@@ -143,7 +99,6 @@ Singleton {
         notification.bodyChanged.connect(replaced)
         notification.imageChanged.connect(replaced)
         notification.appIconChanged.connect(replaced)
-        notification.expireTimeoutChanged.connect(replaced)
         ++revision
         arrived()
     }
@@ -152,11 +107,8 @@ Singleton {
         const index = indexOf(notification.id)
         if (index < 0)
             return
-        settle(Date.now())
         if (index > 0)
             model.move(index, 0, 1)
-        model.setProperty(0, "remaining", timeoutFor(notification))
-        schedule()
         ++revision
         arrived()
     }
@@ -166,43 +118,7 @@ Singleton {
         if (index < 0)
             return
         model.remove(index, 1)
-        schedule()
         ++revision
-    }
-
-    function settle(now) {
-        const elapsed = lastTick > 0 ? Math.max(0, now - lastTick) : 0
-        lastTick = now
-        if (elapsed === 0 || panelOpen)
-            return
-        for (let i = model.count - 1; i >= 0; --i) {
-            const entry = model.get(i)
-            if (entry.remaining < 0 || entry.paused)
-                continue
-            const left = entry.remaining - elapsed
-            model.setProperty(i, "remaining", Math.max(0, left))
-            if (left <= 0)
-                entry.handle.expire()
-        }
-    }
-
-    function setPanelOpen(open) {
-        settle(Date.now())
-        panelOpen = open
-        if (!open) {
-            for (let i = 0; i < model.count; ++i)
-                model.setProperty(i, "paused", false)
-        }
-        schedule()
-    }
-
-    function setPaused(id, paused) {
-        const index = indexOf(id)
-        if (index < 0)
-            return
-        settle(Date.now())
-        model.setProperty(index, "paused", paused)
-        schedule()
     }
 
     function dismiss(id) {

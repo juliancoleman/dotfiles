@@ -51,8 +51,8 @@ Three processes exist:
 - `SettingsState` — `toggleRequested(screenName)` for Super+Comma on the focused output.
 
 **`Notifications`**
-- `NotificationService` — the session's only notification daemon; tracks notifications and expires them on
-  one timer armed for the soonest countdown.
+- `NotificationService` — the session's only notification daemon; keeps each notification until it's
+  dismissed, acted on, or closed by its app (nothing expires; the arrival peek is the center's own).
 
 **`Secure`**
 - `SecureInput` — serves `$XDG_RUNTIME_DIR/qs-secure.sock`, polkit agent flows, the prompt queue.

@@ -34,9 +34,6 @@ Item {
     Keys.onSpacePressed: activate()
     Keys.onDeletePressed: NotificationService.dismiss(notificationId)
 
-    onHoveredChanged: NotificationService.setPaused(notificationId, hovered || activeFocus)
-    onActiveFocusChanged: NotificationService.setPaused(notificationId, hovered || activeFocus)
-
     function activate() {
         if (hasDefault)
             NotificationService.invoke(notificationId, "default")

@@ -111,7 +111,6 @@ Item {
     }
     Component.onCompleted: presence = present ? 1 : 0
 
-    onOpenedChanged: NotificationService.setPanelOpen(opened)
     onQuietChanged: if (quiet) endPeek()
 
     function open() {
@@ -152,7 +151,8 @@ Item {
         }
     }
 
-    // The peeked notification went away (dismissed, expired, acted on): fold back rather than show another.
+    // The peeked notification went away (dismissed, acted on, closed by its app): fold back rather than show
+    // another.
     function checkPeek() {
         if (peeking && (!newest || newest.id !== peekId))
             endPeek()
