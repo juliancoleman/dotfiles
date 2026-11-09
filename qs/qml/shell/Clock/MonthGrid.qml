@@ -161,26 +161,17 @@ Item {
                     width: grid.cell
                     height: grid.cell
 
-                    // Today: an ink disc.
-                    Rectangle {
-                        visible: modelData.today
-                        anchors.centerIn: parent
-                        width: Math.min(Theme.knobSize, grid.cell - grid.gap)
-                        height: width
-                        radius: width / 2
-                        color: Theme.today
-                    }
-
+                    // Today: marked by the blue-black ink alone.
                     Text {
                         anchors.centerIn: parent
                         text: modelData.day
-                        color: modelData.today ? Theme.todayInk
+                        color: modelData.today ? Theme.today
                              : modelData.inMonth ? Theme.textPrimary : Theme.statusDim
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.family: Theme.latinFontFamily
                         font.pixelSize: Theme.textBody
-                        font.weight: modelData.today ? Font.DemiBold : Theme.clockFontWeight
+                        font.weight: Theme.clockFontWeight
                         font.features: ({ "tnum": 1 })
                     }
                 }
