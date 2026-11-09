@@ -14,6 +14,8 @@ Loader {
     visible: SettingsModel.shown(key)
     sourceComponent: {
         switch (SettingsModel.kindOf(control)) {
+        case "toggle":
+            return toggleRow
         case "stepper":
             return stepperRow
         case "location":
@@ -34,6 +36,17 @@ Loader {
             motion: row.motion
             value: SettingsModel.value(row.key)
             onPicked: next => SettingsModel.apply(row.key, next)
+        }
+    }
+
+    Component {
+        id: toggleRow
+
+        Toggle {
+            title: I18n.tr(row.control.title)
+            motion: row.motion
+            on: SettingsModel.value(row.key)
+            onToggled: SettingsModel.apply(row.key, !on)
         }
     }
 

@@ -10,6 +10,7 @@ BluetoothPage 1.0 BluetoothPage.qml
 AudioPage 1.0 AudioPage.qml
 FansPage 1.0 FansPage.qml
 PowerPage 1.0 PowerPage.qml
+DisplayPage 1.0 DisplayPage.qml
 singleton FanControl 1.0 FanControl.qml
 FanTile 1.0 FanTile.qml
 MomentumFlickable 1.0 MomentumFlickable.qml

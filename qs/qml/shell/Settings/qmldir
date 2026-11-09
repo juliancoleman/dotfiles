@@ -4,4 +4,5 @@ SettingsPages 1.0 SettingsPages.qml
 SettingControl 1.0 SettingControl.qml
 Options 1.0 Options.qml
 Stepper 1.0 Stepper.qml
+Toggle 1.0 Toggle.qml
 singleton SettingsState 1.0 SettingsState.qml

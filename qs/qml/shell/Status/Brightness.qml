@@ -20,6 +20,8 @@ Singleton {
     property int watchers: 0
 
     signal adjusted()
+    // The user set the level (keys or slider), as opposed to AutoBrightness following the room.
+    signal chosen()
 
     function take(text) {
         const next = parseInt(text, 10)
@@ -56,20 +58,30 @@ Singleton {
             adjusted()
             return
         }
-        lastWrite = Date.now()
-        writer.setText(String(next))
-        take(String(next))
+        write(next)
+        chosen()
     }
 
     function set(fraction) {
+        if (write(Math.round(fraction * maximum)))
+            chosen()
+    }
+
+    // AutoBrightness's writes: the same as set(), but not announced as the user's choice.
+    function follow(fraction) {
+        write(Math.round(fraction * maximum))
+    }
+
+    function write(level) {
         if (!available)
-            return
-        const next = Math.max(floor, Math.min(maximum, Math.round(fraction * maximum)))
+            return false
+        const next = Math.max(floor, Math.min(maximum, level))
         if (next === raw)
-            return
+            return false
         lastWrite = Date.now()
         writer.setText(String(next))
         take(String(next))
+        return true
     }
 
     Process {

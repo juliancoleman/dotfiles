@@ -60,7 +60,19 @@ Three processes exist:
 
 **`Status`**
 - `Brightness` — reads/writes `/sys/class/backlight/*/brightness` through `FileView`; sysfs has no inotify, so
-  it polls only while a slider shows it, and a key step reads the live value first.
+  it polls only while a slider shows it, and a key step reads the live value first. `chosen()` marks the
+  user's own changes (keys, slider) apart from `follow()`, AutoBrightness's writes.
+- `AutoBrightness` — while `display.autoBrightness` is on, reads the IIO light sensor once a second, smooths
+  it in log space, and ramps the backlight to `0.06 + 0.22·log10(1+lux)` plus `display.brightnessBias` (3%
+  deadband). The brightness sliders go read-only (`SliderTile.adjustable`) meanwhile; a key step (`chosen()`)
+  becomes the new bias instead of being overridden.
+- `Displays` — `niri msg --json outputs`, reduced to one rate per whole hertz at each output's current size;
+  sets modes with `niri msg output <name> mode WxH@R` and re-applies `display.refreshRates` on start, config
+  load and screen changes, asking each saved rate at most once per change so a refused mode can't loop.
+- `Idle` — writes `QS_IDLE_FILE` (hypridle's sourced listeners) from `display.screenOff`: lock and monitors
+  off together, `systemctl suspend` ten minutes later when a laptop battery exists; restarts
+  `hypridle.service` when the text changes, after a 2 s settle so start-up arrivals restart it once. The
+  setting is hidden unless `programs.qs.idle` seeded the file.
 - `Media` — selects the active MPRIS player and emits `mediaEvent`.
 - `Meter` — live output/input signal (dB-scaled peak, 60 dB range) via `pw-record | qs-meter` taps that
   run while `watchers > 0`; `inputInUse` is true when a program other than the taps or a filter chain
@@ -120,14 +132,18 @@ over chrome, 44px targets, every state visible (hover, press, focus, on).
   `radius` (housings), `radiusInput` (rows, fields, hover boxes), `knobSize`, `rowHeight`, `tileGap`; lines
   from `line`/`lineStrong` (a 0.38 pen's line and a fader's track); sizes via `Theme.px`.
 - **Shared parts.** `Common/SectionHeader`, `Common/Rule`, `Common/Field`, `Status/Knob`, `Control/Tile`/
-  `ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/`Stepper`, `Clock/BackButton`/`SettingsButton`/
-  `MonthArrow`.
+  `ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/`Stepper`/`Toggle`, `Clock/BackButton`/
+  `SettingsButton`/`MonthArrow`.
 - **Page, not cards.** Groups are separated by `Rule`s; side-by-side cells by a vertical rule. No filled
   containers. Rows take `lift`/`press` and a `line` outline in `today` on focus.
 - **Knob, then row.** Every actionable row starts with a `Status/Knob`: clicking it acts at once (mute,
   disable Wi‑Fi, flip a fan to manual); clicking the rest of the row goes deeper. Off an unfilled `stroke`
   circle, on a `today` disc.
-- **Faders are rulers** (`lineStrong` track, quarter ticks, no thumb); **scales are graph paper** (gridlines
+- **On/off is a `Toggle`.** A state that is only on or off, with nothing deeper to open, is a `Settings/Toggle`
+  row (title on a rule, switch at the end; the whole row flips it), never a two-choice `Options` row or a
+  knob without a page. Settings declare these as `kind: "toggle"` with a bool `get`/`set`.
+- **Faders are rulers** (`lineStrong` track, quarter ticks, no thumb) and run to the digits: a fader with no
+  page to open gives the chevron's column back. **Scales are graph paper** (gridlines
   at round values, spans with end ticks, the current value a short tick); **fields are written on a line**
   (`Field` underline, `today` on focus). AQI bands appear as a marker, never a gradient.
 - **Reel digits.** Any number that can change is a `Clock/TickerNumber`, so values roll the way the time

@@ -74,7 +74,10 @@ critical). The module also enables `services.upower` and adds udev rules making
 | `secureInput.sudo` | bool | `true` — `SUDO_ASKPASS=qs-askpass`, shell alias `sudo = "sudo -A"` |
 | `secureInput.ssh` | bool | `true` — `SSH_ASKPASS=qs-askpass`, `SSH_ASKPASS_REQUIRE=prefer` |
 | `secureInput.gpg` | bool | `config.services.gpg-agent.enable` — `services.gpg-agent.pinentry.package` |
+| `idle.enable` | bool | `false` — hypridle user service whose listeners the shell writes (see below) |
+| `idle.lockCommand` | str | `"pidof hyprlock \|\| hyprlock"` — hypridle's `lock_cmd` |
 | `paths.configFile` | absolute str | `${xdg.configHome}/qs/config.json` |
+| `paths.idleFile` | absolute str | `${xdg.configHome}/qs/hypridle.conf` |
 
 Enabling installs the package, `quickshell`, `swaybg`, `ibm-plex`, `plemoljp-nf`; defines the `qs-shell`
 user service (`PartOf graphical-session.target`, not enabled — niri's `spawn-at-startup` launches the shell;
@@ -82,6 +85,15 @@ user service (`PartOf graphical-session.target`, not enabled — niri's `spawn-a
 is set — the `matugen` palette generates its colors from it, falling back to `/etc/qs/wallpaper`); exports
 `QS_CONFIG_FILE` and the askpass variables to both the login shell and `systemd --user`; and seeds
 `paths.configFile` from `default.json` (mode 0600) only if the file does not exist.
+
+`idle.enable` turns on Home Manager's `services.hypridle` with `lock_cmd`, `before_sleep_cmd = loginctl
+lock-session` and `after_sleep_cmd = niri msg action power-on-monitors`, sourcing `paths.idleFile` (seeded
+empty; hypridle discards its whole config when a sourced file is missing) and exporting `QS_IDLE_FILE`. The
+shell's `Idle` singleton writes that file from `display.screenOff` — one listener that runs `loginctl
+lock-session` and powers the monitors off together, plus `systemctl suspend` ten minutes later on hosts with
+a laptop battery — and restarts `hypridle.service` when it changes. hypridle honors every inhibitor:
+Wayland idle inhibitors and `org.freedesktop.ScreenSaver` (served by niri) through ext-idle-notify, and
+logind `idle` locks.
 
 ## Niri keybinds
 
@@ -136,6 +148,10 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | `weather.location` | `null` or `{ name, region, latitude, longitude }` | `null` | Location picked in Settings (Open‑Meteo geocoding, US only) |
 | `weather.alerts` | bool | `true` | Fetch NWS active alerts |
 | `dualsense.<address>` | `{ on: bool, mode: solid\|breathe\|fade\|rainbow, color: "#rrggbb", brightness: 0–1, speed: slow\|medium\|fast }` | absent | A DualSense's lightbar, keyed by lowercase Bluetooth address (written from Bluetooth → ⚙). DualSenses not listed keep the color their driver or Steam sets |
+| `display.autoBrightness` | bool | `false` | Backlight follows the ambient light sensor (`/sys/bus/iio/devices/*/in_illuminance_input`); offered only where both exist (written from Brightness → Display) |
+| `display.brightnessBias` | number −1–1 | `0` | Offset from the auto-brightness curve, as a fraction of full brightness; set by the brightness keys while auto-brightness is on (the sliders only read then) |
+| `display.refreshRates.<output>` | integer mHz (niri's `refresh_rate`) | absent | Refresh rate per niri output name, re-applied at shell start and on hotplug. Outputs not listed keep niri's mode. niri forgets IPC modes when that output's block in its own config changes; the shell puts them back next start |
+| `display.screenOff` | `5` `10` `15` `30` `60` (minutes) | `5` | Idle time before the screen locks and turns off (Settings → Display, or the Display page); written into hypridle's listeners when `programs.qs.idle` is on, and offered only then |
 
 ## Fan control
 

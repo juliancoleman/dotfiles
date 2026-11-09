@@ -69,6 +69,7 @@ Item {
         : page === "output" ? outputPage.implicitHeight
         : page === "input" ? inputPage.implicitHeight
         : page === "power" ? powerPage.implicitHeight
+        : page === "display" ? displayPage.implicitHeight
         : onSettings ? settingsPages.implicitHeight
         : grid.height
     property real shownContent: pageContent
@@ -99,6 +100,8 @@ Item {
             return I18n.tr("Input")
         case "power":
             return I18n.tr("Power")
+        case "display":
+            return I18n.tr("Display")
         case "settings":
             return I18n.tr("Settings")
         }
@@ -255,17 +258,15 @@ Item {
 
     // The sources are shared by every screen's panel; each counts the panels showing it and polls (or runs
     // its meter taps) only while one does. A source is wanted only on the pages that show it: the grid has
-    // the meters, usage, brightness, fans and (without Wi-Fi) wired; the audio pages their meter; the fans
-    // and Ethernet pages their own.
+    // the meters, usage, brightness, fans and (without Wi-Fi) wired; the audio pages their meter; the fans,
+    // Ethernet and display pages their own.
     readonly property bool gridShown: opened && page === ""
     readonly property bool metersShown: gridShown || opened && (page === "output" || page === "input")
     readonly property bool fansShown: gridShown || opened && page === "fans"
+    readonly property bool brightnessShown: gridShown || opened && page === "display"
     readonly property bool wiredWatched: !wifiDevice && (gridShown || opened && page === "ethernet")
-    onGridShownChanged: {
-        const delta = gridShown ? 1 : -1
-        SystemSource.watchers += delta
-        Brightness.watchers += delta
-    }
+    onGridShownChanged: SystemSource.watchers += gridShown ? 1 : -1
+    onBrightnessShownChanged: Brightness.watchers += brightnessShown ? 1 : -1
     onMetersShownChanged: Meter.watchers += metersShown ? 1 : -1
     onFansShownChanged: {
         const delta = fansShown ? 1 : -1
@@ -274,10 +275,10 @@ Item {
     }
     onWiredWatchedChanged: WiredSource.watchers += wiredWatched ? 1 : -1
     Component.onDestruction: {
-        if (gridShown) {
+        if (gridShown)
             SystemSource.watchers -= 1
+        if (brightnessShown)
             Brightness.watchers -= 1
-        }
         if (metersShown)
             Meter.watchers -= 1
         if (fansShown) {
@@ -568,6 +569,22 @@ Item {
 
             PageLayer {
                 motion: root.motion
+                shown: root.page === "display"
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: displayPage.implicitHeight
+
+                DisplayPage {
+                    id: displayPage
+                    width: parent.width
+                    active: root.opened && root.page === "display"
+                    motion: root.motion
+                }
+            }
+
+            PageLayer {
+                motion: root.motion
                 shown: root.onSettings
                 x: root.pad
                 y: body.contentY
@@ -673,6 +690,7 @@ Item {
                         width: parent.width
                         spacing: root.gap
                         visible: root.status.output.available || root.status.input.available || Brightness.available
+                            || display.visible
 
                         SliderTile {
                             width: parent.width
@@ -722,6 +740,23 @@ Item {
                             toggleable: false
                             value: Brightness.level
                             onMoved: next => Brightness.set(next)
+                            adjustable: !AutoBrightness.active
+                            opens: true
+                            onOpened: root.page = "display"
+                        }
+
+                        // Without a backlight there's no slider to open the display page from.
+                        ToggleTile {
+                            id: display
+                            width: parent.width
+                            motion: root.motion
+                            visible: !Brightness.available && Displays.available
+                            icon: "monitor"
+                            toggleable: false
+                            title: I18n.tr("Display")
+                            subtitle: Displays.outputs.map(output => I18n.tr("%1 Hz").arg(Displays.hertz(output.current)))
+                                .join(" · ")
+                            onOpened: root.page = "display"
                         }
                     }
 

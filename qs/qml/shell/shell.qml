@@ -7,6 +7,14 @@ import "Settings"
 import "Status"
 
 ShellRoot {
+    // Display work that goes on with no panel open: saved refresh rates go back on, the backlight follows the
+    // light sensor, and hypridle's listeners follow the screen-off setting.
+    Component.onCompleted: {
+        Displays.refresh()
+        AutoBrightness.discover()
+        Idle.sync()
+    }
+
     Variants {
         model: Quickshell.screens
 

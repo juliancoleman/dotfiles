@@ -29,5 +29,10 @@
     "locationMode": "exact",
     "location": null,
     "alerts": true
+  },
+  "display": {
+    "autoBrightness": false,
+    "brightnessBias": 0,
+    "screenOff": 5
   }
 }

@@ -15,6 +15,8 @@ Tile {
     property bool muted: false
     property bool toggleable: true
     property bool opens: false
+    // False while something else drives the value (auto-brightness): the lane only reads, drawn in graphite.
+    property bool adjustable: true
     property real meter: NaN
     // The signal is being consumed (someone is listening to the microphone): ring in the accent.
     property bool meterActive: false
@@ -31,8 +33,8 @@ Tile {
     Accessible.role: Accessible.Slider
     Accessible.name: title
     Accessible.description: Math.round(shown * 100) + "%"
-    Keys.onLeftPressed: moved(Math.max(0, value - 0.05))
-    Keys.onRightPressed: moved(Math.min(1, value + 0.05))
+    Keys.onLeftPressed: if (adjustable) moved(Math.max(0, value - 0.05))
+    Keys.onRightPressed: if (adjustable) moved(Math.min(1, value + 0.05))
     Keys.onSpacePressed: if (toggleable) toggled()
     Keys.onReturnPressed: if (opens) opened()
     Keys.onEnterPressed: if (opens) opened()
@@ -91,7 +93,7 @@ Tile {
             radius: height / 2
             width: Math.max(height, track.width * tile.shown)
             visible: tile.shown > 0.002
-            color: Theme.textPrimary
+            color: tile.adjustable ? Theme.textPrimary : Theme.textSecondary
 
             Behavior on width {
                 enabled: !tile.dragging
@@ -107,6 +109,7 @@ Tile {
             anchors.fill: parent
             anchors.leftMargin: -4
             anchors.rightMargin: -4
+            enabled: tile.adjustable
             cursorShape: Qt.PointingHandCursor
             preventStealing: true
             function pick(px) {
@@ -117,12 +120,11 @@ Tile {
         }
     }
 
-    // The chevron's column is kept even when hidden, so faders stacked in a group end on one line and their
-    // ticks and digits align.
+    // Without a page to open the chevron gives its column back, and the lane runs on to the digits.
     Item {
         id: readout
-        anchors.right: chevron.left
-        anchors.rightMargin: 6
+        anchors.right: tile.opens ? chevron.left : parent.right
+        anchors.rightMargin: tile.opens ? 6 : chevron.anchors.rightMargin
         anchors.verticalCenter: parent.verticalCenter
         width: 26
         height: digits.implicitHeight

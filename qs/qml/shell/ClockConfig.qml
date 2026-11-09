@@ -41,6 +41,15 @@ Singleton {
     // DualSense lightbars by Bluetooth address (lowercase): { on, mode, color, brightness, speed }. Only
     // controllers listed here are painted; the rest keep whatever their driver or Steam sets.
     property var dualsense: ({})
+    // The backlight follows the light sensor (AutoBrightness), shifted by `brightnessBias`: the user's last
+    // correction to its curve, as a fraction of full brightness.
+    property bool autoBrightness: false
+    property real brightnessBias: 0
+    // Refresh rate per output (niri's connector name) in mHz, as niri reports it: { "eDP-1": 60000 }.
+    // Outputs not listed keep whatever niri chose.
+    property var refreshRates: ({})
+    // Idle minutes before the screen locks and turns off (Idle writes them into hypridle's listeners).
+    property int screenOffMinutes: 5
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
@@ -96,6 +105,7 @@ Singleton {
         const launcher = parsed && parsed.launcher ? parsed.launcher : {}
         const weather = parsed && parsed.weather ? parsed.weather : {}
         const theme = parsed && parsed.theme ? parsed.theme : {}
+        const display = parsed && parsed.display ? parsed.display : {}
         const flag = oneOf(true, false)
         document = parsed || {}
         themePalette = pick("theme.colors", theme.colors, oneOf("pens", "matugen"), "pens", themePalette)
@@ -132,6 +142,19 @@ Singleton {
         duration = Math.round(pick("clock.duration", clock.duration, within(50, 2000), 250, duration))
         springOvershoot = Math.round(pick("clock.springOvershoot", clock.springOvershoot, within(0, 4), 2,
                                           springOvershoot) * 10) / 10
+        autoBrightness = pick("display.autoBrightness", display.autoBrightness, flag, false, autoBrightness)
+        brightnessBias = Math.round(pick("display.brightnessBias", display.brightnessBias, within(-1, 1), 0,
+                                         brightnessBias) * 100) / 100
+        const ratesRaw = display.refreshRates && typeof display.refreshRates === "object" ? display.refreshRates : {}
+        const nextRates = {}
+        for (const name in ratesRaw) {
+            const rate = pick("display.refreshRates." + name, ratesRaw[name], value => Number.isInteger(value) && value > 0,
+                              undefined, refreshRates[name])
+            if (rate !== undefined)
+                nextRates[name] = rate
+        }
+        refreshRates = nextRates
+        screenOffMinutes = pick("display.screenOff", display.screenOff, oneOf(5, 10, 15, 30, 60), 5, screenOffMinutes)
         const padsRaw = parsed && parsed.dualsense && typeof parsed.dualsense === "object" ? parsed.dualsense : {}
         const nextPads = {}
         for (const address in padsRaw) {
@@ -177,6 +200,12 @@ Singleton {
         next.clock.duration = duration
         next.clock.springOvershoot = springOvershoot
         next.dualsense = dualsense
+        next.display = Object.assign({}, next.display, {
+            autoBrightness: autoBrightness,
+            brightnessBias: brightnessBias,
+            refreshRates: refreshRates,
+            screenOff: screenOffMinutes
+        })
         delete next.clock.presentationMotion
         document = next
         writer.setText(JSON.stringify(next, null, 2) + "\n")
