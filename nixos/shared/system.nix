@@ -159,6 +159,7 @@ in
     brightnessctl
     grim
     slurp
+    wf-recorder
   ];
 
   environment.pathsToLink = [ "/share/wayland-sessions" ];

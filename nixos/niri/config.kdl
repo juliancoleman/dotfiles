@@ -162,6 +162,9 @@ binds {
     // Screenshot
     Print { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot.sh"; }
     Super+Shift+S { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot-region.sh"; }
+
+    // Screen recording (toggle)
+    Super+Shift+5 { spawn-sh "$HOME/dotfiles/nixos/niri/record-toggle.sh"; }
 }
 
 // ── Window rules ───────────────────────────────────────────────
