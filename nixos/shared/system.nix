@@ -126,8 +126,6 @@ in
     ghostty
     git
     hyprlock
-    hypridle
-    wlopm
     bluetuith
     udiskie
     udisks2

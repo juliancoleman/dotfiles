@@ -169,6 +169,13 @@
   xdg.configFile = {
     "niri/config.kdl".source = ../niri/config.kdl;
     "hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
-    "hypr/hypridle.conf".source = ../niri/hypridle.conf;
+  };
+
+  # ── Idle ──────────────────────────────────────────────────────
+  # hypridle as a user service; the shell's Display settings pick when the
+  # screen locks and turns off.
+  programs.qs.idle = {
+    enable = true;
+    lockCommand = "${config.home.homeDirectory}/dotfiles/nixos/niri/lock.sh";
   };
 }

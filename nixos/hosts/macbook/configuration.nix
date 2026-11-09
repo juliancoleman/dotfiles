@@ -28,14 +28,6 @@
   # wpa_supplicant scans reliably on brcmfmac here; iwd scans time out before
   # reaching later channels. WPA3-only networks may not join with it.
   networking.networkmanager.wifi.backend = "wpa_supplicant";
-  # Prevent the USB Ethernet dongle from being autosuspended during s2idle.
-  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
-
-  # Keep development sessions reachable while unattended. Explicit suspend
-  # and Super+Alt+L locking remain available.
-  services.logind.settings.Login = {
-    IdleAction = "ignore";
-  };
 
   # ── Keyboard layout fix ──
   boot.extraModprobeConfig = ''
@@ -49,18 +41,42 @@
   # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
   # (put there by the Asahi installer). No explicit config needed.
 
-  # ── Battery: limit charge to 80% to preserve lifespan ──
+  # ── Battery: hold at 80%, top up to 100% once a week ──
+  # The SMC limit is 80 or 100. Every 7 days the limit lifts to 100 until the
+  # SMC reports the battery full, which stamps the week and drops back to 80.
+  # (At a 100 limit macsmc-power says Full only from the SMC's own full flags;
+  # Not charging there means an inhibitor such as heat, not a full battery.)
+  # The stamp lives in /var/lib, so a reboot mid-charge doesn't cancel that
+  # week's top-up.
+  # Force one now: sudo touch -d '8 days ago' /var/lib/battery-charge-limit/last-full
   systemd.services.battery-charge-limit = {
-    description = "Limit battery charge to 80%";
+    description = "Battery charge limit (80%, 100% once a week)";
     after = [ "sysinit.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
-      RemainAfterExit = true;
+      StateDirectory = "battery-charge-limit";
     };
     script = ''
-      echo 80 > /sys/class/power_supply/macsmc-battery/charge_control_end_threshold
+      bat=/sys/class/power_supply/macsmc-battery
+      stamp=/var/lib/battery-charge-limit/last-full
+      [ -e "$stamp" ] || touch "$stamp"
+      limit=$(cat $bat/charge_control_end_threshold)
+      if [ "$limit" = 100 ] && [ "$(cat $bat/status)" = Full ]; then
+        touch "$stamp"
+      fi
+      age=$(( $(date +%s) - $(stat -c %Y "$stamp") ))
+      want=80
+      [ "$age" -lt 604800 ] || want=100
+      [ "$limit" = "$want" ] || echo "$want" > $bat/charge_control_end_threshold
     '';
+  };
+  systemd.timers.battery-charge-limit = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "5min";
+      OnUnitActiveSec = "10min";
+    };
   };
 
   # Signal's AppImage is x86_64-only, so this host uses the nixpkgs build. Signal
