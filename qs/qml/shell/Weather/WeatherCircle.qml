@@ -26,10 +26,12 @@ Item {
 
     // Steps aside for anything that opens over its spot, like the notification panel in pill mode.
     property bool yielding: false
-    readonly property bool present: ClockConfig.weatherEnabled && !!WeatherService.current && !yielding
+    readonly property bool present: WeatherService.expected && !yielding
+    // Waiting on its first reading, the face holds a dash and has no forecast to open.
+    readonly property bool ready: !!WeatherService.current
     property real presence: 0
     readonly property real presenceP: Math.max(0, presence)
-    readonly property bool hovered: hit.containsMouse
+    readonly property bool hovered: hit.containsMouse && (ready || opened)
     readonly property bool pointerDown: hit.pressed
     property alias housingItem: housing
 
@@ -76,7 +78,7 @@ Item {
     height: implicitHeight
 
     function open() {
-        if (opened || !present)
+        if (opened || !present || !ready)
             return
         opened = true
         openEase.aim(1)
@@ -161,7 +163,7 @@ Item {
         anchors.fill: parent
         color: Theme.surface
         clip: root.openP > 0.001
-        scale: hit.containsMouse && !root.opened && root.openP < 0.001 ? 1.06 : 1
+        scale: root.hovered && !root.opened && root.openP < 0.001 ? 1.06 : 1
         transformOrigin: root.circleRight
             ? (root.circleBottom ? Item.BottomRight : Item.TopRight)
             : (root.circleBottom ? Item.BottomLeft : Item.TopLeft)
@@ -215,7 +217,8 @@ Item {
             y: root.lent ? (parent.height - height) / 2 : root.circleBottom ? housing.height - height : 0
             opacity: Math.min(root.presenceP, root.lent ? 1 : 1 - root.openP)
             Accessible.role: Accessible.Button
-            Accessible.name: root.opened ? I18n.tr("Close weather") : WeatherService.condition + ", " + root.reading
+            Accessible.name: root.opened ? I18n.tr("Close weather")
+                : root.ready ? WeatherService.condition + ", " + root.reading : I18n.tr("Weather")
 
             // In the notch, opening weather replaces its cloud and temperature with the close action.
             Item {
@@ -266,7 +269,7 @@ Item {
                 id: hit
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+                cursorShape: root.ready || root.opened ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onPressed: root.toggle()
             }
         }

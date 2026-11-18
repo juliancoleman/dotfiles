@@ -3,7 +3,8 @@ import "../Common"
 
 // A whole number on the clock's digit tickers, so readings like the temperature and battery change the way
 // the time does. Columns are fixed and aligned from the right, keeping the ones digit on the same ticker;
-// a leading column folds away while unused rather than rolling through a blank.
+// a leading column folds away while unused rather than rolling through a blank. Without a reading the ones
+// ticker rests on the placeholder, a step before 0, so a reading that turns up late rolls in over it.
 Row {
     id: root
 
@@ -19,24 +20,23 @@ Row {
     property real shown: NaN
     readonly property bool known: !isNaN(shown)
     readonly property int magnitude: known ? Math.abs(shown) : 0
+    // What the number is created with simply appears; changes after that roll.
+    property bool settled: false
 
     baselineOffset: ones.y + ones.baselineOffset
 
-    // Digits are pushed imperatively so each ticker knows, as its digit changes, whether to roll: a column
-    // that was folded away, or a first reading, simply appears.
+    // Digits are pushed imperatively so each ticker knows, as its digit changes, whether to roll. A column a
+    // growing number unfolds simply appears; over the placeholder, every column the reading needs rolls open.
     function sync() {
         const previous = shown
-        if (isNaN(value)) {
-            shown = NaN
-            return
-        }
-        const next = Math.max(-999, Math.min(999, Math.round(value)))
-        const rolling = !isNaN(previous) && motion !== "none"
-        const before = Math.abs(previous)
-        const size = Math.abs(next)
-        place(hundredsColumn, hundreds, Math.floor(size / 100) % 10, rolling && before >= 100)
-        place(tensColumn, tens, Math.floor(size / 10) % 10, rolling && before >= 10)
-        place(onesColumn, ones, size % 10, rolling)
+        const next = isNaN(value) ? NaN : Math.max(-999, Math.min(999, Math.round(value)))
+        const rolling = settled && motion !== "none"
+        const arriving = isNaN(previous)
+        const before = arriving ? 0 : Math.abs(previous)
+        const size = isNaN(next) ? 0 : Math.abs(next)
+        place(hundredsColumn, hundreds, Math.floor(size / 100) % 10, rolling && (arriving || before >= 100))
+        place(tensColumn, tens, Math.floor(size / 10) % 10, rolling && (arriving || before >= 10))
+        place(onesColumn, ones, isNaN(next) ? placeholder : size % 10, rolling)
         shown = next
     }
 
@@ -47,15 +47,9 @@ Row {
     }
 
     onValueChanged: sync()
-    Component.onCompleted: sync()
-
-    Text {
-        visible: !root.known
-        text: root.placeholder
-        color: root.color
-        font.family: Theme.latinFontFamily
-        font.pixelSize: root.fontPixelSize
-        font.weight: root.fontWeight
+    Component.onCompleted: {
+        sync()
+        settled = true
     }
 
     Text {
@@ -107,6 +101,7 @@ Row {
         DigitTicker {
             id: ones
             anchors.right: parent.right
+            samples: [root.placeholder].concat(defaultSamples)
             wraps: false
             motion: root.motion
             color: root.color
@@ -131,7 +126,6 @@ Row {
         property Item ticker: null
         property bool snapping: true
 
-        visible: root.known
         width: used && ticker ? ticker.implicitWidth : 0
         height: ticker ? ticker.implicitHeight : 0
         clip: true

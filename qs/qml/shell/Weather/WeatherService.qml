@@ -32,6 +32,9 @@ Singleton {
     property string automaticError: ""
     readonly property var location: !ClockConfig.weatherEnabled ? null
         : automatic ? (LocationServices.enabled ? automaticFix : null) : ClockConfig.weatherLocation
+    // A reading is due: there is a place, or one being found. The circle holds its spot with a dash until
+    // the reading arrives, so a slow or failed first load still shows that weather is on.
+    readonly property bool expected: !!location || locating
 
     property var point: null
     property var current: null

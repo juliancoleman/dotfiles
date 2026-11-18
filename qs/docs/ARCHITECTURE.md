@@ -156,7 +156,9 @@ over chrome, 44px targets, every state visible (hover, press, focus, on).
   at round values, spans with end ticks, the current value a short tick); **fields are written on a line**
   (`Field` underline, `today` on focus). AQI bands appear as a marker, never a gradient.
 - **Reel digits.** Any number that can change is a `Clock/TickerNumber`, so values roll the way the time
-  does. Digits set in `latinFontFamily`, so a locale switch doesn't resize numbers.
+  does. Digits set in `latinFontFamily`, so a locale switch doesn't resize numbers. A reading not known yet
+  is a dash on the same reel, so it rolls in when it arrives: the weather circle is there from the start
+  whenever a place is set (`WeatherService.expected`), and opens once it has a reading.
 - **Ring readouts.** A live 0..1 reading (meter, usage, battery) may ring its glyph (`Status/StatusArc`);
   never the setpoint its own slider already shows.
 - **Drawn glyphs.** Icons are `StatusGlyph` stroke paths (Lucide), never an icon font.
