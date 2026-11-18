@@ -70,6 +70,7 @@ Item {
         : page === "input" ? inputPage.implicitHeight
         : page === "power" ? powerPage.implicitHeight
         : page === "display" ? displayPage.implicitHeight
+        : page === "keyboard" ? keyboardPage.implicitHeight
         : onSettings ? settingsPages.implicitHeight
         : grid.height
     property real shownContent: pageContent
@@ -102,6 +103,8 @@ Item {
             return I18n.tr("Power")
         case "display":
             return I18n.tr("Display")
+        case "keyboard":
+            return I18n.tr("Keyboard")
         case "settings":
             return I18n.tr("Settings")
         }
@@ -142,7 +145,7 @@ Item {
 
     // Most the panel takes, so the bar can reserve room for the spring's overshoot. A constant: the window is
     // sized from it, and a layer-shell resize mid-animation drops a frame.
-    readonly property real reserveHeight: 420
+    readonly property real reserveHeight: 470
     readonly property real reserveWidth: gridWidth + Theme.panelPad * 2
 
     // Pad past the circle along the edge, grown in while fusing so docking into the clock lands flush.
@@ -585,6 +588,21 @@ Item {
 
             PageLayer {
                 motion: root.motion
+                shown: root.page === "keyboard"
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: keyboardPage.implicitHeight
+
+                KeyboardPage {
+                    id: keyboardPage
+                    width: parent.width
+                    motion: root.motion
+                }
+            }
+
+            PageLayer {
+                motion: root.motion
                 shown: root.onSettings
                 x: root.pad
                 y: body.contentY
@@ -690,7 +708,7 @@ Item {
                         width: parent.width
                         spacing: root.gap
                         visible: root.status.output.available || root.status.input.available || Brightness.available
-                            || display.visible
+                            || display.visible || KeyboardBacklight.available
 
                         SliderTile {
                             width: parent.width
@@ -757,6 +775,19 @@ Item {
                             subtitle: Displays.outputs.map(output => I18n.tr("%1 Hz").arg(Displays.hertz(output.current)))
                                 .join(" · ")
                             onOpened: root.page = "display"
+                        }
+
+                        SliderTile {
+                            width: parent.width
+                            motion: root.motion
+                            visible: KeyboardBacklight.available
+                            title: I18n.tr("Keyboard brightness")
+                            icon: "keyboard"
+                            toggleable: false
+                            value: KeyboardBacklight.level
+                            onMoved: next => KeyboardBacklight.set(next)
+                            opens: true
+                            onOpened: root.page = "keyboard"
                         }
                     }
 

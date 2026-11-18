@@ -1,6 +1,8 @@
 module Status
 singleton Brightness 1.0 Brightness.qml
 singleton AutoBrightness 1.0 AutoBrightness.qml
+singleton AmbientLight 1.0 AmbientLight.qml
+singleton KeyboardBacklight 1.0 KeyboardBacklight.qml
 singleton Displays 1.0 Displays.qml
 singleton Idle 1.0 Idle.qml
 singleton Media 1.0 Media.qml

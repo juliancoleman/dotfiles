@@ -214,6 +214,38 @@ Singleton {
             ]
         },
         {
+            id: "keyboard",
+            icon: "keyboard",
+            title: "Keyboard",
+            controls: [
+                {
+                    key: "keyboardAdaptive",
+                    kind: "toggle",
+                    title: "Adjust backlight in low light",
+                    keywords: "keyboard keys backlight brightness ambient light sensor adaptive automatic dark",
+                    shown: () => KeyboardBacklight.available && AmbientLight.available,
+                    get: () => ClockConfig.keyboardAdaptive,
+                    set: next => ClockConfig.keyboardAdaptive = next
+                },
+                {
+                    key: "keyboardOffAfter",
+                    title: "Turn backlight off after",
+                    keywords: "keyboard keys backlight idle inactivity timeout seconds never",
+                    choices: [
+                        { label: "5 s", value: "5" },
+                        { label: "10 s", value: "10" },
+                        { label: "30 s", value: "30" },
+                        { label: "1 min", value: "60" },
+                        { label: "5 min", value: "300" },
+                        { label: "Never", value: "0" }
+                    ],
+                    shown: () => KeyboardBacklight.available,
+                    get: () => String(ClockConfig.keyboardOffAfter),
+                    set: next => ClockConfig.keyboardOffAfter = parseInt(next, 10)
+                }
+            ]
+        },
+        {
             id: "launcher",
             icon: "search",
             title: "Launcher",
@@ -313,6 +345,11 @@ Singleton {
                 byKey[sections[s].controls[i].key] = sections[s].controls[i]
         }
         return byKey
+    }
+
+    // A section none of whose controls apply right now isn't listed.
+    function sectionShown(entry) {
+        return entry.controls.some(control => shown(control.key))
     }
 
     function kindOf(control) {

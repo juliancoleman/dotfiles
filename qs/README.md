@@ -58,8 +58,10 @@ With `devices = [ ]` the helper discovers the hardware itself (see *Fan control*
 `{ name: str; channel: 1–16; minimumPercent: 0–100 }`), `thermalSensors` (non-empty list of
 `{ identity: str; input: 1–64; warningCelsius: number; criticalCelsius: number }`, warning asserted below
 critical). The module also enables `services.upower` and adds udev rules making
-`/sys/class/backlight/*/brightness` group‑writable by `video` and DualSense/DualSense Edge lightbars
-(`/sys/class/leds/input*:rgb:indicator/multi_intensity`) group‑writable by `users`.
+`/sys/class/backlight/*/brightness` and the keyboard backlight (`/sys/class/leds/*kbd_backlight/brightness`)
+group‑writable by `video`, and DualSense/DualSense Edge lightbars
+(`/sys/class/leds/input*:rgb:indicator/multi_intensity`) group‑writable by `users`. The rules run when a
+device is added, so a newly switched system needs a reboot (or `udevadm trigger --action=add`) to pick them up.
 
 ### `programs.qs` (Home Manager, `nix/home-manager-module.nix`)
 
@@ -103,7 +105,7 @@ logind `idle` locks.
 | --- | --- |
 | `launcher` | `toggle`, `open`, `close` |
 | `settings` | `toggle` |
-| `status` | `next`, `previous`, `playPause`, `brightnessUp`, `brightnessDown` |
+| `status` | `next`, `previous`, `playPause`, `brightnessUp`, `brightnessDown`, `keyboardBrightnessUp`, `keyboardBrightnessDown` |
 
 ```kdl
 spawn-at-startup "qs-shell"
@@ -112,6 +114,8 @@ binds {
     Super+Comma { spawn "qs-shell" "ipc" "call" "settings" "toggle"; }
     XF86MonBrightnessUp   allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "brightnessUp"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "brightnessDown"; }
+    XF86KbdBrightnessUp   allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "keyboardBrightnessUp"; }
+    XF86KbdBrightnessDown allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "keyboardBrightnessDown"; }
     XF86AudioNext  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "next"; }
     XF86AudioPlay  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "playPause"; }
     XF86AudioPrev  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "previous"; }
@@ -152,6 +156,9 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | `display.brightnessBias` | number −1–1 | `0` | Offset from the auto-brightness curve, as a fraction of full brightness; set by the brightness keys while auto-brightness is on (the sliders only read then) |
 | `display.refreshRates.<output>` | integer mHz (niri's `refresh_rate`) | absent | Refresh rate per niri output name, re-applied at shell start and on hotplug. Outputs not listed keep niri's mode. niri forgets IPC modes when that output's block in its own config changes; the shell puts them back next start |
 | `display.screenOff` | `5` `10` `15` `30` `60` (minutes) | `5` | Idle time before the screen locks and turns off (Settings → Display, or the Display page); written into hypridle's listeners when `programs.qs.idle` is on, and offered only then |
+| `keyboard.brightness` | number 0–1 | `0.5` | How bright the keys are when lit (the keyboard slider and the keyboard-brightness keys, 10% a step). Offered only where a `/sys/class/leds/*kbd_backlight` this user may write exists |
+| `keyboard.adaptive` | bool | `true` | With a light sensor, the keys wait for low light: dark from about 160 lux, lit again under about 80, and dimmed toward half of `keyboard.brightness` as the room goes fully dark. Setting the level in a bright room lights them anyway until the room has been dim once (Keyboard brightness → Keyboard, or Settings → Keyboard) |
+| `keyboard.offAfter` | `0` `5` `10` `30` `60` `300` (seconds) | `30` | Time without key, pointer or touch input before the keys fade out; `0` never. Any input fades them back. They also go dark when the idle screen turns off (`display.screenOff`) |
 
 ## Fan control
 

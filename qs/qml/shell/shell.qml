@@ -7,11 +7,12 @@ import "Settings"
 import "Status"
 
 ShellRoot {
-    // Display work that goes on with no panel open: saved refresh rates go back on, the backlight follows the
-    // light sensor, and hypridle's listeners follow the screen-off setting.
+    // Work that goes on with no panel open: saved refresh rates go back on, the screen and the keyboard
+    // backlights follow the light sensor, and hypridle's listeners follow the screen-off setting.
     Component.onCompleted: {
         Displays.refresh()
         AutoBrightness.discover()
+        KeyboardBacklight.discover()
         Idle.sync()
     }
 
@@ -71,6 +72,14 @@ ShellRoot {
 
         function brightnessDown(): void {
             Brightness.step(-1)
+        }
+
+        function keyboardBrightnessUp(): void {
+            KeyboardBacklight.step(1)
+        }
+
+        function keyboardBrightnessDown(): void {
+            KeyboardBacklight.step(-1)
         }
     }
 }

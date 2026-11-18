@@ -19,7 +19,7 @@ Item {
     readonly property int controlPriority: 2
     readonly property int mediaPriority: 1
 
-    // The arc owner: "", "volume", "microphone", or "brightness". Empty means the arc shows battery.
+    // The arc owner: "", "volume", "microphone", "brightness", or "keyboard". Empty means the arc shows battery.
     // Controls own the arc for their whole activity, even while a higher-priority icon holds the slot.
     property string control: ""
 
@@ -33,6 +33,7 @@ Item {
     readonly property real arcValue: control === "volume" ? (output.muted ? 0 : output.level)
         : control === "microphone" ? (input.muted ? 0 : input.level)
         : control === "brightness" ? Brightness.level
+        : control === "keyboard" ? KeyboardBacklight.level
         : battery.available ? battery.percentage : 0
     // Set while something nearby already shows the battery percentage.
     property bool labelSuppressed: false
@@ -146,6 +147,8 @@ Item {
             return output.muted || output.level <= 0.005 ? "volume-muted" : "volume"
         case "microphone":
             return input.muted || input.level <= 0.005 ? "microphone-muted" : "microphone"
+        case "keyboard":
+            return "keyboard"
         default:
             return "brightness"
         }
@@ -203,6 +206,13 @@ Item {
         target: Brightness
         function onAdjusted() {
             root.showControl("brightness")
+        }
+    }
+
+    Connections {
+        target: KeyboardBacklight
+        function onAdjusted() {
+            root.showControl("keyboard")
         }
     }
 

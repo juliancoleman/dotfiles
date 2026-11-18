@@ -151,6 +151,8 @@ binds {
     XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
     XF86MonBrightnessUp   allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "brightnessUp"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "brightnessDown"; }
+    XF86KbdBrightnessUp   allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "keyboardBrightnessUp"; }
+    XF86KbdBrightnessDown allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "keyboardBrightnessDown"; }
     XF86AudioNext  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "next"; }
     XF86AudioPause allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "playPause"; }
     XF86AudioPlay  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "playPause"; }

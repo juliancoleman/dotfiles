@@ -55,6 +55,7 @@ Item {
                         required property var modelData
                         width: list.width
                         motion: root.motion
+                        visible: SettingsModel.sectionShown(modelData)
                         icon: modelData.icon
                         title: I18n.tr(modelData.title)
                         trailing: "chevron-right"

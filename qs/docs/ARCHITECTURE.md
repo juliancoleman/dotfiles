@@ -62,10 +62,19 @@ Three processes exist:
 - `Brightness` — reads/writes `/sys/class/backlight/*/brightness` through `FileView`; sysfs has no inotify, so
   it polls only while a slider shows it, and a key step reads the live value first. `chosen()` marks the
   user's own changes (keys, slider) apart from `follow()`, AutoBrightness's writes.
-- `AutoBrightness` — while `display.autoBrightness` is on, reads the IIO light sensor once a second, smooths
-  it in log space, and ramps the backlight to `0.06 + 0.22·log10(1+lux)` plus `display.brightnessBias` (3%
-  deadband). The brightness sliders go read-only (`SliderTile.adjustable`) meanwhile; a key step (`chosen()`)
-  becomes the new bias instead of being overridden.
+- `AmbientLight` — the IIO light sensor (`in_illuminance_input`), read once a second while `watchers > 0` and
+  smoothed in log space (`level` = `log10(1+lux)`); `sampled()` after each reading.
+- `AutoBrightness` — while `display.autoBrightness` is on, follows `AmbientLight` and ramps the backlight to
+  `0.06 + 0.22·level` plus `display.brightnessBias` (3% deadband). The brightness sliders go read-only
+  (`SliderTile.adjustable`) meanwhile; a key step (`chosen()`) becomes the new bias instead of being
+  overridden.
+- `KeyboardBacklight` — sole writer of `/sys/class/leds/*kbd_backlight/brightness`. `wanted` is
+  `keyboard.brightness` while in use and 0 while `resting`: an `IdleMonitor` (ext-idle-notify) at
+  `keyboard.offAfter` that ignores inhibitors, or one at `display.screenOff` that honors them, as hypridle's
+  listener does. With `keyboard.adaptive` it follows `AmbientLight` only while not resting: 0 once the room
+  passes `log10(1+lux)` 2.2, lit again under 1.9, and scaled from all of the level there to half in the dark
+  (5% deadband); `set()` in a bright room marks it `forced` until the room is dim. `shown` fades to `wanted`
+  over 500 ms and each step is written; `set()`/`step()` land at once.
 - `Displays` — `niri msg --json outputs`, reduced to one rate per whole hertz at each output's current size;
   sets modes with `niri msg output <name> mode WxH@R` and re-applies `display.refreshRates` on start, config
   load and screen changes, asking each saved rate at most once per change so a refused mode can't loop.
@@ -202,9 +211,10 @@ before the helper first touched a channel, remembered in `/run/qs-fan-helper/bas
 (`RuntimeDirectoryPreserve`) so `ExecStopPost --restore` after a crash can put it back. The service runs
 with an empty capability set under a strict systemd sandbox.
 
-**Backlight and lightbars**. The NixOS udev rules `chgrp video` + `chmod g+w` on
-`/sys/class/backlight/*/brightness`, and `chgrp users` + `chmod g+w` on hid-playstation's
-`inputN:rgb:indicator/multi_intensity`, let the shell write both directly; no helper is involved.
+**Backlights and lightbars**. The NixOS udev rules `chgrp video` + `chmod g+w` on
+`/sys/class/backlight/*/brightness` and `/sys/class/leds/*kbd_backlight/brightness`, and `chgrp users` +
+`chmod g+w` on hid-playstation's `inputN:rgb:indicator/multi_intensity`, let the shell write them directly; no
+helper is involved.
 
 **Location**. `LocationServices` can only `systemctl start qs-location-on/off.service`; the polkit rule in
 `nixos-module.nix` allows exactly those two units for a local, active session.

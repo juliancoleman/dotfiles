@@ -50,6 +50,11 @@ Singleton {
     property var refreshRates: ({})
     // Idle minutes before the screen locks and turns off (Idle writes them into hypridle's listeners).
     property int screenOffMinutes: 5
+    // The keyboard backlight (KeyboardBacklight): how bright the keys are when lit, whether they wait for low
+    // light, and the seconds without input before they go dark (0 for never).
+    property real keyboardBrightness: 0.5
+    property bool keyboardAdaptive: true
+    property int keyboardOffAfter: 30
 
     onDurationChanged: Theme.motionDuration = duration
     onSpringOvershootChanged: Theme.springOvershoot = springOvershoot
@@ -106,6 +111,7 @@ Singleton {
         const weather = parsed && parsed.weather ? parsed.weather : {}
         const theme = parsed && parsed.theme ? parsed.theme : {}
         const display = parsed && parsed.display ? parsed.display : {}
+        const keyboard = parsed && parsed.keyboard ? parsed.keyboard : {}
         const flag = oneOf(true, false)
         document = parsed || {}
         themePalette = pick("theme.colors", theme.colors, oneOf("pens", "matugen"), "pens", themePalette)
@@ -155,6 +161,11 @@ Singleton {
         }
         refreshRates = nextRates
         screenOffMinutes = pick("display.screenOff", display.screenOff, oneOf(5, 10, 15, 30, 60), 5, screenOffMinutes)
+        keyboardBrightness = Math.round(pick("keyboard.brightness", keyboard.brightness, within(0, 1), 0.5,
+                                             keyboardBrightness) * 100) / 100
+        keyboardAdaptive = pick("keyboard.adaptive", keyboard.adaptive, flag, true, keyboardAdaptive)
+        keyboardOffAfter = pick("keyboard.offAfter", keyboard.offAfter, oneOf(0, 5, 10, 30, 60, 300), 30,
+                                keyboardOffAfter)
         const padsRaw = parsed && parsed.dualsense && typeof parsed.dualsense === "object" ? parsed.dualsense : {}
         const nextPads = {}
         for (const address in padsRaw) {
@@ -205,6 +216,11 @@ Singleton {
             brightnessBias: brightnessBias,
             refreshRates: refreshRates,
             screenOff: screenOffMinutes
+        })
+        next.keyboard = Object.assign({}, next.keyboard, {
+            brightness: keyboardBrightness,
+            adaptive: keyboardAdaptive,
+            offAfter: keyboardOffAfter
         })
         delete next.clock.presentationMotion
         document = next

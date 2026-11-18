@@ -34,5 +34,10 @@
     "autoBrightness": false,
     "brightnessBias": 0,
     "screenOff": 5
+  },
+  "keyboard": {
+    "brightness": 0.5,
+    "adaptive": true,
+    "offAfter": 30
   }
 }
