@@ -115,19 +115,19 @@ Singleton {
 
     // ext-idle-notify through the compositor: any key, pointer or touch input counts as use. Inhibitors don't
     // hold it: a film keeps the screen awake, not the keys lit.
-    IdleMonitor {
+    IdleWatch {
         id: unused
-        enabled: root.available && ClockConfig.keyboardOffAfter > 0
-        timeout: ClockConfig.keyboardOffAfter
+        watching: root.available
+        wait: ClockConfig.keyboardOffAfter
         respectInhibitors: false
     }
 
     // The same wait, inhibitors included, as the listener Idle gives hypridle to turn the screen off: the keys
     // go dark with it, whatever their own timeout.
-    IdleMonitor {
+    IdleWatch {
         id: screenOff
-        enabled: root.available && Idle.installed
-        timeout: ClockConfig.screenOffMinutes * 60
+        watching: root.available && Idle.installed
+        wait: ClockConfig.screenOffMinutes * 60
         respectInhibitors: true
     }
 

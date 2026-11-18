@@ -69,12 +69,13 @@ Three processes exist:
   (`SliderTile.adjustable`) meanwhile; a key step (`chosen()`) becomes the new bias instead of being
   overridden.
 - `KeyboardBacklight` — sole writer of `/sys/class/leds/*kbd_backlight/brightness`. `wanted` is
-  `keyboard.brightness` while in use and 0 while `resting`: an `IdleMonitor` (ext-idle-notify) at
+  `keyboard.brightness` while in use and 0 while `resting`: an `IdleWatch` (ext-idle-notify) at
   `keyboard.offAfter` that ignores inhibitors, or one at `display.screenOff` that honors them, as hypridle's
-  listener does. With `keyboard.adaptive` it follows `AmbientLight` only while not resting: 0 once the room
-  passes `log10(1+lux)` 2.2, lit again under 1.9, and scaled from all of the level there to half in the dark
-  (5% deadband); `set()` in a bright room marks it `forced` until the room is dim. `shown` fades to `wanted`
-  over 500 ms and each step is written; `set()`/`step()` land at once.
+  listener does. `IdleWatch` is Quickshell's `IdleMonitor` re-armed whenever its wait changes, since the
+  monitor keeps the timeout it was enabled with. With `keyboard.adaptive` it follows `AmbientLight` only
+  while not resting: 0 once the room passes `log10(1+lux)` 2.2, lit again under 1.9, and scaled from all of
+  the level there to half in the dark (5% deadband); `set()` in a bright room marks it `forced` until the
+  room is dim. `shown` fades to `wanted` over 500 ms and each step is written; `set()`/`step()` land at once.
 - `Displays` — `niri msg --json outputs`, reduced to one rate per whole hertz at each output's current size;
   sets modes with `niri msg output <name> mode WxH@R` and re-applies `display.refreshRates` on start, config
   load and screen changes, asking each saved rate at most once per change so a refused mode can't loop.

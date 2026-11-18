@@ -16,3 +16,4 @@ NetworkSource 1.0 NetworkSource.qml
 CloseMark 1.0 CloseMark.qml
 Knob 1.0 Knob.qml
 singleton Meter 1.0 Meter.qml
+IdleWatch 1.0 IdleWatch.qml
