@@ -42,8 +42,6 @@
 
   # ── Compositor ──
   programs.niri.enable = true;
-  # X11 apps run through niri's xwayland-satellite integration (niri/config.kdl).
-  programs.xwayland.enable = true;
 
   # ── Shell (Quickshell bar, wallpaper) ──
   services.qs = {
@@ -149,7 +147,6 @@
     grim
     slurp
     wf-recorder
-    xwayland-satellite
   ];
 
   # ── Nix settings ──

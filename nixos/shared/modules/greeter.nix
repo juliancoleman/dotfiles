@@ -74,8 +74,7 @@ in
   services.displayManager.regreet = {
     enable = true;
     settings = {
-      # Straight to the password for whoever logged in last; the user and session pickers show only the
-      # first time.
+      # Straight to the password for the user ReGreet remembers, with no user or session picker first.
       skip_selection = true;
       background = {
         path = "${../../niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg}";
@@ -121,4 +120,18 @@ in
 
   # ReGreet lists the sessions it finds here; niri-session is the only one.
   environment.pathsToLink = [ "/share/wayland-sessions" ];
+
+  # There is one user and one session, so ReGreet starts out remembering them: the first boot asks for
+  # the password too. Copied only while missing; ReGreet keeps the file up to date after that.
+  systemd.tmpfiles.settings."10-regreet"."/var/lib/regreet/state.toml".C = {
+    user = config.services.greetd.settings.default_session.user;
+    group = "greeter";
+    mode = "0644";
+    argument = "${pkgs.writeText "regreet-state.toml" ''
+      last_user = "julian"
+
+      [user_to_last_sess]
+      julian = "Niri"
+    ''}";
+  };
 }

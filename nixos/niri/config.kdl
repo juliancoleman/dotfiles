@@ -86,10 +86,6 @@ workspace "ws4"
 spawn-at-startup "udiskie" "--notify" "--auto-mount"
 spawn-at-startup "qs-shell"
 
-xwayland-satellite {
-    path "xwayland-satellite"
-}
-
 hotkey-overlay {
     skip-at-startup
 }

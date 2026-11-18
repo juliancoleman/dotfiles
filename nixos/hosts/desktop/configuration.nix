@@ -39,6 +39,10 @@ in
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # Steam and the WhatsApp launcher below are X11 clients; niri starts xwayland-satellite for them when
+  # it finds it on PATH.
+  programs.xwayland.enable = true;
+
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -65,6 +69,7 @@ in
     llama-cpp
     pcsx2
     spotify
+    xwayland-satellite
   ];
 
   # ── Fans ──
