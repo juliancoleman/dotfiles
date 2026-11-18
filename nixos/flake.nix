@@ -2,8 +2,6 @@
   description = "Julian's NixOS build with Niri + Quickshell";
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    # Keep the base system pinned while allowing newer Ollama builds for model compatibility.
-    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,77 +19,35 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { nixpkgs, nixpkgs-ollama, home-manager, apple-silicon, qs, ... }@inputs:
+  outputs = { nixpkgs, home-manager, ... }@inputs:
   let
-    # Shared home-manager module
-    mkHomeManagerModule = homeArgs: {
-      home-manager = {
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        users.julian = { pkgs, lib, config, ... }@hmArgs: import ./shared/home.nix (hmArgs // homeArgs);
-        backupFileExtension = "backup";
-	extraSpecialArgs = { inherit inputs; };
-      };
-    };
-    # Helper to create a host
-    mkHost = { system, modules, specialArgs ? { }, homeArgs ? { } }: nixpkgs.lib.nixosSystem {
+    # A host is its own configuration plus the shared Home Manager setup.
+    mkHost = { system, modules }: nixpkgs.lib.nixosSystem {
       inherit system;
-      specialArgs = { inherit nixpkgs-ollama; inherit inputs; } // specialArgs;
-      modules = modules ++ [ home-manager.nixosModules.home-manager (mkHomeManagerModule homeArgs) ];
-    };
-  in {
-    # Desktop — Nvidia GTX 1080, B450 Tomahawk Max
-    nixosConfigurations.hyprland-btw = mkHost {
-      system = "x86_64-linux";
-      modules = [
-        ./hosts/desktop/configuration.nix
-        qs.nixosModules.default
+      specialArgs = { inherit inputs; };
+      modules = modules ++ [
+        home-manager.nixosModules.home-manager
         {
-          services.qs = {
-            enable = true;
-            wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
-            # Discovery mode: the helper finds the nct6797 headers itself and guards with k10temp.
-            fanControl = {
-              enable = true;
-              users = [ "julian" ];
-            };
-          };
-          home-manager.users.julian = {
-            imports = [ qs.homeManagerModules.default ];
-            programs.qs = {
-              enable = true;
-              wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
-            };
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.julian = ./shared/home.nix;
+            backupFileExtension = "backup";
+            extraSpecialArgs = { inherit inputs; };
           };
         }
       ];
+    };
+  in {
+    # Desktop — Nvidia GTX 1080, B450 Tomahawk Max
+    nixosConfigurations.desktop = mkHost {
+      system = "x86_64-linux";
+      modules = [ ./hosts/desktop/configuration.nix ];
     };
     # MacBook Pro — Apple M2 Pro, Asahi Linux
     nixosConfigurations.macbook-pro = mkHost {
       system = "aarch64-linux";
-      modules = [
-        ./hosts/macbook/configuration.nix
-        apple-silicon.nixosModules.apple-silicon-support
-        qs.nixosModules.default
-        {
-          services.qs = {
-            locationServices.enable = true;
-            enable = true;
-            wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
-          };
-          home-manager.users.julian = {
-            imports = [ qs.homeManagerModules.default ];
-            programs.qs = {
-              enable = true;
-              wallpaper = ./niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
-            };
-          };
-        }
-        {
-        nixpkgs.overlays = [ apple-silicon.overlays.apple-silicon-overlay ];
-        }
-        { programs.niri.package = nixpkgs.legacyPackages.aarch64-linux.niri; }
-      ];
+      modules = [ ./hosts/macbook/configuration.nix ];
     };
   };
 }

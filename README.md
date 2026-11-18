@@ -1,81 +1,48 @@
 # Dotfiles
 
-Simple dotfiles for use with GNU stow.
+Two NixOS machines and the few configs that live outside Nix.
 
-## Installation
-
-Simply `cd` to your home directory and `git clone` this repo, or download via the button
-above.
-
-> Caution: this will attempt to overwrite your existing configuration in `~/.config`. You
-> can either backup your existing configuration with `mv ~/.config /.config-backup` or
-> use the `stow --adopt` flag.
-
-From here you can run `stow .` and it'll put your files in the correct spot. If you don't
-want the nixos stuff, either ignore it via the stow command, or delete it after running
-the installation.
-
-## Fish
-
-This one is a doozy, so strap in. First up, home-manager maintains this section of
-`.config` (shoot me, I know). If you're using NixOS, this means we're pre-installing
-`fenv`. You're going to need this.
-
-### I'm using NixOS
-
-```bash
-rm -rf ~/.config/fish
-sudo nixos-rebuild switch --flake ~/dotfiles/nixos#hyprland-btw
-rm ~/.config/fish/config.fish
-cd ~/dotfiles
-stow --adopt fish
-```
-
-Please. For the love of God.
-The reason we have to do this is because home-manager will fail if something already
-lives here. So we need to nuke it to generate a new hash for the home-manager fish
-completions. Then we need to put everything back.
-
-I recommend collecting garbage and removing the last generation at this point. This
-needlessly creates a whole new generation for no good reason.
-
-### I'm not using NixOS
-
-Okay, you're cool then.
-
-```bash
-cd ~/.config/fish
-rm -rf functions conf.d config.fish
-cd ~/dotfiles
-stow --adopt fish
-```
-You will want to keep your `fish_variables` as Fish actually generates these and
-maintains them on your behalf.
+| Path | What it is |
+| --- | --- |
+| `nixos/` | The NixOS flake: system and Home Manager config for both hosts, the niri config and its scripts |
+| `qs/` | The Quickshell desktop shell (bar, control center, launcher), its own flake; see `qs/README.md` |
+| `ghostty/`, `yazi/` | Plain config, linked into `~/.config` with GNU stow |
 
 ## NixOS
 
-If you're using this with NixOS (I am btw), you'll want to ensure your initial setup has
-`git` and `stow` listed as a system package. You can then clone this repo to your home
-directory.
+The checkout lives at `~/dotfiles`. Hosts:
 
-Copy your `hardware-configuration.nix` file into this folder after it's been cloned
+| Flake output | Machine |
+| --- | --- |
+| `desktop` | Ryzen desktop, Nvidia GTX 1080 (`nixos/hosts/desktop`) |
+| `macbook-pro` | MacBook Pro M2 Pro on Asahi Linux (`nixos/hosts/macbook`) |
 
-```bash
-cp /etc/nixos/hardware-configuration.nix ~/dotfiles
-sudo chown -R <your_username>:users hardware-configuration.nix
-```
-
-You will need to rebuild your system
+Rebuild from `nixos/`:
 
 ```bash
-nixos-rebuild switch --flake ~/nixos
+sudo nixos-rebuild switch --flake .#desktop
+sudo nixos-rebuild switch --impure --flake .#macbook-pro
 ```
 
-> Note: go touch some grass or get a coffee. This is going to take up to an hour
-> depending on how fast your system is.
+The MacBook needs `--impure`: the Asahi module reads the peripheral firmware the Asahi installer left in
+`/boot/vendorfw`, which is outside the flake. Its kernel is built locally, so a kernel update takes a while.
 
-### Home Manager
+`shared/system.nix` and `shared/home.nix` hold what both hosts have in common; each host's
+`configuration.nix` holds its hardware and the apps that differ. Login is greetd with ReGreet
+(`shared/modules/greeter.nix`), the session is niri (`niri/config.kdl`), and the lock screen is hyprlock
+(`niri/hyprlock.conf`, `niri/lock.sh`). The scripts in `niri/` are installed on `PATH` as `niri-<name>`, so
+a change to one takes a rebuild.
 
-While this config does make use of home manager, it is only responsible for the GUI apps
-that I have installed on my system. It otherwise has no affect on things you might want
-to change often, such as your Neovim or Kitty config.
+SSH takes keys only; the accepted keys are listed in `shared/system.nix`.
+
+A new machine needs its own `hosts/<name>/` with the `hardware-configuration.nix` that
+`nixos-generate-config` wrote, and an entry in `flake.nix`.
+
+## Stow
+
+```bash
+cd ~/dotfiles
+stow ghostty yazi
+```
+
+`.stow-local-ignore` keeps `nixos/` and `qs/` out of `stow .`.

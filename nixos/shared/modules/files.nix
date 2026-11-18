@@ -6,6 +6,5 @@
   environment.systemPackages = with pkgs; [
     nautilus
     seahorse
-    gvfs
   ];
 }

@@ -100,8 +100,8 @@ binds {
     Super+Return { spawn "ghostty"; }
     Super+Space { spawn "qs-shell" "ipc" "call" "launcher" "toggle"; }
     Super+Comma { spawn "qs-shell" "ipc" "call" "settings" "toggle"; }
-    Super+Alt+L { spawn-sh "$HOME/dotfiles/nixos/niri/lock.sh"; }
-    Super+U { spawn-sh "$HOME/dotfiles/nixos/niri/open-usb.sh"; }
+    Super+Alt+L { spawn "niri-lock"; }
+    Super+U { spawn "niri-open-usb"; }
     Super+Q { close-window; }
     Super+Shift+E { quit; }
 
@@ -159,11 +159,11 @@ binds {
     XF86AudioPrev  allow-when-locked=true { spawn "qs-shell" "ipc" "call" "status" "previous"; }
 
     // Screenshot
-    Print { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot.sh"; }
-    Super+Shift+S { spawn-sh "$HOME/dotfiles/nixos/niri/screenshot-region.sh"; }
+    Print { spawn "niri-screenshot"; }
+    Super+Shift+S { spawn "niri-screenshot-region"; }
 
     // Screen recording (toggle)
-    Super+Shift+5 { spawn-sh "$HOME/dotfiles/nixos/niri/record-toggle.sh"; }
+    Super+Shift+5 { spawn "niri-record-toggle"; }
 }
 
 // ── Window rules ───────────────────────────────────────────────

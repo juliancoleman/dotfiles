@@ -1,10 +1,6 @@
 # Desktop host — Nvidia GTX 1080, B450 Tomahawk Max, dual SSD
-{ config, lib, pkgs, nixpkgs-ollama, ... }:
+{ config, lib, pkgs, ... }:
 let
-  ollamaPkgs = import nixpkgs-ollama {
-    system = pkgs.stdenv.hostPlatform.system;
-    config.allowUnfree = true;
-  };
   # PCSX2 overlay: patches assertion crash (FQC=0 on VIF FIFO READ) and
   # signal handler robustness (sigaltstack for SIGSEGV during JIT execution).
   pcsx2Overlay = import ../../overlays/pcsx2.nix;
@@ -29,7 +25,7 @@ in
   boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
   # ── Networking ──
-  networking.hostName = "hyprland-btw";
+  networking.hostName = "desktop";
   networking.networkmanager.enable = true;
 
   # ── Nvidia GTX 1080 ──
@@ -43,14 +39,9 @@ in
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # X11 apps (Steam, WhatsApp, Proton Mail) run through niri's xwayland-satellite integration.
-  programs.xwayland.enable = true;
-
   environment.sessionVariables = {
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    WLR_NO_HARDWARE_CURSORS = "1";
-    XDG_SESSION_TYPE = "wayland";
     NIXOS_OZONE_WL = "1";
   };
 
@@ -62,7 +53,7 @@ in
   # laptop clients while keeping the model store on the desktop.
   services.ollama = {
     enable = true;
-    package = ollamaPkgs.ollama-vulkan;
+    package = pkgs.ollama-vulkan;
     host = "0.0.0.0";
     port = 11434;
     openFirewall = true;
@@ -71,13 +62,17 @@ in
   # ── Desktop-only packages ──
   environment.systemPackages = with pkgs; [
     lm_sensors
-    ollamaPkgs.ollama
     llama-cpp
     pcsx2
     spotify
-    protonmail-desktop
-    xwayland-satellite
   ];
+
+  # ── Fans ──
+  # Discovery mode: the shell's helper finds the nct6797 headers itself and guards with k10temp.
+  services.qs.fanControl = {
+    enable = true;
+    users = [ "julian" ];
+  };
 
   # ── EGL library path for Electron apps on Nvidia ──
   environment.variables.LD_LIBRARY_PATH = [
@@ -144,16 +139,6 @@ in
       StartupWMClass=com.github.dagmoller.whatsapp-electron
     '';
 
-    # Proton Mail needs XWayland (native Wayland doesn't work)
-    xdg.dataFile."applications/proton-mail.desktop".text = ''
-      [Desktop Entry]
-      Type=Application
-      Name=Proton Mail
-      Exec=proton-mail --ozone-platform=x11 --no-sandbox %U
-      Icon=proton-mail
-      Categories=Network;Email;
-    '';
-
     # Steam's CEF UI must use XWayland; native Ozone Wayland can map a blank window.
     xdg.dataFile."applications/steam.desktop".text = ''
       [Desktop Entry]
@@ -174,4 +159,6 @@ in
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
   };
+
+  system.stateVersion = "25.11";
 }

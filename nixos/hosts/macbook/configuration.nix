@@ -1,14 +1,19 @@
 # MacBook Pro M2 Pro host — Asahi Linux
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
+    inputs.apple-silicon.nixosModules.apple-silicon-support
     ../../shared/system.nix
   ];
 
-  # ── Boot (Asahi uses m1n1 + U-Boot, not GRUB/systemd-boot) ──
+  # ── Boot (m1n1 and U-Boot hand over to systemd-boot; U-Boot's EFI has no writable variables) ──
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
+
+  # The Asahi GPU driver needs a few seconds after boot before a compositor can take the DRM device;
+  # the greeter waits them out.
+  systemd.services.greetd.serviceConfig.ExecStartPre = "${pkgs.coreutils}/bin/sleep 5";
 
   boot.kernelPatches = [
     {
@@ -35,11 +40,9 @@
   '';
 
   # ── Asahi firmware ──
+  # The module finds the peripheral firmware the Asahi installer left in /boot/vendorfw by itself. It
+  # reads it from outside the flake, which is why this host builds with --impure.
   hardware.asahi.enable = true;
-  hardware.asahi.peripheralFirmwareDirectory = /boot/vendorfw;
-
-  # Upstream apple-silicon module defaults to /boot/vendorfw/firmware.cpio
-  # (put there by the Asahi installer). No explicit config needed.
 
   # ── Battery: hold at 80%, top up to 100% once a week ──
   # The SMC limit is 80 or 100. Every 7 days the limit lifts to 100 until the
@@ -79,6 +82,9 @@
     };
   };
 
+  # ── Location (weather's automatic mode) ──
+  services.qs.locationServices.enable = true;
+
   # Signal's AppImage is x86_64-only, so this host uses the nixpkgs build. Signal
   # refuses clients that fall too far behind, so keep nixpkgs current.
   home-manager.users.julian = { pkgs, config, ... }: {
@@ -111,4 +117,6 @@
     earlySetup = true;
     keyMap = "us";
   };
+
+  system.stateVersion = "25.11";
 }

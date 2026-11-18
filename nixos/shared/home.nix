@@ -1,10 +1,19 @@
 { config, lib, pkgs, inputs, ... }:
+let
+  wallpaper = ../niri/wallpapers/tj-holowaychuk-mist-over-banff-ave.jpg;
+  # The session's helper scripts, on PATH under the names niri/config.kdl binds.
+  script = name: pkgs.writeScriptBin "niri-${name}" (builtins.readFile (../niri + "/${name}.sh"));
+  lock = script "lock";
+in
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
   home.stateVersion = "25.11";
+  imports = [
+    inputs.omp.homeManagerModules.default
+    inputs.qs.homeManagerModules.default
+  ];
   # -- OMP --------------------------------------------------------
-  imports = [ inputs.omp.homeManagerModules.default ];
   programs.omp = {
     enable = true;
     settings.startup.quiet = true;
@@ -25,27 +34,9 @@
       ls = "eza";   # we almost never want to use coreutils ls
       cd = "z";     # we almost never want to use coreutils cd
     };
-    # Runs for every shell (login + interactive + non-interactive)
-    shellInit = ''
+    interactiveShellInit = ''
       # Disable the fish greeting
       set -g fish_greeting
-      # Carapace completions
-      set -gx CARAPACE_BRIDGES 'fish'
-      carapace _carapace | source
-      # Pay-respects
-      pay-respects fish | source
-    '';
-    # Runs only for interactive shells
-    interactiveShellInit = ''
-      # Terminal colors — NixOS-specific
-      if set -q IS_NIXOS
-        if test -z "$WAYLAND_DISPLAY" -a -n "$XDG_VTNR" -a "$XDG_VTNR" -gt 0
-          set -gx TERM vt100
-        else
-          set -gx TERM xterm-256color
-        end
-        # Niri is now launched by greetd, not fish
-      end
     '';
     # Custom functions (from conf.d/ and functions/)
     functions = {
@@ -92,7 +83,7 @@
         set -l red (set_color -o red)
         set -l green (set_color -o green)
         set -l blue (set_color -o blue)
-        set -l norma (set_color normal)
+        set -l normal (set_color normal)
         set -l arrow_color "$green"
         if test $__last_command_exit_status != 0
           set arrow_color "$red"
@@ -120,6 +111,7 @@
   # ── Completion / tool integrations (native home-manager) ──────
   programs.zoxide.enable = true;
   programs.carapace.enable = true;
+  programs.pay-respects.enable = true;
   # ── Font rendering ─────────────────────────────────────────────
   fonts.fontconfig = {
     antialiasing = true;
@@ -128,12 +120,18 @@
   # ── Packages ───────────────────────────────────────────────────
   home.packages = with pkgs; [
     brave
-    pkgs.catppuccin-cursors.latteLight
+    catppuccin-cursors.latteLight
+    lock
+    (script "open-usb")
+    (script "screenshot")
+    (script "screenshot-region")
+    (script "record-toggle")
   ];
   # ── Session variables & paths ──────────────────────────────────
   home.sessionVariables = {
-    IS_NIXOS = "1";
     XDG_CONFIG_HOME = "$HOME/.config";
+    # Carapace also offers what fish's own completions know.
+    CARAPACE_BRIDGES = "fish";
   };
   home.sessionPath = [
     "$HOME/.local/bin"
@@ -162,20 +160,22 @@
     ]))
   ];
 
-  # Niri session scripts live in the git checkout at ~/dotfiles/nixos/niri/
-  # (config.kdl spawn-sh paths). Do not home.file them here — that path is
-  # the working tree, and HM would replace git files with store symlinks.
   # ── Niri compositor config ────────────────────────────────────
   xdg.configFile = {
     "niri/config.kdl".source = ../niri/config.kdl;
-    "hypr/hyprlock.conf".source = ../niri/hyprlock.conf;
+    "hypr/hyprlock.conf".text =
+      builtins.replaceStrings [ "@wallpaper@" ] [ "${wallpaper}" ] (builtins.readFile ../niri/hyprlock.conf);
   };
 
-  # ── Idle ──────────────────────────────────────────────────────
-  # hypridle as a user service; the shell's Display settings pick when the
-  # screen locks and turns off.
-  programs.qs.idle = {
+  # ── Shell ─────────────────────────────────────────────────────
+  # Quickshell bar and wallpaper. hypridle runs as a user service; the shell's Display settings pick when
+  # the screen locks and turns off.
+  programs.qs = {
     enable = true;
-    lockCommand = "${config.home.homeDirectory}/dotfiles/nixos/niri/lock.sh";
+    inherit wallpaper;
+    idle = {
+      enable = true;
+      lockCommand = "${lock}/bin/niri-lock";
+    };
   };
 }
