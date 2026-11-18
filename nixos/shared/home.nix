@@ -14,9 +14,15 @@ in
     inputs.qs.homeManagerModules.default
   ];
   # -- OMP --------------------------------------------------------
+  # The module rewrites ~/.omp/agent/config.yml from these settings at every Home Manager activation
+  # (each boot and each rebuild), so anything OMP saves there itself is lost, including that onboarding
+  # was finished. The wizard is turned off here instead; `omp setup` still runs it by hand.
   programs.omp = {
     enable = true;
-    settings.startup.quiet = true;
+    settings.startup = {
+      quiet = true;
+      setupWizard = false;
+    };
   };
   # ── Shell ──────────────────────────────────────────────────────
   programs.fish = {
