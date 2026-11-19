@@ -12,12 +12,15 @@ Item {
 
     signal closeRequested()
 
-    // The place row shares the capsule's height in a top bar pill; its close action takes the capsule's place,
-    // like the control center's ring, so it sits where the pointer already is.
+    // The place row shares the capsule's height in the pill; its close action takes the capsule's place, like
+    // the control center's ring, so it sits where the pointer already is. faceWidth is 0 when the capsule isn't
+    // in this panel (lent to the notch, where the capsule itself becomes the close action).
     property real rowHeight: 26
-    property real faceRoom: 0
-    // Below a bottom or side bar's pill the capsule holds the panel's bottom corner instead.
-    property real footRoom: 0
+    property real faceWidth: 0
+    // Which corner the capsule holds: below a bottom or side bar's pill the place row moves to the bottom with
+    // it, and along a left bar the close action sits at the left end.
+    property bool faceLeft: false
+    property bool faceBottom: false
     // Where the screen runs out first, everything but the place row scrolls.
     property real maxHeight: Infinity
     // The notched weather trigger becomes the close action while this panel is open.
@@ -28,7 +31,7 @@ Item {
     readonly property bool clock24: ClockConfig.use24Hour
     readonly property var today: WeatherService.daily.length > 0 ? WeatherService.daily[0] : null
 
-    implicitHeight: placeRow.height + scroller.height + Math.max(pad, footRoom)
+    implicitHeight: placeRow.height + scroller.height + pad
 
     function degrees(celsius) {
         return celsius === null || celsius === undefined || isNaN(celsius) ? "–" : WeatherService.toUnits(celsius) + "°"
@@ -94,12 +97,14 @@ Item {
     Item {
         id: placeRow
         x: root.pad
+        y: root.faceBottom ? scroller.y + scroller.height : 0
         width: root.innerWidth
         height: root.rowHeight
 
         Row {
             readonly property real room: Math.max(0, root.innerWidth
                 - (root.closeActionInFace ? 0 : closeButton.width + Theme.px(8)) - Theme.px(14))
+            x: root.faceLeft && closeButton.visible ? closeButton.x + closeButton.width + Theme.px(8) : 0
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.px(4)
 
@@ -131,7 +136,10 @@ Item {
             label: I18n.tr("Close weather")
             motion: root.motion
             anchors.verticalCenter: parent.verticalCenter
-            x: root.faceRoom > 0 ? parent.width + root.pad - (root.faceRoom + width) / 2 : parent.width - width
+            // Centered on the capsule's corner of the panel, whichever it is.
+            x: root.faceWidth > 0
+                ? (root.faceLeft ? root.faceWidth / 2 : root.width - root.faceWidth / 2) - root.pad - width / 2
+                : parent.width - width
             onActivated: root.closeRequested()
         }
     }
@@ -139,10 +147,9 @@ Item {
     MomentumFlickable {
         id: scroller
         x: root.pad
-        y: placeRow.height
+        y: root.faceBottom ? root.pad : placeRow.height
         width: root.innerWidth
-        height: Math.max(0, Math.min(body.implicitHeight,
-                                     root.maxHeight - placeRow.height - Math.max(root.pad, root.footRoom)))
+        height: Math.max(0, Math.min(body.implicitHeight, root.maxHeight - placeRow.height - root.pad))
         contentHeight: body.implicitHeight
         clip: true
 

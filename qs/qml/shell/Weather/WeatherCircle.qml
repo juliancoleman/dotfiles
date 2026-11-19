@@ -193,15 +193,17 @@ Item {
             visible: root.openP > 0.001
             enabled: root.opened
 
-            // The same panel in the pill and the notch; the pill only keeps room for the capsule's corner.
+            // The same panel in the pill and the notch; in the pill the place row's close action sits on the
+            // capsule's corner.
             WeatherPanel {
                 id: panel
                 width: parent.width
                 motion: root.motion
                 rowHeight: root.diameter
                 pad: root.pad
-                faceRoom: !root.lent && !root.circleBottom ? root.restWidth : 0
-                footRoom: !root.lent && root.circleBottom ? root.diameter : 0
+                faceWidth: root.lent ? 0 : face.width
+                faceLeft: !root.lent && !root.circleRight
+                faceBottom: !root.lent && root.circleBottom
                 maxHeight: Math.min(root.maxPanelHeight, root.reserveHeight - 40)
                 closeActionInFace: root.closeActionInFace
                 onCloseRequested: root.close()
