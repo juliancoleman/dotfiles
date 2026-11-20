@@ -65,19 +65,38 @@ Singleton {
                                           urgency: urgency, time: Date.now() }))
     }
 
-    // Image data or path first, then the app's themed icon. Missing theme icons resolve to "" so callers
-    // show the generic symbol rather than the icon provider's placeholder.
+    // Image data or path first, then the app's icon. `logo` marks an icon (a themed name, or the app_icon
+    // path): it's the app's own shape, drawn whole. Anything else is a picture the notification carries,
+    // cropped to the circle. Missing theme icons resolve to no source so callers show the generic symbol
+    // rather than the icon provider's placeholder.
     function mediaFor(notification) {
+        const none = { source: "", logo: false }
         if (!notification)
-            return ""
+            return none
         const image = String(notification.image || "")
         const themed = "image://icon/"
-        if (image !== "" && (!image.startsWith(themed) || Quickshell.hasThemeIcon(image.slice(themed.length))))
-            return image
+        if (image.startsWith(themed)) {
+            // Quickshell files an image-path hint that isn't a file: URL under the icon provider, even a bare
+            // absolute path like notify-send's, which no theme can resolve.
+            const name = image.slice(themed.length)
+            if (name.startsWith("/"))
+                return { source: fileUrl(name), logo: false }
+            if (Quickshell.hasThemeIcon(name))
+                return { source: image, logo: true }
+        } else if (image !== "") {
+            return { source: image, logo: false }
+        }
         const icon = String(notification.appIcon || "")
-        if (icon.startsWith("/") || icon.startsWith("file:"))
-            return icon
-        return icon !== "" && Quickshell.hasThemeIcon(icon) ? Quickshell.iconPath(icon) : ""
+        if (icon.startsWith("/"))
+            return { source: fileUrl(icon), logo: true }
+        if (icon.startsWith("file:"))
+            return { source: icon, logo: true }
+        return icon !== "" && Quickshell.hasThemeIcon(icon) ? { source: Quickshell.iconPath(icon), logo: true } : none
+    }
+
+    // Each segment escaped, so a '#', '?' or '%' in a file name stays part of the path.
+    function fileUrl(path) {
+        return "file://" + path.split("/").map(encodeURIComponent).join("/")
     }
 
     function indexOf(id) {

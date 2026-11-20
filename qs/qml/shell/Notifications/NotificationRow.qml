@@ -21,7 +21,7 @@ Item {
     readonly property var namedActions: handle ? handle.actions.filter(a => a.identifier !== "default") : []
     readonly property bool hasDefault: !!handle && handle.actions.some(a => a.identifier === "default")
     readonly property bool hovered: hit.containsMouse || close.hovered || actionHover.hovered
-    readonly property string media: NotificationService.mediaFor(handle)
+    readonly property var media: NotificationService.mediaFor(handle)
 
 
     implicitHeight: content.implicitHeight + inset * 2
@@ -80,7 +80,8 @@ Item {
         onClicked: row.activate()
     }
 
-    // The app's mark: an off knob's outline, filled by the app's picture when there is one.
+    // The app's mark: an off knob's outline, filled by a picture the notification carries, or holding the
+    // app's logo.
     Rectangle {
         id: badge
         x: Theme.knobInset
@@ -89,18 +90,15 @@ Item {
         height: Theme.knobSize
         radius: width / 2
         color: Theme.clear
-        border.width: picture.visible ? 0 : 1
+        border.width: picture.visible && !picture.logo ? 0 : 1
         border.color: Theme.stroke
-        clip: true
 
-        Image {
+        NotificationPicture {
             id: picture
             anchors.fill: parent
-            source: row.media
-            fillMode: Image.PreserveAspectCrop
+            source: row.media.source
+            logo: row.media.logo
             sourceSize: Qt.size(Theme.knobSize * 2, Theme.knobSize * 2)
-            asynchronous: true
-            visible: status === Image.Ready
         }
 
         StatusGlyph {

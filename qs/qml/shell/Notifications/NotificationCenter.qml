@@ -75,8 +75,10 @@ Item {
     }
     readonly property real fullHeight: diameter + Theme.panelHeaderGap + shownContent + pad
     // The pop-up's one notification is drawn bare, the panel standing in for its card, so its content sits
-    // on the panel's gutter; the row's own inset is taken back out of the panel's pad.
-    readonly property real peekInset: pad - peekRow.inset
+    // on the panel's gutter; the row's own inset is taken back out of the panel's pad. Lent to the notch the
+    // panel has no pad and the clock's slot clips at its edge, so the row gives back no more than its knob and
+    // dismiss button keep clear of its own edge; any more and they're cut off.
+    readonly property real peekInset: Math.max(pad - peekRow.inset, -Math.min(Theme.knobInset, Theme.tileGap))
     readonly property real peekWidth: panelWidth - peekInset * 2
     readonly property real peekHeight: lent ? peekRow.implicitHeight + peekInset * 2
         : Math.max(diameter, peekRow.implicitHeight + peekInset * 2)
@@ -430,7 +432,7 @@ Item {
             opacity: root.lent ? Math.min(1, root.presenceP) : 1 - Math.min(1, root.openP)
 
             readonly property real face: root.diameter - root.inset * 2
-            readonly property string media: NotificationService.mediaFor(root.newest)
+            readonly property var media: NotificationService.mediaFor(root.newest)
 
             Rectangle {
                 id: face
@@ -443,7 +445,6 @@ Item {
                 border.width: NotificationService.newestCritical ? 1.5 : 0
                 border.color: Theme.dangerMark
                 opacity: 1
-                clip: true
 
                 Item {
                     anchors.fill: parent
@@ -451,15 +452,13 @@ Item {
                     visible: opacity > 0.01
                     Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
 
-                    Image {
+                    NotificationPicture {
                         id: picture
                         anchors.fill: parent
                         anchors.margins: face.border.width
-                        source: badge.media
-                        fillMode: Image.PreserveAspectCrop
+                        source: badge.media.source
+                        logo: badge.media.logo
                         sourceSize: Qt.size(badge.face * 2, badge.face * 2)
-                        asynchronous: true
-                        visible: status === Image.Ready
                     }
 
                     StatusGlyph {
