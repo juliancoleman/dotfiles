@@ -1,6 +1,6 @@
 # Home services hosted on this machine: contacts and calendar (Radicale) behind TLS (Caddy),
-# the vault → phone address book exporter, Syncthing for the vault itself, and a nightly backup
-# of the service data to the NAS.
+# the vault → phone address book exporter, and a nightly backup of the service data to the NAS.
+# What a machine needs to use them (name resolution, the CA, Syncthing) is in shared/system.nix.
 #
 # Secrets stay out of the repo, in /var/lib/secrets:
 #   radicale.htpasswd   home-secret radicale
@@ -160,18 +160,6 @@ in
       disable-publishing = false;
       publish-addresses = true;
     };
-  };
-
-  # ── Vault sync ──
-  # Devices and folders are paired in the GUI (http://127.0.0.1:8384) and kept as paired.
-  services.syncthing = {
-    enable = true;
-    user = "julian";
-    dataDir = "/home/julian";
-    configDir = "/home/julian/.config/syncthing";
-    openDefaultPorts = true;
-    overrideDevices = false;
-    overrideFolders = false;
   };
 
   # ── Backup to the NAS ──

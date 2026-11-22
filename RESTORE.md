@@ -70,7 +70,9 @@ All four copies need `sudo`: restic restores as root, and `/tmp/restore` is clos
 `cp -a` keeps each file's owner, so the vault and Syncthing files still end up yours.
 
 Restoring `/var/lib/home-tls` keeps the certificate the phone and the desktop already trust. Without it
-the MacBook makes a new one on first start, and each device has to trust the new `ca.crt`.
+the MacBook makes a new one on first start, and each device has to trust the new `ca.crt`: the phone
+when DAVx⁵ next asks, and both NixOS hosts by copying `/var/lib/home-tls/ca.crt` over
+`nixos/hosts/macbook/home-ca.crt` in this repo and rebuilding.
 
 Then set the secrets again, which are never backed up:
 

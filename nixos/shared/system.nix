@@ -66,6 +66,7 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKTAb71YzUdWLk+hh7H9ebO/MMibcBc50uQ1jkuvPpwP"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINL3Z21QY/cIzOG9JP+mtcoFpvCUJT1U3SVWDWd0x+xW julian@macbook-pro"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDxF/F6bhTxPDpVXpaEFL5B7PEiqYyfS7Tsito2TAL5x julian@desktop"
     ];
   };
 
@@ -98,6 +99,36 @@
       }
     });
   '';
+
+  # ── Home services (what every machine needs to use them) ──
+  # The MacBook serves contacts and calendar at https://macbook-pro.local (hosts/macbook/services.nix).
+  # That name resolves over mDNS, and its certificate comes from the MacBook's own one-certificate CA.
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
+  security.pki.certificateFiles = [ ../hosts/macbook/home-ca.crt ];
+
+  # ── Vault sync ──
+  # Syncthing keeps ~/obsidian-vault the same on every machine. It stays on the home network: no public
+  # discovery servers, relays or port mapping. Devices and folders are paired in the GUI
+  # (http://127.0.0.1:8384) and kept as paired.
+  services.syncthing = {
+    enable = true;
+    user = "julian";
+    dataDir = "/home/julian";
+    configDir = "/home/julian/.config/syncthing";
+    openDefaultPorts = true;
+    overrideDevices = false;
+    overrideFolders = false;
+    settings.options = {
+      globalAnnounceEnabled = false;
+      relaysEnabled = false;
+      natEnabled = false;
+      urAccepted = -1;
+      crashReportingEnabled = false;
+    };
+  };
 
   # ── Fonts ──
   fonts.packages = with pkgs; [
