@@ -21,11 +21,16 @@ from pathlib import Path
 import yaml
 
 TAG = "phone"
-# Order of the structured values, per RFC 6350.
+# The address book is served by Radicale, which parses and rewrites every card with vobject.
+# vobject speaks vCard 3.0: a 4.0 `PHOTO:data:...` URI comes back with its `;` escaped and no
+# longer loads on the phone, while a 3.0 `PHOTO;ENCODING=b` survives byte for byte.
+DATA_URI = re.compile(r"data:image/(?P<type>[A-Za-z0-9.+-]+);base64,(?P<data>[A-Za-z0-9+/=]+)")
+# Order of the structured values, per RFC 2426.
 N_PARTS = ["FN", "GN", "MN", "PREFIX", "SUFFIX"]
 ADR_PARTS = ["PO", "EXT", "STREET", "LOCALITY", "REGION", "POSTAL", "COUNTRY"]
-TEXT_PROPS = {"FN", "NICKNAME", "ORG", "TITLE", "ROLE", "NOTE", "EMAIL"}
-RAW_PROPS = {"URL", "ANNIVERSARY", "GENDER"}
+# URL is here too: vobject cuts an unescaped value off at its first comma.
+TEXT_PROPS = {"FN", "NICKNAME", "ORG", "TITLE", "ROLE", "NOTE", "EMAIL", "URL"}
+RAW_PROPS = {"BDAY", "ANNIVERSARY", "GENDER"}
 E164 = re.compile(r"\+[1-9][0-9]{6,14}")
 KEY = re.compile(r"(?P<name>[A-Z][A-Z0-9-]*)(?:\[(?P<bracket>[^\]]*)\])?(?:\.(?P<part>[A-Z]+))?")
 
@@ -123,11 +128,16 @@ def vcard(meta):
             raw = scalar(parts[None], name)
             if name == "TEL":
                 value = phone(raw)
-            elif name == "BDAY":
-                value = raw.replace("-", "") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw) else raw
             elif name == "PHOTO":
-                # The plugin unfolds long values with spaces; a data URI has none.
-                value = re.sub(r"\s+", "", raw)
+                # The plugin unfolds long values with spaces; neither form of the value has any.
+                raw = re.sub(r"\s+", "", raw)
+                inline = DATA_URI.fullmatch(raw)
+                if inline:
+                    params = f";ENCODING=b;TYPE={inline['type'].upper()}"
+                    value = inline["data"]
+                else:
+                    params = ";VALUE=uri"
+                    value = raw
             elif name in TEXT_PROPS:
                 value = escape(raw)
             elif name in RAW_PROPS or name.startswith("X-"):
@@ -137,7 +147,10 @@ def vcard(meta):
         if value.strip(";"):
             lines.append(f"{name}{params}:{value}")
 
-    body = ["BEGIN:VCARD", "VERSION:4.0", f"UID:{uid}", *sorted(lines), "END:VCARD"]
+    if ("N", None) not in instances:
+        # vCard 3.0 requires N; a note with only a display name gets it as the given name.
+        lines.append("N:;" + escape(scalar(meta["FN"], "FN")) + ";;;")
+    body = ["BEGIN:VCARD", "VERSION:3.0", f"UID:{uid}", *sorted(lines), "END:VCARD"]
     return uid, "".join(fold(line) + "\r\n" for line in body)
 
 
