@@ -7,6 +7,7 @@ Two NixOS machines and the few configs that live outside Nix.
 | `nixos/` | The NixOS flake: system and Home Manager config for both hosts, the niri config and its scripts |
 | `qs/` | The Quickshell desktop shell (bar, control center, launcher), its own flake; see `qs/README.md` |
 | `ghostty/`, `yazi/` | Plain config, linked into `~/.config` with GNU stow |
+| `RESTORE.md` | What is backed up, and how to get it back after losing a machine |
 
 ## NixOS
 
