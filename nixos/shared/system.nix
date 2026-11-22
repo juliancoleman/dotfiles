@@ -109,10 +109,10 @@
   };
   security.pki.certificateFiles = [ ../hosts/macbook/home-ca.crt ];
 
-  # ── Vault sync ──
-  # Syncthing keeps ~/obsidian-vault the same on every machine. It stays on the home network: no public
-  # discovery servers, relays or port mapping. Devices and folders are paired in the GUI
-  # (http://127.0.0.1:8384) and kept as paired.
+  # ── Vault and game-save sync ──
+  # Syncthing keeps ~/obsidian-vault and ~/game-saves the same on every machine. It stays on the home
+  # network: no public discovery servers, relays or port mapping. Devices and folders are paired in the
+  # GUI (http://127.0.0.1:8384) and kept as paired.
   services.syncthing = {
     enable = true;
     user = "julian";
@@ -128,6 +128,29 @@
       urAccepted = -1;
       crashReportingEnabled = false;
     };
+  };
+
+  # ── NAS ──
+  # The drive on the router, mounted when something looks into /mnt/nas. Its login is not in the repo:
+  # /var/lib/secrets/nas.credentials holds two lines, username=… and password=…, mode 600.
+  systemd.tmpfiles.settings."10-secrets"."/var/lib/secrets".d = { mode = "0751"; user = "root"; group = "root"; };
+  fileSystems."/mnt/nas" = {
+    device = "//192.168.0.1/H";
+    fsType = "cifs";
+    options = [
+      "credentials=/var/lib/secrets/nas.credentials"
+      # The router's file server speaks SMB 2.0 and nothing newer; the kernel's default asks for 2.1+.
+      "vers=2.0"
+      "noauto"
+      "nofail"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=10min"
+      "x-systemd.mount-timeout=20s"
+      "uid=julian"
+      "gid=users"
+      "file_mode=0600"
+      "dir_mode=0700"
+    ];
   };
 
   # ── Fonts ──

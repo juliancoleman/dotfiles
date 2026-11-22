@@ -18,7 +18,8 @@ let
   exportPython = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
   owned = { user = "radicale"; group = "radicale"; };
 
-  nasAddress = "192.168.0.1";
+  # The NAS itself is mounted at /mnt/nas by shared/system.nix; this is its address, for reachability checks.
+  nasAddress = builtins.elemAt (lib.splitString "/" config.fileSystems."/mnt/nas".device) 2;
   homeSecret = pkgs.writeShellApplication {
     name = "home-secret";
     runtimeInputs = [ pkgs.mkpasswd ];
@@ -49,7 +50,6 @@ in
   };
 
   systemd.tmpfiles.settings."10-home-services" = {
-    "/var/lib/secrets".d = { mode = "0751"; user = "root"; group = "root"; };
     # Empty until filled in: nobody can log in, and Radicale still starts.
     "/var/lib/secrets/radicale.htpasswd".f = { mode = "0640"; user = "root"; group = "radicale"; };
 
@@ -165,26 +165,6 @@ in
   # ── Backup to the NAS ──
   environment.systemPackages = [ homeSecret ];
 
-  # The drive on the router, mounted when something looks into /mnt/nas.
-  fileSystems."/mnt/nas" = {
-    device = "//${nasAddress}/H";
-    fsType = "cifs";
-    options = [
-      "credentials=/var/lib/secrets/nas.credentials"
-      # The router's file server speaks SMB 2.0 and nothing newer; the kernel's default asks for 2.1+.
-      "vers=2.0"
-      "noauto"
-      "nofail"
-      "x-systemd.automount"
-      "x-systemd.idle-timeout=10min"
-      "x-systemd.mount-timeout=20s"
-      "uid=julian"
-      "gid=users"
-      "file_mode=0600"
-      "dir_mode=0700"
-    ];
-  };
-
   # Encrypted before it leaves this machine; the NAS only ever holds the repository.
   services.restic.backups.nas = {
     repository = "/mnt/nas/backups/${config.networking.hostName}";
@@ -194,6 +174,8 @@ in
       "/var/lib/radicale"
       tlsDir
       "/home/julian/obsidian-vault"
+      # PCSX2 memory cards and other emulator saves, which Syncthing brings here from the desktop.
+      "/home/julian/game-saves"
       "/home/julian/.config/syncthing/config.xml"
       "/home/julian/.config/syncthing/cert.pem"
       "/home/julian/.config/syncthing/key.pem"
