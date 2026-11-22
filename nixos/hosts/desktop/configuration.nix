@@ -11,6 +11,7 @@ in
   imports = [
     ./hardware-configuration.nix
     ./steam-mount.nix
+    ./photos.nix
     ../../shared/system.nix
   ];
 
