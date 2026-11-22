@@ -1,8 +1,11 @@
 # Home services hosted on this machine: contacts and calendar (Radicale) behind TLS (Caddy),
-# the vault → phone address book exporter, and Syncthing for the vault itself.
+# the vault → phone address book exporter, Syncthing for the vault itself, and a nightly backup
+# of the service data to the NAS.
 #
-# Secrets stay out of the repo. One file has to be filled in by hand:
-#   /var/lib/secrets/radicale.htpasswd     sudo htpasswd -B /var/lib/secrets/radicale.htpasswd julian
+# Secrets stay out of the repo, in /var/lib/secrets:
+#   radicale.htpasswd   home-secret radicale
+#   restic-password     home-secret backup
+#   nas.credentials     two lines by hand: username=…  password=…
 { config, lib, pkgs, ... }:
 let
   site = "${config.networking.hostName}.local";
@@ -14,6 +17,13 @@ let
 
   exportPython = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
   owned = { user = "radicale"; group = "radicale"; };
+
+  nasAddress = "192.168.0.1";
+  homeSecret = pkgs.writeShellApplication {
+    name = "home-secret";
+    runtimeInputs = [ pkgs.mkpasswd ];
+    text = builtins.replaceStrings [ "@davUser@" ] [ davUser ] (builtins.readFile ./home-secret.sh);
+  };
 in
 {
   # ── Contacts + calendar ──
@@ -162,5 +172,56 @@ in
     openDefaultPorts = true;
     overrideDevices = false;
     overrideFolders = false;
+  };
+
+  # ── Backup to the NAS ──
+  environment.systemPackages = [ homeSecret ];
+
+  # The drive on the router, mounted when something looks into /mnt/nas.
+  fileSystems."/mnt/nas" = {
+    device = "//${nasAddress}/H";
+    fsType = "cifs";
+    options = [
+      "credentials=/var/lib/secrets/nas.credentials"
+      # The router's file server speaks SMB 2.0 and nothing newer; the kernel's default asks for 2.1+.
+      "vers=2.0"
+      "noauto"
+      "nofail"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=10min"
+      "x-systemd.mount-timeout=20s"
+      "uid=julian"
+      "gid=users"
+      "file_mode=0600"
+      "dir_mode=0700"
+    ];
+  };
+
+  # Encrypted before it leaves this machine; the NAS only ever holds the repository.
+  services.restic.backups.nas = {
+    repository = "/mnt/nas/backups/${config.networking.hostName}";
+    passwordFile = "/var/lib/secrets/restic-password";
+    initialize = true;
+    paths = [
+      "/var/lib/radicale"
+      tlsDir
+      "/home/julian/obsidian-vault"
+      "/home/julian/.config/syncthing/config.xml"
+      "/home/julian/.config/syncthing/cert.pem"
+      "/home/julian/.config/syncthing/key.pem"
+    ];
+    pruneOpts = [ "--keep-daily 14" "--keep-weekly 8" "--keep-monthly 12" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "20min";
+    };
+  };
+  systemd.services.restic-backups-nas = {
+    # Skipped, not failed, until `home-secret backup` has been run.
+    unitConfig.ConditionFileNotEmpty = "/var/lib/secrets/restic-password";
+    # Skipped, not failed, away from home.
+    serviceConfig.ExecCondition =
+      "${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c 'exec 3<>/dev/tcp/${nasAddress}/445'";
   };
 }
