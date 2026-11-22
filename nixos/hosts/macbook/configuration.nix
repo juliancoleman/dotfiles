@@ -5,7 +5,6 @@
     ./hardware-configuration.nix
     inputs.apple-silicon.nixosModules.apple-silicon-support
     ../../shared/system.nix
-    ./encrypt-root.nix
     ./services.nix
   ];
 
@@ -13,10 +12,14 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
-  # ── Disk encryption (transitional) ──
-  # Offers to encrypt the root partition in place at boot and unlocks it afterwards. Once the disk is
-  # encrypted this becomes `boot.initrd.luks.devices.cryptroot` and encrypt-root.nix goes away.
-  boot.initrd.encryptRoot.device = "/dev/disk/by-partuuid/6780e661-c154-4ae6-9e5a-c0ecabade201";
+  # ── Disk encryption ──
+  # The root partition is LUKS2; the passphrase is asked for in the initrd.
+  boot.initrd.luks.devices.cryptroot = {
+    device = "/dev/disk/by-partuuid/6780e661-c154-4ae6-9e5a-c0ecabade201";
+    allowDiscards = true;
+  };
+  # The root filesystem appears only once the passphrase is typed; do not give up on it after 90 s.
+  boot.initrd.systemd.settings.Manager.DefaultDeviceTimeoutSec = "infinity";
 
   # The Asahi GPU driver needs a few seconds after boot before a compositor can take the DRM device;
   # the greeter waits them out.
