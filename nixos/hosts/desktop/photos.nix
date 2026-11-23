@@ -36,8 +36,38 @@ in
       hashVerificationEnabled = true;
       template = "{{y}}/{{y}}-{{MM}}/{{filename}}";
     };
+    # Two dumps land on days this machine is awake at 2:00 (Immich's own, and the timer below).
+    settings.backup.database.keepLastAmount = 30;
   };
 
   # Without the NAS there is no library; do not start against an empty mount point.
   systemd.services.immich-server.unitConfig.RequiresMountsFor = [ media ];
+
+  # Immich dumps its database to Photos/backups on the NAS at 2:00, but only if this machine is awake
+  # then. This asks it for the same dump once a day and catches up after sleep.
+  systemd.services.immich-database-backup = {
+    description = "Ask Immich for a database dump";
+    after = [ "immich-server.service" ];
+    requires = [ "immich-server.service" ];
+    # Skipped until an API key has been saved.
+    unitConfig.ConditionFileNotEmpty = "/var/lib/secrets/immich-api-key";
+    serviceConfig = {
+      Type = "oneshot";
+      LoadCredential = "key:/var/lib/secrets/immich-api-key";
+    };
+    script = ''
+      ${pkgs.curl}/bin/curl --fail --silent --show-error -X POST \
+        -H "x-api-key: $(tr -d '\n' < "$CREDENTIALS_DIRECTORY/key")" \
+        -H 'Content-Type: application/json' -d '{"name":"backup-database"}' \
+        http://127.0.0.1:${toString config.services.immich.port}/api/jobs
+    '';
+  };
+  systemd.timers.immich-database-backup = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "10min";
+    };
+  };
 }
