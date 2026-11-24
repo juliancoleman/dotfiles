@@ -12,6 +12,7 @@ Rules:
 """
 
 import argparse
+import datetime
 import fcntl
 import os
 import re
@@ -90,6 +91,11 @@ def phone(value):
 
 
 def scalar(value, key):
+    # YAML reads an unquoted `BDAY: 1990-05-01` as a date and a ZIP code as a number.
+    if isinstance(value, (datetime.date, datetime.datetime)):
+        return value.isoformat()
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
     if not isinstance(value, str):
         raise Rejected(f"{key} is not a plain value")
     return value.strip()
