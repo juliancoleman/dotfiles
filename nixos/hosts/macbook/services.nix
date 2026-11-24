@@ -25,6 +25,27 @@ let
     runtimeInputs = [ pkgs.mkpasswd ];
     text = builtins.replaceStrings [ "@davUser@" ] [ davUser ] (builtins.readFile ./home-secret.sh);
   };
+  homePage = pkgs.writeTextDir "index.html" ''
+    <!doctype html>
+    <html lang="en">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 3rem auto; padding: 0 1rem; }
+      a { display: block; padding: .6rem 0; font-size: 1.15rem; }
+      p { color: #666; margin: 0 0 1rem; }
+      @media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } a { color: #8ab4f8; } p { color: #999; } }
+    </style>
+    <h1>Home</h1>
+    <a href="${config.services.immich.settings.server.externalDomain}/">Photos</a>
+    <p>Immich. The phone app uses this same address.</p>
+    <a href="/.web/">Calendars and address books</a>
+    <p>Radicale's own page, for creating or removing them. Events are edited in a calendar app.</p>
+    <a href="http://127.0.0.1:8384/">Syncthing on this device</a>
+    <p>Each device has its own; this link opens the one you are sitting at.</p>
+    </html>
+  '';
 in
 {
   # ── Contacts + calendar ──
@@ -143,11 +164,24 @@ in
     '';
   };
 
+  # One address to remember: the front page links to everything served here. Only a browser's plain
+  # request for "/" gets it; calendar and contact clients talk to Radicale as before.
   services.caddy = {
     enable = true;
     virtualHosts.${site}.extraConfig = ''
       tls ${tlsDir}/server.crt ${tlsDir}/server.key
-      reverse_proxy 127.0.0.1:5232
+      @front {
+        method GET
+        path /
+      }
+      handle @front {
+        root * ${homePage}
+        rewrite * /index.html
+        file_server
+      }
+      handle {
+        reverse_proxy 127.0.0.1:5232
+      }
     '';
   };
   networking.firewall.allowedTCPPorts = [ 443 ];

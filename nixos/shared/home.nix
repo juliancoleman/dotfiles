@@ -4,6 +4,10 @@ let
   # The session's helper scripts, on PATH under the names niri/config.kdl binds.
   script = name: pkgs.writeScriptBin "niri-${name}" (builtins.readFile (../niri + "/${name}.sh"));
   lock = script "lock";
+  # The machine that hosts the home services, and its one-site certificate authority.
+  server = "macbook-pro.local";
+  homeCa = ../hosts/macbook/home-ca.crt;
+  open = "${pkgs.xdg-utils}/bin/xdg-open";
 in
 {
   home.username = "julian";
@@ -133,6 +137,28 @@ in
     (script "screenshot-region")
     (script "record-toggle")
   ];
+  # ── Home services ──────────────────────────────────────────────
+  # In the launcher by name, so no address or port has to be remembered.
+  xdg.desktopEntries = {
+    home-photos = {
+      name = "Photos";
+      genericName = "Immich photo library";
+      exec = "${open} https://${server}:8443/";
+      icon = "camera-photo";
+    };
+    home-services = {
+      name = "Home services";
+      genericName = "Photos, calendars, contacts";
+      exec = "${open} https://${server}/";
+      icon = "network-server";
+    };
+  };
+  # Brave keeps its own list of trusted authorities and ignores the system's, so the server's goes in too.
+  home.activation.trustHomeServer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    db="$HOME/.pki/nssdb"
+    [ -f "$db/cert9.db" ] || { mkdir -p "$db"; ${pkgs.nss.tools}/bin/certutil -d "sql:$db" -N --empty-password; }
+    ${pkgs.nss.tools}/bin/certutil -d "sql:$db" -A -t "C,," -n "Home server" -i ${homeCa}
+  '';
   # ── Session variables & paths ──────────────────────────────────
   home.sessionVariables = {
     XDG_CONFIG_HOME = "$HOME/.config";
