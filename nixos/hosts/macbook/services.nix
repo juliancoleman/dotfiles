@@ -190,8 +190,14 @@ in
   systemd.services.restic-backups-nas = {
     # Skipped, not failed, until `home-secret backup` has been run.
     unitConfig.ConditionFileNotEmpty = "/var/lib/secrets/restic-password";
-    # Skipped, not failed, away from home.
-    serviceConfig.ExecCondition =
-      "${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c 'exec 3<>/dev/tcp/${nasAddress}/445'";
+    # Skipped, not failed, away from home. The timer catches up at the instant of waking, seconds before
+    # Wi-Fi is back, so the NAS gets 90 s to answer before the run is given up for the day.
+    serviceConfig.ExecCondition = pkgs.writeShellScript "nas-reachable" ''
+      for attempt in {1..18}; do
+        ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c 'exec 3<>/dev/tcp/${nasAddress}/445' 2>/dev/null && exit 0
+        ${pkgs.coreutils}/bin/sleep 5
+      done
+      exit 1
+    '';
   };
 }
