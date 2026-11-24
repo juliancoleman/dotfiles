@@ -40,6 +40,21 @@ in
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
+  # The driver never returns niri's freed buffers to the VRAM pool: over days niri grows from ~20 MiB to
+  # several GiB, until Xwayland cannot allocate a buffer and X11 games freeze on their last frame. NVIDIA
+  # ships this setting for Hyprland, kwin, mutter and wlroots, but not for niri.
+  # https://github.com/niri-wm/niri/wiki/Nvidia
+  environment.etc."nvidia/nvidia-application-profiles-rc.d/50-niri-vram.json".text = builtins.toJSON {
+    rules = [{
+      pattern = { feature = "procname"; matches = "niri"; };
+      profile = "Limit Free Buffer Pool On Wayland Compositors";
+    }];
+    profiles = [{
+      name = "Limit Free Buffer Pool On Wayland Compositors";
+      settings = [{ key = "GLVidHeapReuseRatio"; value = 0; }];
+    }];
+  };
+
   # Steam and the WhatsApp launcher below are X11 clients; niri starts xwayland-satellite for them when
   # it finds it on PATH.
   programs.xwayland.enable = true;
