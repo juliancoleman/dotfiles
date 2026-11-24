@@ -7,10 +7,11 @@ import "../Settings"
 import "../Status"
 
 // Super+Space: the bar's housing (`from`) grows into a search over applications, the home folder's files,
-// and settings, shown as a list, large icons, or small icons. "@" narrows to applications, "/" to files, and
-// ">" to settings; choosing a setting opens the control center at its section. Without a prefix, apps come
-// first, then files, then settings. Math answers above them all, and Enter copies it. While files are among
-// the results, a pane beside them previews the selection.
+// settings, and the photo library, shown as a list, large icons, or small icons. "@" narrows to applications,
+// "/" to files and photos, and ">" to settings; choosing a setting opens the control center at its section.
+// Without a prefix, apps come first, then files, then settings, then photos once the query reads as a
+// description. Math answers above them all, and Enter copies it. While files or photos are among the results,
+// a pane beside them previews the selection.
 Item {
     id: root
 
@@ -27,7 +28,7 @@ Item {
     readonly property real previewW: Theme.px(270)
     // The preview opens away from a side edge so the list stays where it was.
     readonly property bool previewLeft: edge === "right"
-    readonly property bool showPreview: fileResults.length > 0
+    readonly property bool showPreview: fileResults.length > 0 || photoResults.length > 0
     readonly property real maxW: listW + previewW
     property real openW: listW + (showPreview ? previewW : 0)
     Behavior on openW {
@@ -67,9 +68,16 @@ Item {
     // Mixed in once something is typed; an empty search would list every setting.
     readonly property var settingResults: mode === "settings" || mode === "all" && !calc && term.trim() !== ""
         ? SettingsModel.search(term) : []
+    // Photos answer descriptions: asked for under "/", and without a prefix once the query runs to several
+    // words or names someone in the library, so a one-word app search stays just that.
+    readonly property string photoTerm: !PhotoSearch.enabled ? ""
+        : mode === "files" ? term.trim()
+        : mode === "all" && !calc && PhotoSearch.describes(term) ? term.trim() : ""
+    readonly property var photoResults: photoTerm === "" ? [] : PhotoSearch.results
     readonly property var results: appResults.map(entry => ({ kind: "app", entry: entry }))
         .concat(fileResults.map(file => ({ kind: "file", file: file })))
         .concat(settingResults.map(hit => ({ kind: "setting", section: hit.section, control: hit.control })))
+        .concat(photoResults.map(photo => ({ kind: "photo", photo: photo })))
     readonly property var selected: calcSelected ? null : results[grid.currentIndex] || null
     // A result is selected when it appears, so Enter copies it; arrowing down moves into the apps.
     property bool calcFocused: true
@@ -112,6 +120,8 @@ Item {
             AppSearch.launch(item.entry)
         else if (item.kind === "file")
             Quickshell.execDetached(["xdg-open", item.file.path])
+        else if (item.kind === "photo")
+            PhotoSearch.open(item.photo)
         else
             settingChosen(item.section.id)
     }
@@ -130,6 +140,7 @@ Item {
 
     onQueryChanged: calcFocused = true
     onFileTermChanged: FileSearch.search(fileTerm)
+    onPhotoTermChanged: PhotoSearch.search(photoTerm)
     onResultsChanged: grid.currentIndex = 0
 
     onShownChanged: {
@@ -143,6 +154,7 @@ Item {
         }
         if (shown) {
             view = ClockConfig.launcherView
+            PhotoSearch.warm()
             input.text = ""
             grid.currentIndex = 0
             grid.positionViewAtBeginning()
@@ -497,15 +509,19 @@ Item {
                         readonly property bool isApp: modelData.kind === "app"
                         readonly property bool isSetting: modelData.kind === "setting"
                         readonly property var file: modelData.kind === "file" ? modelData.file : null
+                        readonly property var photo: modelData.kind === "photo" ? modelData.photo : null
+                        // A photo reads by its day, then where it was taken and its file: "6/14/15", "Carmel · DSC_0630.jpg".
                         readonly property string label: isApp ? modelData.entry.name
-                            : isSetting ? I18n.tr(modelData.control.title) : file.name
+                            : isSetting ? I18n.tr(modelData.control.title)
+                            : photo ? PhotoSearch.dayText(photo) || photo.name : file.name
                         // A setting reads where it lives and what it's set to: "Theme · Pill".
                         readonly property string comment: isApp
                             ? (modelData.entry.genericName || modelData.entry.comment)
                             : isSetting ? [I18n.tr(modelData.section.title), SettingsModel.valueLabel(modelData.control)]
                                 .filter(part => part !== "").join(" · ")
+                            : photo ? [photo.place, photo.name].filter(part => part !== "").join(" · ")
                             : file.dir
-                        readonly property bool thumbnail: !!file && FileSearch.kindOf(file) === "image"
+                        readonly property bool thumbnail: !!photo || !!file && FileSearch.kindOf(file) === "image"
                         width: grid.cellWidth
                         height: grid.cellHeight
 
@@ -548,7 +564,7 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 visible: cell.thumbnail
-                                source: cell.thumbnail ? FileSearch.url(cell.file.path) : ""
+                                source: cell.photo ? cell.photo.thumb : cell.thumbnail ? FileSearch.url(cell.file.path) : ""
                                 sourceSize: Qt.size(icon.size * 2, icon.size * 2)
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
@@ -581,7 +597,8 @@ Item {
                                     minimumPixelSize: Theme.px(6)
                                     text: cell.isApp ? cell.label.charAt(0).toUpperCase()
                                         : cell.isSetting ? ""
-                                        : (cell.file.ext || (cell.file.isDir ? "dir" : "file")).slice(0, 4).toUpperCase()
+                                        : cell.file ? (cell.file.ext || (cell.file.isDir ? "dir" : "file")).slice(0, 4).toUpperCase()
+                                        : ""
                                     color: Theme.textPrimary
                                     font.family: Theme.fontFamily
                                     font.pixelSize: parent.width * (cell.isApp ? 0.46 : 0.3)

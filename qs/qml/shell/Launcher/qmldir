@@ -3,5 +3,6 @@ singleton AppSearch 1.0 AppSearch.qml
 singleton Calculator 1.0 Calculator.qml
 singleton FileSearch 1.0 FileSearch.qml
 singleton LauncherState 1.0 LauncherState.qml
+singleton PhotoSearch 1.0 PhotoSearch.qml
 FilePreview 1.0 FilePreview.qml
 LauncherPanel 1.0 LauncherPanel.qml

@@ -14,6 +14,7 @@
   niri,
   pipewire,
   poppler-utils,
+  qt6,
   systemd,
   wl-clipboard,
   xdg-utils,
@@ -36,6 +37,7 @@ stdenvNoCC.mkDerivation {
 
     makeWrapper ${lib.getExe quickshell} "$out/bin/qs-shell" \
       --add-flags "-p $out/share/qs/shell" \
+      --prefix QT_PLUGIN_PATH : ${qt6.qtimageformats}/${qt6.qtbase.qtPluginPrefix} \
       --suffix PATH : ${lib.makeBinPath [ bash coreutils curl fd gnugrep iproute2 matugen networkmanager niri pipewire poppler-utils systemd wl-clipboard xdg-utils meter-helper ]}
 
     runHook postInstall

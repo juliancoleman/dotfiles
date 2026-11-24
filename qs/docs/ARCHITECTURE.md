@@ -44,6 +44,10 @@ Three processes exist:
 - `LauncherState` — open/closed and which output (`screenName`) the launcher is on.
 - `AppSearch` — installed applications ranked against the query; launch counts bias ties.
 - `FileSearch` — home-folder search through `fd`.
+- `PhotoSearch` — an Immich library asked in plain words (`launcher.photos`): people named there narrow the
+  search (`personIds`), the remaining words go to `/api/search/smart`, a name alone to `/api/search/metadata`.
+  Every request is a `curl` that reads the API key from `photos.key` beside the config file
+  (`--variable key@… --expand-header`), so the key is never in the shell's memory or on a command line.
 - `Calculator` — arithmetic parser for typed expressions; never evaluates input as code.
 
 **`Settings`**
@@ -101,6 +105,7 @@ Three processes exist:
 | Launcher open + screen | `LauncherState` | none |
 | Launcher app usage counts | `AppSearch` | `$XDG_CACHE_HOME/qs-launcher.json` (else `~/.cache/`) |
 | File preview renders | `FilePreview` | `$XDG_RUNTIME_DIR/qs-preview/<md5>.png` (else `/tmp`) |
+| Photo thumbnails and previews | `PhotoSearch` | `$XDG_RUNTIME_DIR/qs-photos/<asset id>.webp`/`.jpg` (else `/tmp`); cleared at logout |
 | Weather alert "already notified" keys | `WeatherAlerts` | `$XDG_CACHE_HOME/qs-weather-alerts.json`, atomic writes |
 | Fan lease / manual set | `FanControl` ↔ helper | none; the helper's own state dies with the connection |
 | Location on/off | NixOS oneshots | `/var/lib/qs/location-off` marker, read by `LocationServices` |

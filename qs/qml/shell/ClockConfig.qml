@@ -24,6 +24,8 @@ Singleton {
     property real scale: 1
     // "list", "large", or "small" grid.
     property string launcherView: "large"
+    // The Immich library the launcher searches for photos, as "http://host:port"; empty for none.
+    property string photosUrl: ""
     property int duration: 250
     property real springOvershoot: 2
     property string batteryPercentage: "low"
@@ -139,6 +141,8 @@ Singleton {
         shadow = pick("bar.shadow", bar.shadow, flag, true, shadow)
         scale = Math.round(pick("bar.scale", bar.scale, within(0.75, 2), 1, scale) * 20) / 20
         launcherView = pick("launcher.view", launcher.view, oneOf("list", "large", "small"), "large", launcherView)
+        photosUrl = pick("launcher.photos", launcher.photos,
+                         raw => typeof raw === "string" && /^(https?:\/\/[^\s\/]+)?$/.test(raw), "", photosUrl)
         use24Hour = pick("clock.hourCycle", clock.hourCycle, oneOf(12, 24), 24, use24Hour ? 24 : 12) === 24
         showPeriod = pick("clock.meridiem", clock.meridiem, oneOf("shown", "hidden"), "shown",
                           showPeriod ? "shown" : "hidden") === "shown"

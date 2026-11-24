@@ -144,6 +144,7 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | `clock.duration` | number 50–2000 | `250` | Animation duration in ms (`Theme.motionDuration`) |
 | `clock.springOvershoot` | number 0–4 | `2` | Overshoot for `spring` motion |
 | `launcher.view` | `list` `large` `small` | `large` | Launcher result layout (written by Settings, absent from `default.json`) |
+| `launcher.photos` | `""` or `http(s)://host[:port]` | `""` | Immich library the launcher searches for photos (set by hand; the API key goes in `photos.key` beside this file) |
 | `status.batteryPercentage` | `always` `low` | `low` | When the battery percentage is shown |
 | `notifications.doNotDisturb` | bool | `false` | No peek card, no badge; notifications still queue |
 | `weather.enabled` | bool | `true` | Show the weather circle |

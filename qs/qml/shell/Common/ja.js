@@ -151,6 +151,7 @@ var strings = {
     "Type to search your home folder": "入力してホームフォルダを検索",
     "No matches": "一致する項目はありません",
     "Folder": "フォルダ",
+    "Video": "動画",
 
     // Authentication
     "Checking…": "確認中…",
