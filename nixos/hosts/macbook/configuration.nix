@@ -6,6 +6,7 @@
     inputs.apple-silicon.nixosModules.apple-silicon-support
     ../../shared/system.nix
     ./services.nix
+    ./photos.nix
   ];
 
   # ── Boot (m1n1 and U-Boot hand over to systemd-boot; U-Boot's EFI has no writable variables) ──
