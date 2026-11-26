@@ -193,7 +193,9 @@
     element-desktop
     bitwarden-desktop
     # Productivity
-    obsidian
+    # Electron does not know niri as a desktop and would keep Obsidian's keychain in plain text; this
+    # names the keyring that is running (the same flag Signal gets).
+    (obsidian.override { commandLineArgs = "--password-store=gnome-libsecret"; })
     openscad
     # Utilities
     wl-clipboard
