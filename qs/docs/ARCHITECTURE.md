@@ -41,7 +41,9 @@ Three processes exist:
 - `WiredSource` — NetworkManager global switch and default route via `nmcli`/`ip`.
 - `RunningApps` — the user's apps and services for the control center's Running page, polled while it or
   the grid shows. One `sh` pass over `/proc` (builtins only) lists this user's processes with parent,
-  session id and cgroup; `niri msg --json windows` and `systemctl --user list-units` complete it. Scoped
+  session id and cgroup; `niri msg --json windows` and one `systemctl --user show` over the running services
+  complete it (a service is listed only if its unit file is neither under `/etc` or the store nor a link
+  the home configuration installed). Scoped
   processes are merged into apps by union: same scope (except the shell's own, which also holds what the
   launcher started before it used scopes), same session (except the one niri shares with everything it
   spawns), and parent to child. The group holding the shell is left out. X11 windows, which niri reports

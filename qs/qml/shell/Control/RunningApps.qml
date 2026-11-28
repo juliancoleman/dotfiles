@@ -6,10 +6,11 @@ import Quickshell.Io
 import "../Secure"
 
 // What the user has running: apps (the processes in the session's scopes, grouped into whole apps) and
-// the user's services. An app is more than a process tree: a front end may exit and leave helpers that
-// were re-parented, or moved into a scope of their own, and those block the next launch. Processes are
-// tied together by what survives that: the scope they were started in, their session id, and parentage.
-// Quitting signals every process of the app. Read from /proc and niri while `watchers > 0`.
+// the services someone started by hand. An app is more than a process tree: a front end may exit and
+// leave helpers that were re-parented, or moved into a scope of their own, and those block the next
+// launch. Processes are tied together by what survives that: the scope they were started in, their
+// session id, and parentage. Quitting signals every process of the app. Read from /proc and niri while
+// `watchers > 0`.
 Singleton {
     id: root
 
@@ -17,12 +18,12 @@ Singleton {
     readonly property bool active: watchers > 0
     // [{ key, name, icon, pids, units, windows, windowIds }], apps with a window first.
     property var apps: []
-    // [{ unit, name, about, core }]; `core` services carry the session and are shown without actions.
+    // [{ unit, name, about }]: running services that are not part of the desktop itself.
     property var services: []
     property string signature: ""
 
     // Every process of this user under the user manager, with its parent, session and cgroup; the shell's
-    // own pid; niri's windows; the running services' descriptions. Builtins only, so a poll forks twice.
+    // own pid; niri's windows; the running services with where each unit file lives.
     readonly property string collector: "printf '@@shell %s\\n' \"$PPID\"\n"
         + "for d in /proc/[0-9]*; do\n"
         + "  [ -O \"$d\" ] || continue\n"
@@ -34,7 +35,11 @@ Singleton {
         + "  printf '%s\\t%s\\t%s\\t%s\\t%s\\n' \"${d#/proc/}\" \"$2\" \"$4\" \"${cg#*user@*.service/}\" \"$comm\"\n"
         + "done\n"
         + "printf '@@windows\\n'; niri msg --json windows 2>/dev/null; printf '\\n@@services\\n'\n"
-        + "systemctl --user list-units --type=service --state=running --plain --no-legend --no-pager 2>/dev/null\n"
+        + "systemctl --user show -p Id -p FragmentPath -p Description $(systemctl --user list-units --type=service"
+        + " --state=running --plain --no-legend --no-pager 2>/dev/null | while read -r unit rest; do"
+        + " printf '%s ' \"$unit\"; done) 2>/dev/null\n"
+        // Unit files the home configuration installed are links into the store; ones written by hand are files.
+        + "for f in \"$HOME\"/.config/systemd/user/*.service; do [ -L \"$f\" ] && printf 'Linked=%s\\n' \"$f\"; done\n"
 
     // "app-niri-qs\x2dshell-1790.scope" -> "app-niri-qs-shell-1790.scope"
     function plainName(unit) {
@@ -73,6 +78,8 @@ Singleton {
         let shellPid = 0
         let windows = []
         const about = {}
+        const linked = []
+        let unit = {}
         let part = "procs"
         let windowJson = ""
         for (const line of text.split("\n")) {
@@ -85,9 +92,19 @@ Singleton {
             } else if (part === "windows") {
                 windowJson += line
             } else if (part === "services") {
-                const hit = line.trim().match(/^(\S+\.service)\s+\S+\s+\S+\s+\S+\s+(.*)$/)
-                if (hit)
-                    about[hit[1]] = hit[2]
+                // Blocks of Key=Value, one per unit, with a blank line between them.
+                const at = line.indexOf("=")
+                if (line.startsWith("Linked=")) {
+                    linked.push(line.slice(7))
+                } else if (at > 0) {
+                    unit[line.slice(0, at)] = line.slice(at + 1)
+                    if (unit.Id !== undefined && unit.FragmentPath !== undefined && unit.Description !== undefined) {
+                        about[unit.Id] = { path: unit.FragmentPath, text: unit.Description }
+                        unit = {}
+                    }
+                } else {
+                    unit = {}
+                }
             } else if (line !== "") {
                 const [pid, ppid, sid, cgroup, comm] = line.split("\t")
                 const parts = cgroup.split("/")
@@ -100,7 +117,7 @@ Singleton {
         } catch (problem) {
             windows = []
         }
-        return { procs: procs, shellPid: shellPid, windows: windows, about: about }
+        return { procs: procs, shellPid: shellPid, windows: windows, about: about, linked: linked }
     }
 
     // Groups the scoped processes into apps. `seen` is parse()'s result. Only scopes inside a slice count:
@@ -219,17 +236,20 @@ Singleton {
         }).sort((a, b) => (b.windows > 0) - (a.windows > 0) || a.name.localeCompare(b.name))
     }
 
+    // The desktop's own services (the compositor, audio, portals, the wallpaper, the idle daemon) come
+    // from the system's or the home's configuration and return at the next login; stopping one only breaks
+    // the session. What is left is what was started by hand: a transient unit, or one the user wrote.
+    function configured(path, linked) {
+        return path.startsWith("/etc/") || path.startsWith("/nix/store/") || path.startsWith("/run/current-system/")
+            || linked.includes(path)
+    }
+
     function serviceList(seen) {
-        const units = {}
-        for (const p of seen.procs)
-            if (p.unit.endsWith(".service"))
-                units[p.unit] = p.slice
-        return Object.keys(units).map(unit => ({
+        return Object.keys(seen.about).filter(unit => !configured(seen.about[unit].path, seen.linked)).map(unit => ({
             unit: unit,
             name: root.plainName(unit.replace(/\.service$/, "")),
-            about: seen.about[unit] || "",
-            core: units[unit] === "session.slice"
-        })).sort((a, b) => a.core - b.core || a.name.localeCompare(b.name))
+            about: seen.about[unit].text
+        })).sort((a, b) => a.name.localeCompare(b.name))
     }
 
     function take(text) {

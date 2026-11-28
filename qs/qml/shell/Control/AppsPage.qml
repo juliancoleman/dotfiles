@@ -1,9 +1,10 @@
 import QtQuick
 import "../Common"
 
-// What is running, as a "Force Quit" list: the apps, then the user's services. An app with no window
-// says so, since that is the leftover that keeps a relaunch from showing anything. Quitting asks every
-// process of the app to end; force quitting ends them, and takes a second click on the same row.
+// What is running, as a "Force Quit" list: the apps, then any service started by hand. An app with no
+// window says so, since that is the leftover that keeps a relaunch from showing anything. Quitting asks
+// every process of the app to end; force quitting ends them, and takes a second click on the same row.
+// The desktop's own services are not listed: stopping the wallpaper or the compositor is nobody's wish.
 Item {
     id: page
 
@@ -128,11 +129,9 @@ Item {
                 width: list.width
                 motion: page.motion
                 title: modelData.about || modelData.name
-                subtitle: isArmed ? I18n.tr("Click again to force stop")
-                    : modelData.core ? modelData.name + " · " + I18n.tr("Part of the session") : modelData.name
+                subtitle: isArmed ? I18n.tr("Click again to force stop") : modelData.name
                 current: isArmed
-                // Services the session itself runs on are listed, not offered for stopping.
-                actions: modelData.core ? [] : [
+                actions: [
                     { id: "stop", icon: "close", label: I18n.tr("Stop") },
                     { id: "force", icon: "power-off", label: I18n.tr("Force stop") }
                 ]

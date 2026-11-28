@@ -24,12 +24,16 @@
   };
 
   # ── XDG Desktop Portal ──
+  # File dialogs come from the GTK portal and screen capture from the wlroots one. The niri module also
+  # installs the GNOME portal, which nothing here is routed to, so the list is stated in full: these two,
+  # and the keyring's, which serves apps their secrets.
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [
+    extraPortals = lib.mkForce (with pkgs; [
       xdg-desktop-portal-gtk
       xdg-desktop-portal-wlr
-    ];
+      gnome-keyring
+    ]);
     config = {
       niri = {
         default = lib.mkForce [ "gtk" "wlr" ];

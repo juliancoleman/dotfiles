@@ -147,7 +147,6 @@ var strings = {
     "Stop": "停止",
     "Force stop": "強制停止",
     "Click again to force stop": "もう一度クリックで強制停止",
-    "Part of the session": "セッションの一部",
 
     // Notifications
     "Notifications": "通知",

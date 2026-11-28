@@ -164,7 +164,7 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 ## Running apps
 
 Control center → **Running** lists what the user has running, as a Force Quit list does: apps first, then
-the user's services. It is not a process monitor; it answers "what is open, and what is still running after
+any service started by hand. It is not a process monitor; it answers "what is open, and what is still running after
 its window went away".
 
 - An **app** is every process that belongs together, found by what survives a front end exiting: the
@@ -177,8 +177,10 @@ its window went away".
   `app-qs-<desktop id>-<random>.scope`. Apps started before that (in the shell's own scope) are still
   grouped, by session; their detached helpers, such as crash reporters, can show up as rows of their own
   until the app is next started.
-- **Services** are the user's running `*.service` units. Those in `session.slice` (the compositor, the
-  message bus, audio) are listed without actions; the rest can be stopped or force stopped.
+- **Services** are the user's running `*.service` units that are not part of the desktop: transient units
+  (`systemd-run`) and unit files written by hand. Units from the system or installed by the home
+  configuration (the compositor, audio, portals, the wallpaper) are left out, since stopping one only
+  breaks the session until the next login. Listed services can be stopped or force stopped.
 - Clicking an app's row focuses its first window.
 
 ## Fan control
