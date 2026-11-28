@@ -14,6 +14,8 @@ import "../Status"
 // in exactly one place; `set` writes a preference that the model then saves, unless the control is a
 // `system` switch that lives outside the config file. Titles and labels stay English sources that the views
 // pass through I18n.tr, so search can match either language and a locale switch doesn't rebuild every page.
+// A section that names a `page` lives on that page of the control center and nowhere else: it is not listed
+// under Settings, and finding one of its controls in the launcher opens that page.
 Singleton {
     id: root
 
@@ -193,6 +195,7 @@ Singleton {
         },
         {
             id: "display",
+            page: "display",
             icon: "monitor",
             title: "Display",
             controls: [
@@ -346,6 +349,9 @@ Singleton {
         }
         return byKey
     }
+
+    // The sections Settings lists and holds a page for.
+    readonly property var listed: sections.filter(entry => !entry.page)
 
     // A section none of whose controls apply right now isn't listed.
     function sectionShown(entry) {

@@ -48,7 +48,7 @@ Item {
             }
         }
 
-        // Settings → Display's own control, so the key is defined once.
+        // Defined with the other settings, so the launcher finds it; this page is the one place it shows.
         SettingControl {
             width: parent.width
             motion: page.motion

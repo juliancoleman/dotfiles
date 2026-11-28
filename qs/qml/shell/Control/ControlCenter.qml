@@ -98,10 +98,12 @@ Item {
             close()
     }
 
-    // Opens straight onto settings, or one section of it, as the launcher does. The page is picked before
-    // opening so the height snaps rather than growing from the grid's.
+    // Opens straight onto settings, or onto where one section lives (its own page, or one under settings),
+    // as the launcher does. The page is picked before opening so the height snaps rather than growing from
+    // the grid's.
     function openSettings(section) {
-        page = section ? settingsPrefix + section : "settings"
+        const entry = section ? SettingsModel.section(section) : null
+        page = !section ? "settings" : entry && entry.page ? entry.page : settingsPrefix + section
         open()
     }
 

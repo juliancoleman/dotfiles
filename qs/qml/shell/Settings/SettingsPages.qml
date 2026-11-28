@@ -49,7 +49,7 @@ Item {
                 spacing: 2
 
                 Repeater {
-                    model: SettingsModel.sections
+                    model: SettingsModel.listed
 
                     ListRow {
                         required property var modelData
@@ -68,7 +68,7 @@ Item {
 
     Repeater {
         id: pages
-        model: SettingsModel.sections
+        model: SettingsModel.listed
 
         PageLayer {
             id: page
