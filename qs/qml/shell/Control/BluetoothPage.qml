@@ -233,16 +233,10 @@ Item {
             }
         }
 
-        Text {
+        Note {
             width: parent.width
             visible: page.powered && page.devices.length === 0
-            horizontalAlignment: Text.AlignHCenter
-            topPadding: 8
-            bottomPadding: 10
             text: I18n.tr("No devices found")
-            color: Theme.textSecondary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textLabel
         }
     }
 }

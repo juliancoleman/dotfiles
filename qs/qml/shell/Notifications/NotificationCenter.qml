@@ -341,17 +341,16 @@ Item {
                         font.features: { "tnum": 1 }
                     }
                 }
-                SettingsButton {
+
+                PanelCloseButton {
                     id: closeButton
                     opened: root.openP
                     motion: root.motion
                     visible: !root.closeActionInBadge
-                    icon: "close"
                     label: I18n.tr("Close notifications")
-                    anchors.verticalCenter: parent.verticalCenter
                     // Centered on the badge it replaces, whichever end of the panel that is.
                     readonly property real badgeCenter: root.diameter / 2 - (root.pad + Theme.panelHeaderInset)
-                    x: root.mirrored ? parent.width - badgeCenter - width / 2 : badgeCenter - width / 2
+                    triggerCenter: root.mirrored ? parent.width - badgeCenter : badgeCenter
                     onActivated: root.close()
                 }
 
@@ -365,13 +364,14 @@ Item {
                     Accessible.role: Accessible.Button
                     Accessible.name: I18n.tr("Clear all")
                     Keys.onReturnPressed: NotificationService.clearAll()
+                    Keys.onEnterPressed: NotificationService.clearAll()
                     Keys.onSpacePressed: NotificationService.clearAll()
 
                     Rectangle {
                         anchors.fill: parent
                         radius: Theme.radiusInput
                         color: clearHit.pressed ? Theme.press : clearHit.containsMouse ? Theme.lift : Theme.clear
-                        border.width: clear.activeFocus ? 1 : 0
+                        border.width: clear.activeFocus ? Theme.line : 0
                         border.color: Theme.today
                     }
 
@@ -514,6 +514,7 @@ Item {
                 id: circleHit
                 anchors.fill: parent
                 hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
                 enabled: root.lent || !root.opened
                 Accessible.role: Accessible.Button
                 Accessible.name: root.opened ? I18n.tr("Close notifications") : I18n.tr("Notifications")

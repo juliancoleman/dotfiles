@@ -84,16 +84,10 @@ Item {
             }
         }
 
-        Text {
+        Note {
             width: parent.width
             visible: page.devices.length === 0
-            horizontalAlignment: Text.AlignHCenter
-            topPadding: 8
-            bottomPadding: 10
             text: page.input ? I18n.tr("No input devices") : I18n.tr("No output devices")
-            color: Theme.textSecondary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textLabel
         }
     }
 }

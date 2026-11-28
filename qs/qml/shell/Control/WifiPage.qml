@@ -160,16 +160,10 @@ Item {
             }
         }
 
-        Text {
+        Note {
             width: parent.width
             visible: Networking.wifiEnabled && page.networks.length === 0
-            horizontalAlignment: Text.AlignHCenter
-            topPadding: 8
-            bottomPadding: 10
             text: I18n.tr("No networks found")
-            color: Theme.textSecondary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textLabel
         }
     }
 }

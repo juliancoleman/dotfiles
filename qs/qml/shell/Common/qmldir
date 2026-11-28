@@ -8,3 +8,4 @@ Rule 1.0 Rule.qml
 Field 1.0 Field.qml
 singleton Matugen 1.0 Matugen.qml
 SectionHeader 1.0 SectionHeader.qml
+Note 1.0 Note.qml

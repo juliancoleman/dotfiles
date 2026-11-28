@@ -94,16 +94,10 @@ Item {
             }
         }
 
-        Text {
+        Note {
             width: parent.width
             visible: RunningApps.apps.length === 0
-            topPadding: 8
-            bottomPadding: 8
-            horizontalAlignment: Text.AlignHCenter
             text: I18n.tr("Nothing open")
-            color: Theme.textSecondary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textLabel
         }
 
         Item {

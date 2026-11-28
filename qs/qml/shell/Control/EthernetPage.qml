@@ -157,16 +157,10 @@ Item {
             Detail { label: I18n.tr("Hardware"); value: WiredSource.hardwareAddress }
         }
 
-        Text {
+        Note {
             width: parent.width
             visible: !WiredSource.on || WiredSource.address === ""
-            horizontalAlignment: Text.AlignHCenter
-            topPadding: Theme.px(8)
-            bottomPadding: Theme.px(10)
             text: !WiredSource.on ? I18n.tr("Networking is off") : I18n.tr("No cable or no lease")
-            color: Theme.textSecondary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textLabel
         }
     }
 }

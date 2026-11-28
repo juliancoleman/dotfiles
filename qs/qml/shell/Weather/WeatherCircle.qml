@@ -206,6 +206,7 @@ Item {
                 faceBottom: !root.lent && root.circleBottom
                 maxHeight: Math.min(root.maxPanelHeight, root.reserveHeight - 40)
                 closeActionInFace: root.closeActionInFace
+                openProgress: root.openP
                 onCloseRequested: root.close()
             }
         }

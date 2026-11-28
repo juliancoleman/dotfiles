@@ -61,19 +61,18 @@ Item {
     readonly property string settingsSection: page.startsWith(settingsPrefix) ? page.slice(settingsPrefix.length) : ""
     // The DualSense whose lights "bluetooth/dualsense" shows.
     property var dualSenseDevice: null
-    readonly property real pageContent: page === "wifi" ? wifiPage.implicitHeight
-        : page === "ethernet" ? ethernetPage.implicitHeight
-        : page === "bluetooth" ? bluetoothPage.implicitHeight
-        : page === "bluetooth/dualsense" ? dualSensePage.implicitHeight
-        : page === "fans" ? fansPage.implicitHeight
-        : page === "output" ? outputPage.implicitHeight
-        : page === "input" ? inputPage.implicitHeight
-        : page === "power" ? powerPage.implicitHeight
-        : page === "display" ? displayPage.implicitHeight
-        : page === "keyboard" ? keyboardPage.implicitHeight
-        : page === "apps" ? appsPage.implicitHeight
-        : onSettings ? settingsPages.implicitHeight
-        : grid.height
+    // Pages declare themselves below (ControlPage); the one showing supplies the panel's height and title.
+    readonly property var currentPage: {
+        const pages = body.children
+        for (let i = 0; i < pages.length; ++i)
+            if (pages[i] instanceof ControlPage && pages[i].current)
+                return pages[i]
+        return null
+    }
+    readonly property real contentY: circleBottom ? pad : diameter + Theme.panelHeaderGap
+    // Rows of a scrolling page stay within the height the bar reserves for this panel.
+    readonly property real maxPageHeight: reserveHeight - diameter - Theme.panelHeaderGap - pad
+    readonly property real pageContent: currentPage ? currentPage.height : grid.height
     property real shownContent: pageContent
     Behavior on shownContent {
         enabled: root.opened
@@ -84,36 +83,7 @@ Item {
         }
     }
 
-    readonly property string pageTitle: {
-        switch (page) {
-        case "wifi":
-            return I18n.tr("Wi-Fi")
-        case "ethernet":
-            return I18n.tr("Ethernet")
-        case "bluetooth":
-            return I18n.tr("Bluetooth")
-        case "bluetooth/dualsense":
-            return I18n.tr("%1 lights").arg(DualSenseLights.model(dualSenseDevice ? dualSenseDevice.address : ""))
-        case "fans":
-            return I18n.tr("Fans")
-        case "output":
-            return I18n.tr("Output")
-        case "input":
-            return I18n.tr("Input")
-        case "power":
-            return I18n.tr("Power")
-        case "display":
-            return I18n.tr("Display")
-        case "keyboard":
-            return I18n.tr("Keyboard")
-        case "apps":
-            return I18n.tr("Running")
-        case "settings":
-            return I18n.tr("Settings")
-        }
-        const section = SettingsModel.section(settingsSection)
-        return section ? I18n.tr(section.title) : ""
-    }
+    readonly property string pageTitle: currentPage ? currentPage.title : ""
 
     // One level up: a settings section to the section list, a DualSense's lights to Bluetooth, any other page
     // to the grid.
@@ -341,17 +311,15 @@ Item {
                     shown: root.page === ""
                     anchors.fill: parent
 
-                    SettingsButton {
+                    PanelCloseButton {
                         id: closeButton
                         opened: root.openP
                         motion: root.motion
-                        icon: "close"
                         label: I18n.tr("Close control center")
-                        anchors.verticalCenter: parent.verticalCenter
                         visible: !root.closeActionInFace
                         // Centered on the status circle it replaces, whichever end of the panel that is.
                         readonly property real ringCenter: root.diameter / 2 - (root.pad + Theme.panelHeaderInset)
-                        x: root.circleRight ? parent.width - ringCenter - width / 2 : ringCenter - width / 2
+                        triggerCenter: root.circleRight ? parent.width - ringCenter : ringCenter
                         onActivated: root.close()
                     }
 
@@ -438,56 +406,42 @@ Item {
                 }
             }
 
-            readonly property real contentY: root.circleBottom ? root.pad : root.diameter + Theme.panelHeaderGap
-
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "wifi"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: wifiPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "wifi"
+                title: I18n.tr("Wi-Fi")
 
                 WifiPage {
-                    id: wifiPage
                     width: parent.width
                     device: root.wifiDevice
-                    active: root.opened && root.page === "wifi"
+                    active: parent.active
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "ethernet"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: ethernetPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "ethernet"
+                title: I18n.tr("Ethernet")
 
                 EthernetPage {
-                    id: ethernetPage
                     width: parent.width
-                    active: root.opened && root.page === "ethernet"
+                    active: parent.active
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "bluetooth"
+            ControlPage {
+                panel: root
+                name: "bluetooth"
+                title: I18n.tr("Bluetooth")
                 // A DualSense's page goes deeper, so Bluetooth leaves the way the grid does.
                 behind: root.page === "bluetooth/dualsense"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: bluetoothPage.implicitHeight
 
                 BluetoothPage {
-                    id: bluetoothPage
                     width: parent.width
                     adapter: root.adapter
-                    active: root.opened && root.page === "bluetooth"
+                    active: parent.active
                     motion: root.motion
                     onDualSenseRequested: device => {
                         root.dualSenseDevice = device
@@ -496,48 +450,36 @@ Item {
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "bluetooth/dualsense"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: dualSensePage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "bluetooth/dualsense"
+                title: I18n.tr("%1 lights").arg(DualSenseLights.model(root.dualSenseDevice ? root.dualSenseDevice.address : ""))
 
                 DualSensePage {
-                    id: dualSensePage
                     width: parent.width
                     device: root.dualSenseDevice
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "output"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: outputPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "output"
+                title: I18n.tr("Output")
 
                 AudioPage {
-                    id: outputPage
                     width: parent.width
                     source: root.status.output
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "input"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: inputPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "input"
+                title: I18n.tr("Input")
 
                 AudioPage {
-                    id: inputPage
                     width: parent.width
                     input: true
                     source: root.status.input
@@ -545,104 +487,81 @@ Item {
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "fans"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: fansPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "fans"
+                title: I18n.tr("Fans")
 
                 FansPage {
-                    id: fansPage
                     width: parent.width
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "power"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: powerPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "power"
+                title: I18n.tr("Power")
 
                 PowerPage {
-                    id: powerPage
                     width: parent.width
-                    active: root.opened && root.page === "power"
+                    active: parent.active
                     motion: root.motion
                     onActed: root.close()
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "display"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: displayPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "display"
+                title: I18n.tr("Display")
 
                 DisplayPage {
-                    id: displayPage
                     width: parent.width
-                    active: root.opened && root.page === "display"
+                    active: parent.active
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "keyboard"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: keyboardPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "keyboard"
+                title: I18n.tr("Keyboard")
 
                 KeyboardPage {
-                    id: keyboardPage
                     width: parent.width
                     motion: root.motion
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.page === "apps"
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: appsPage.implicitHeight
+            ControlPage {
+                panel: root
+                name: "apps"
+                title: I18n.tr("Running")
 
                 AppsPage {
-                    id: appsPage
                     width: parent.width
-                    active: root.opened && root.page === "apps"
+                    active: parent.active
                     motion: root.motion
-                    // Kept within the height the bar reserves for this panel.
-                    maxHeight: root.reserveHeight - root.diameter - Theme.panelHeaderGap - root.pad
+                    maxHeight: root.maxPageHeight
                     onActed: root.close()
                 }
             }
 
-            PageLayer {
-                motion: root.motion
-                shown: root.onSettings
-                x: root.pad
-                y: body.contentY
-                width: root.gridWidth
-                height: settingsPages.implicitHeight
+            // One page for the section list and for each section; the title follows the section.
+            ControlPage {
+                panel: root
+                name: "settings"
+                current: root.onSettings
+                readonly property var section: SettingsModel.section(root.settingsSection)
+                title: root.settingsSection === "" ? I18n.tr("Settings") : section ? I18n.tr(section.title) : ""
 
                 SettingsPages {
-                    id: settingsPages
                     width: parent.width
                     section: root.settingsSection
                     motion: root.motion
-                    active: root.opened && root.onSettings
-                    // Kept within the height the bar reserves for this panel.
-                    maxHeight: root.reserveHeight - root.diameter - Theme.panelHeaderGap - root.pad
+                    active: parent.active
+                    maxHeight: root.maxPageHeight
                     onSectionChosen: id => root.page = root.settingsPrefix + id
                 }
             }
@@ -652,7 +571,7 @@ Item {
                 motion: root.motion
                 shown: root.page === ""
                 x: root.pad
-                y: body.contentY
+                y: root.contentY
                 width: root.gridWidth
                 height: grid.height
 

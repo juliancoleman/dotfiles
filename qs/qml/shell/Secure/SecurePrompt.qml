@@ -147,7 +147,7 @@ Item {
                 radius: width / 2
                 readonly property bool failed: SecureInput.error !== ""
                 color: failed ? Theme.danger : Theme.clear
-                border.width: failed ? 0 : 1
+                border.width: failed ? 0 : Theme.line
                 border.color: Theme.stroke
 
                 Behavior on color {
@@ -282,7 +282,7 @@ Item {
                     radius: width / 2
                     // Ready reads like an on knob: an ink disc; otherwise the off knob's outline.
                     color: root.ready ? Theme.today : goHit.pressed ? Theme.press : Theme.clear
-                    border.width: root.ready ? 0 : 1
+                    border.width: root.ready ? 0 : Theme.line
                     border.color: Theme.stroke
                     opacity: SecureInput.busy ? 0.45 + 0.55 * pulse.value : 1
 

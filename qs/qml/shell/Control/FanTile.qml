@@ -32,6 +32,7 @@ Tile {
     Accessible.description: manual ? Math.round(shownPercent) + "%" : I18n.tr("Auto")
     Keys.onSpacePressed: toggle()
     Keys.onReturnPressed: toggle()
+    Keys.onEnterPressed: toggle()
     Keys.onLeftPressed: if (manual && controllable) percentRequested(Math.max(minimum, percent - 5))
     Keys.onRightPressed: if (manual && controllable) percentRequested(Math.min(100, percent + 5))
 

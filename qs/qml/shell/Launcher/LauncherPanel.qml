@@ -320,7 +320,7 @@ Item {
                     visible: root.calc !== null
                     radius: Theme.radiusInput
                     color: answerHit.pressed ? Theme.press : root.calcSelected ? root.pickFill : Theme.clear
-                    border.width: root.calcSelected ? 1 : 0
+                    border.width: root.calcSelected ? Theme.line : 0
                     border.color: Theme.today
                     Accessible.role: Accessible.Button
                     Accessible.name: root.calc ? I18n.tr("Copy %1").arg(root.calc.text) : ""
@@ -540,7 +540,7 @@ Item {
                             anchors.margins: 2
                             radius: Theme.radiusInput
                             color: cell.on ? root.pickFill : Theme.clear
-                            border.width: cell.on ? 1 : 0
+                            border.width: cell.on ? Theme.line : 0
                             border.color: Theme.today
 
                             // Hover and press state layers over the row, selected or not.
@@ -577,7 +577,7 @@ Item {
                                 visible: !cell.thumbnail && (icon.source == "" || icon.status === Image.Error)
                                 radius: width * 0.24
                                 color: Theme.clear
-                                border.width: 1
+                                border.width: Theme.line
                                 border.color: Theme.stroke
 
                                 StatusGlyph {

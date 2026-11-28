@@ -50,7 +50,7 @@ Item {
         anchors.topMargin: row.ruled ? 1 : 0
         radius: Theme.radiusInput
         color: row.bare ? Theme.clear : hit.pressed ? Theme.press : row.hovered ? Theme.lift : Theme.clear
-        border.width: row.activeFocus ? 1 : 0
+        border.width: row.activeFocus ? Theme.line : 0
         border.color: Theme.today
 
         Behavior on color {
@@ -90,7 +90,7 @@ Item {
         height: Theme.knobSize
         radius: width / 2
         color: Theme.clear
-        border.width: picture.visible && !picture.logo ? 0 : 1
+        border.width: picture.visible && !picture.logo ? 0 : Theme.line
         border.color: Theme.stroke
 
         NotificationPicture {
@@ -192,12 +192,13 @@ Item {
                     height: Theme.px(24)
                     radius: Theme.radiusInput
                     color: actionHit.pressed ? Theme.press : actionHit.containsMouse ? Theme.lift : Theme.clear
-                    border.width: activeFocus ? 1 : 0
+                    border.width: activeFocus ? Theme.line : 0
                     border.color: Theme.today
                     activeFocusOnTab: true
                     Accessible.role: Accessible.Button
                     Accessible.name: modelData.text
                     Keys.onReturnPressed: modelData.invoke()
+                    Keys.onEnterPressed: modelData.invoke()
                     Keys.onSpacePressed: modelData.invoke()
 
                     Text {
@@ -232,13 +233,14 @@ Item {
         height: Theme.px(22)
         radius: width / 2
         color: closeHit.pressed ? Theme.press : hovered ? Theme.lift : Theme.clear
-        border.width: activeFocus ? 1 : 0
+        border.width: activeFocus ? Theme.line : 0
         border.color: Theme.today
         opacity: row.hovered || activeFocus || row.activeFocus ? 1 : 0.55
         activeFocusOnTab: true
         Accessible.role: Accessible.Button
         Accessible.name: I18n.tr("Dismiss")
         Keys.onReturnPressed: NotificationService.dismiss(row.notificationId)
+        Keys.onEnterPressed: NotificationService.dismiss(row.notificationId)
         Keys.onSpacePressed: NotificationService.dismiss(row.notificationId)
 
         StatusGlyph {

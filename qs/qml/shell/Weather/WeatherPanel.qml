@@ -25,6 +25,8 @@ Item {
     property real maxHeight: Infinity
     // The notched weather trigger becomes the close action while this panel is open.
     property bool closeActionInFace: false
+    // How far open the panel is, 0 to 1; the close action comes in with it.
+    property real openProgress: 1
     property string motion: "easeOut"
     property real pad: Theme.panelPad
     readonly property real innerWidth: width - pad * 2
@@ -128,18 +130,16 @@ Item {
             }
         }
 
-        SettingsButton {
+        PanelCloseButton {
             id: closeButton
-            opened: 1
+            opened: root.openProgress
             visible: !root.closeActionInFace
-            icon: "close"
             label: I18n.tr("Close weather")
             motion: root.motion
-            anchors.verticalCenter: parent.verticalCenter
-            // Centered on the capsule's corner of the panel, whichever it is.
-            x: root.faceWidth > 0
-                ? (root.faceLeft ? root.faceWidth / 2 : root.width - root.faceWidth / 2) - root.pad - width / 2
-                : parent.width - width
+            // Centered on the capsule's corner of the panel, whichever it is; at the row's end without one.
+            triggerCenter: root.faceWidth > 0
+                ? (root.faceLeft ? root.faceWidth / 2 : root.width - root.faceWidth / 2) - root.pad
+                : parent.width - width / 2
             onActivated: root.closeRequested()
         }
     }

@@ -156,9 +156,14 @@ over chrome, 44px targets, every state visible (hover, press, focus, on).
   `fontFamily`/`latinFontFamily`/`fontWeightStrong`; shape from
   `radius` (housings), `radiusInput` (rows, fields, hover boxes), `knobSize`, `rowHeight`, `tileGap`; lines
   from `line`/`lineStrong` (a 0.38 pen's line and a fader's track); sizes via `Theme.px`.
-- **Shared parts.** `Common/SectionHeader`, `Common/Rule`, `Common/Field`, `Status/Knob`, `Control/Tile`/
-  `ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/`Stepper`/`Toggle`, `Clock/BackButton`/
-  `SettingsButton`/`MonthArrow`.
+- **Shared parts.** `Common/SectionHeader`, `Common/Rule`, `Common/Field`, `Common/Note` (what an empty
+  list says), `Status/Knob`, `Control/Tile`/`ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/
+  `Stepper`/`Toggle`, `Clock/BackButton`/`SettingsButton`/`MonthArrow`/`PanelCloseButton` (a panel's
+  close action, standing where its trigger was).
+- **A control-center page is one declaration.** `Control/ControlPage { panel; name; title; <content> }`
+  inside `ControlCenter`: it shows while `page` is its `name`, and the panel reads its height and header
+  title from whichever page is showing (`currentPage`). Adding a page is that block plus a tile that sets
+  `page`; there is no table of pages to keep in step.
 - **Page, not cards.** Groups are separated by `Rule`s; side-by-side cells by a vertical rule. No filled
   containers. Rows take `lift`/`press` and a `line` outline in `today` on focus.
 - **Knob, then row.** Every actionable row starts with a `Status/Knob`: clicking it acts at once (mute,

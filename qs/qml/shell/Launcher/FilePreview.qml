@@ -113,7 +113,7 @@ Item {
         // Only a picture is boxed, in a ruled frame. Text and icons sit straight on the panel.
         radius: Theme.radiusInput
         color: Theme.clear
-        border.width: boxed ? 1 : 0
+        border.width: boxed ? Theme.line : 0
         border.color: Theme.edge
         clip: true
 

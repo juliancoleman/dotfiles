@@ -23,3 +23,4 @@ singleton DualSenseLights 1.0 DualSenseLights.qml
 DualSensePage 1.0 DualSensePage.qml
 singleton RunningApps 1.0 RunningApps.qml
 AppsPage 1.0 AppsPage.qml
+ControlPage 1.0 ControlPage.qml
