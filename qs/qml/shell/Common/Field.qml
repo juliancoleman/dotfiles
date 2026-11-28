@@ -8,8 +8,6 @@ Item {
     property bool focused: false
     property string motion: "easeOut"
 
-    readonly property int fade: Theme.durationFor(motion) * 0.56
-
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
@@ -18,9 +16,9 @@ Item {
         color: field.focused ? Theme.today : Theme.rule
 
         Behavior on color {
-            ColorAnimation {
-                duration: field.fade
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: field.motion
+                factor: Theme.hoverFade
             }
         }
     }

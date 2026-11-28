@@ -10,6 +10,7 @@ Column {
 
     property var results: []
     property bool searching: false
+    property string motion: "spring"
     readonly property bool exact: !WeatherService.automatic
     // Where text starts inside the field: on its line, just off the margin.
     readonly property real fieldInset: Theme.px(2)
@@ -82,6 +83,7 @@ Column {
         Field {
             anchors.fill: parent
             focused: field.activeFocus
+            motion: root.motion
         }
 
         Text {
@@ -131,6 +133,10 @@ Column {
                 height: Theme.px(32)
                 radius: Theme.radiusInput
                 color: rowHit.pressed ? Theme.press : rowHit.containsMouse ? Theme.lift : Theme.clear
+
+                Behavior on color {
+                    Settle { motion: root.motion; factor: Theme.hoverFade }
+                }
 
                 Text {
                     anchors.left: parent.left

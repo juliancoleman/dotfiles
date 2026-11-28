@@ -8,9 +8,7 @@ Item {
     property int month: 0
     property date today: new Date()
     property string localeName: "en"
-    property int motionDuration: 250
-    property int motionCurve: Easing.OutCubic
-    property bool motionNone: false
+    property string motion: "easeOut"
 
     readonly property int cell: Theme.px(24)
     // Hairline between cells.
@@ -66,7 +64,7 @@ Item {
         year = nextYear
         month = nextMonth
         rebuild(nextYear, nextMonth)
-        if (!animate || motionNone) {
+        if (!animate || motion === "none") {
             rowEase.stop()
             rowSpan = rows
         } else if (Math.abs(rowSpan - rows) > 0.05) {
@@ -75,7 +73,7 @@ Item {
             rowEase.to = rows
             rowEase.start()
         }
-        if (!animate || motionNone || !had || same || (!forward && !backward)) {
+        if (!animate || motion === "none" || !had || same || (!forward && !backward)) {
             slideEase.stop()
             fadeEase.stop()
             slideX = 0
@@ -183,8 +181,8 @@ Item {
         id: rowEase
         target: grid
         property: "rowSpan"
-        duration: grid.motionNone ? 0 : grid.motionDuration
-        easing.type: grid.motionCurve
+        duration: Theme.durationFor(grid.motion)
+        easing.type: Theme.easingFor(grid.motion)
         easing.overshoot: Theme.springOvershoot
     }
 
@@ -192,8 +190,8 @@ Item {
         id: slideEase
         target: grid
         property: "slideX"
-        duration: grid.motionNone ? 0 : grid.motionDuration
-        easing.type: grid.motionCurve
+        duration: Theme.durationFor(grid.motion)
+        easing.type: Theme.easingFor(grid.motion)
         easing.overshoot: Theme.springOvershoot
     }
 
@@ -201,8 +199,7 @@ Item {
         id: fadeEase
         target: grid
         property: "slideFade"
-        duration: grid.motionNone ? 0 : Math.round(grid.motionDuration * 0.72)
-        easing.type: grid.motionCurve
-        easing.overshoot: Theme.springOvershoot
+        duration: Math.round(Theme.durationFor(grid.motion) * 0.72)
+        easing.type: Theme.settleFor(grid.motion)
     }
 }

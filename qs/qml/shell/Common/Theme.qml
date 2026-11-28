@@ -206,8 +206,18 @@ QtObject {
     readonly property int buttonIconSize: px(16)
     readonly property int stackGap: px(3)
     readonly property int statusGap: px(8)
+    // ── Motion ────────────────────────────────────────────────────────────────────────────────────────
+    // One setting drives all of it. What moves (a size, a position) follows the chosen curve, overshoot and
+    // all: easingFor, or the `Move` animation. What must not pass its target (a color, an opacity, a level)
+    // follows the same curve with a spring settling instead of overshooting: settleFor, or `Settle`.
     property int motionDuration: 250
     property real springOvershoot: 2.0
+    // Share of the duration a hover or press layer takes, so it never trails the pointer.
+    readonly property real hoverFade: 0.56
+    // How far a bar trigger grows under the pointer.
+    readonly property real hoverZoom: 1.06
+    // One beat of a "working on it" pulse; a rhythm rather than a transition, so not scaled by the setting.
+    readonly property int pulseBeat: 500
 
     function normalizeMotion(name) {
         switch (name) {
@@ -240,5 +250,9 @@ QtObject {
         default:
             return Easing.OutCubic
         }
+    }
+
+    function settleFor(name) {
+        return normalizeMotion(name) === "spring" ? Easing.OutCubic : easingFor(name)
     }
 }

@@ -97,9 +97,8 @@ Tile {
 
             Behavior on width {
                 enabled: !tile.dragging
-                NumberAnimation {
-                    duration: tile.motionDuration
-                    easing.type: Easing.OutCubic
+                Settle {
+                    motion: tile.motion
                 }
             }
         }

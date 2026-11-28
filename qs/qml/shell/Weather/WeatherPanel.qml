@@ -33,7 +33,7 @@ Item {
     readonly property bool clock24: ClockConfig.use24Hour
     readonly property var today: WeatherService.daily.length > 0 ? WeatherService.daily[0] : null
 
-    implicitHeight: placeRow.height + scroller.height + pad
+    implicitHeight: placeRow.height + Theme.panelHeaderGap + scroller.height + pad
 
     function degrees(celsius) {
         return celsius === null || celsius === undefined || isNaN(celsius) ? "–" : WeatherService.toUnits(celsius) + "°"
@@ -99,23 +99,22 @@ Item {
     Item {
         id: placeRow
         x: root.pad
-        y: root.faceBottom ? scroller.y + scroller.height : 0
+        y: root.faceBottom ? scroller.y + scroller.height + Theme.panelHeaderGap : 0
         width: root.innerWidth
         height: root.rowHeight
 
+        // The header row of the other panels: the same title, as far inside the gutter, and beside the close
+        // action by the trigger's own width when that sits at the left.
         Row {
-            readonly property real room: Math.max(0, root.innerWidth
-                - (root.closeActionInFace ? 0 : closeButton.width + Theme.px(8)) - Theme.px(14))
-            x: root.faceLeft && closeButton.visible ? closeButton.x + closeButton.width + Theme.px(8) : 0
+            readonly property real room: Math.max(0, root.innerWidth - x
+                - (root.closeActionInFace || root.faceLeft ? 0 : closeButton.width + Theme.px(8)) - Theme.px(14))
+            x: root.faceLeft && closeButton.visible ? root.rowHeight : Theme.panelHeaderInset
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.px(4)
 
-            Text {
+            PanelTitle {
                 id: placeName
                 text: WeatherService.place || I18n.tr("Weather")
-                color: Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.textBody
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, parent.room)
             }
@@ -147,9 +146,10 @@ Item {
     MomentumFlickable {
         id: scroller
         x: root.pad
-        y: root.faceBottom ? root.pad : placeRow.height
+        y: root.faceBottom ? root.pad : placeRow.height + Theme.panelHeaderGap
         width: root.innerWidth
-        height: Math.max(0, Math.min(body.implicitHeight, root.maxHeight - placeRow.height - root.pad))
+        height: Math.max(0, Math.min(body.implicitHeight,
+            root.maxHeight - placeRow.height - Theme.panelHeaderGap - root.pad))
         contentHeight: body.implicitHeight
         clip: true
 

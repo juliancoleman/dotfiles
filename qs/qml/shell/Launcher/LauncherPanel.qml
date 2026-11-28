@@ -33,10 +33,7 @@ Item {
     property real openW: listW + (showPreview ? previewW : 0)
     Behavior on openW {
         enabled: root.shown && root.pc > 0.999
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Easing.OutCubic
-        }
+        Move { motion: root.motion }
     }
     // Fits what's showing, so a lone answer opens short; past this the results scroll.
     readonly property real maxH: Theme.px(450)
@@ -45,10 +42,7 @@ Item {
     property real openH: fitH
     Behavior on openH {
         enabled: root.shown && root.pc > 0.999
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Easing.OutCubic
-        }
+        Move { motion: root.motion }
     }
     property real openProgress: 0
     readonly property real p: Math.max(0, openProgress)
@@ -144,14 +138,7 @@ Item {
     onResultsChanged: grid.currentIndex = 0
 
     onShownChanged: {
-        openEase.stop()
-        if (Theme.durationFor(motion) === 0) {
-            openProgress = shown ? 1 : 0
-        } else {
-            openEase.from = openProgress
-            openEase.to = shown ? 1 : 0
-            openEase.start()
-        }
+        openEase.aim(shown ? 1 : 0)
         if (shown) {
             view = ClockConfig.launcherView
             PhotoSearch.warm()
@@ -164,13 +151,11 @@ Item {
         }
     }
 
-    NumberAnimation {
+    Tween {
         id: openEase
         target: root
         property: "openProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
     Rectangle {
@@ -320,6 +305,10 @@ Item {
                     visible: root.calc !== null
                     radius: Theme.radiusInput
                     color: answerHit.pressed ? Theme.press : root.calcSelected ? root.pickFill : Theme.clear
+
+                    Behavior on color {
+                        Settle { motion: root.motion; factor: Theme.hoverFade }
+                    }
                     border.width: root.calcSelected ? Theme.line : 0
                     border.color: Theme.today
                     Accessible.role: Accessible.Button
@@ -450,6 +439,10 @@ Item {
                                 height: Theme.px(24)
                                 radius: Theme.radiusInput
                                 color: toggleHit.pressed ? Theme.press : toggleHit.containsMouse ? Theme.lift : Theme.clear
+
+                                Behavior on color {
+                                    Settle { motion: root.motion; factor: Theme.hoverFade }
+                                }
                                 Accessible.role: Accessible.Button
                                 Accessible.name: modelData.name
 
@@ -548,6 +541,10 @@ Item {
                                 anchors.fill: parent
                                 radius: parent.radius
                                 color: cellHit.pressed ? Theme.press : cellHit.containsMouse && !cell.on ? Theme.lift : Theme.clear
+
+                                Behavior on color {
+                                    Settle { motion: root.motion; factor: Theme.hoverFade }
+                                }
                             }
                         }
 

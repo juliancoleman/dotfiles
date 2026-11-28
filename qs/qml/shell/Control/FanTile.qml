@@ -149,23 +149,19 @@ Tile {
         property real shown: tile.fraction
         Behavior on shown {
             enabled: !drag.pressed
-            NumberAnimation {
-                duration: tile.motionDuration
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: tile.motion
             }
         }
 
         Behavior on height {
-            NumberAnimation {
-                duration: tile.motionDuration
-                easing.type: Theme.easingFor(tile.motion)
-                easing.overshoot: Theme.springOvershoot
+            Move {
+                motion: tile.motion
             }
         }
         Behavior on opacity {
-            NumberAnimation {
-                duration: tile.motionDuration
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: tile.motion
             }
         }
 

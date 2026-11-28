@@ -9,3 +9,6 @@ Field 1.0 Field.qml
 singleton Matugen 1.0 Matugen.qml
 SectionHeader 1.0 SectionHeader.qml
 Note 1.0 Note.qml
+Move 1.0 Move.qml
+Settle 1.0 Settle.qml
+PanelTitle 1.0 PanelTitle.qml

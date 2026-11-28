@@ -42,9 +42,9 @@ Rectangle {
     Keys.onSpacePressed: activated()
 
     Behavior on color {
-        ColorAnimation {
-            duration: Theme.durationFor(row.motion) * 0.56
-            easing.type: Easing.OutCubic
+        Settle {
+            motion: row.motion
+            factor: Theme.hoverFade
         }
     }
 
@@ -78,9 +78,8 @@ Rectangle {
             fillColor: row.levelColor
 
             Behavior on value {
-                NumberAnimation {
-                    duration: Theme.durationFor(row.motion)
-                    easing.type: Easing.OutCubic
+                Settle {
+                    motion: row.motion
                 }
             }
         }
@@ -192,8 +191,8 @@ Rectangle {
             running: row.busy
             loops: Animation.Infinite
             onStopped: pulse.value = 1
-            NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: 500; easing.type: Easing.InOutSine }
-            NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: 500; easing.type: Easing.InOutSine }
+            NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: Theme.pulseBeat; easing.type: Easing.InOutSine }
+            NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: Theme.pulseBeat; easing.type: Easing.InOutSine }
         }
     }
 }

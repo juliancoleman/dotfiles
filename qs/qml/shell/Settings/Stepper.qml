@@ -95,6 +95,13 @@ Item {
                 color: pressed.pressed ? Theme.press
                      : pressed.containsMouse ? Theme.lift : Theme.clear
 
+                Behavior on color {
+                    Settle {
+                        motion: field.motion
+                        factor: Theme.hoverFade
+                    }
+                }
+
                 Text {
                     anchors.centerIn: parent
                     text: parent.modelData.label

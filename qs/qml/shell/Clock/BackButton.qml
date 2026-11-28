@@ -8,6 +8,7 @@ Item {
     id: back
 
     property string title: ""
+    property string motion: "spring"
     signal activated()
 
     width: row.width + Theme.px(12)
@@ -24,6 +25,13 @@ Item {
         color: hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
         border.width: back.activeFocus ? Theme.line : 0
         border.color: Theme.today
+
+        Behavior on color {
+            Settle {
+                motion: back.motion
+                factor: Theme.hoverFade
+            }
+        }
     }
 
     Row {
@@ -39,13 +47,9 @@ Item {
             icon: "chevron-left"
         }
 
-        Text {
+        PanelTitle {
             anchors.verticalCenter: parent.verticalCenter
             text: back.title
-            color: Theme.textPrimary
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.textStrong
-            font.weight: Theme.fontWeightStrong
         }
     }
 

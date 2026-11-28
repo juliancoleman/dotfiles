@@ -39,9 +39,9 @@ Item {
         border.color: button.on ? Theme.textPrimary : Theme.today
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.durationFor(button.motion) * 0.56
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: button.motion
+                factor: Theme.hoverFade
             }
         }
     }

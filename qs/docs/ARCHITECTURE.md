@@ -157,9 +157,11 @@ over chrome, 44px targets, every state visible (hover, press, focus, on).
   `radius` (housings), `radiusInput` (rows, fields, hover boxes), `knobSize`, `rowHeight`, `tileGap`; lines
   from `line`/`lineStrong` (a 0.38 pen's line and a fader's track); sizes via `Theme.px`.
 - **Shared parts.** `Common/SectionHeader`, `Common/Rule`, `Common/Field`, `Common/Note` (what an empty
-  list says), `Status/Knob`, `Control/Tile`/`ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/
-  `Stepper`/`Toggle`, `Clock/BackButton`/`SettingsButton`/`MonthArrow`/`PanelCloseButton` (a panel's
-  close action, standing where its trigger was).
+  list says), `Common/PanelTitle` (the name in a panel's header row), `Status/Knob`, `Control/Tile`/
+  `ToggleTile`/`SliderTile`/`ListRow`, `Settings/Options`/`Stepper`/`Toggle`, `Clock/BackButton`/
+  `SettingsButton`/`MonthArrow`/`PanelCloseButton` (a panel's close action, standing where its trigger
+  was). The three panels share one header: `diameter` tall, `panelHeaderInset` inside the gutter,
+  `panelHeaderGap` above the content, and one content width (`Theme.px(298)`).
 - **A control-center page is one declaration.** `Control/ControlPage { panel; name; title; <content> }`
   inside `ControlCenter`: it shows while `page` is its `name`, and the panel reads its height and header
   title from whichever page is showing (`currentPage`). Adding a page is that block plus a tile that sets
@@ -190,9 +192,18 @@ over chrome, 44px targets, every state visible (hover, press, focus, on).
 - `clock.motion` is one of `spring | easeIn | linear | easeOut | none` (`Theme.normalizeMotion`, unknown → `spring`).
 - `Theme.durationFor(motion)` is `0` for `none`, else `Theme.motionDuration` (`clock.duration`).
   `Theme.easingFor(motion)` maps to `Easing.OutBack` (spring), `InCubic`, `Linear`, `OutCubic`.
+- **Two kinds of motion, one setting.** What moves (a size, a position) takes the chosen curve, overshoot
+  included: `Theme.easingFor`, written as `Move { motion }` in a `Behavior`. What must not pass its target
+  (a color, an opacity, a level) takes the same curve with a spring settling instead of overshooting:
+  `Theme.settleFor`, written as `Settle { motion }`. Both accept `factor`, a share of the duration; hover
+  and press layers pass `Theme.hoverFade`. No site names an easing constant or a duration in milliseconds.
 - `Common/Tween.qml` is a `NumberAnimation` with `aim(next)`: snaps when motion is `none`, ignores aims at
   the resting value, and restarts from the current value otherwise. Panels drive progress reals
-  (`openProgress`, `presenceP`, `notchAmount`, …) with Tweens rather than `Behavior`s.
+  (`openProgress`, `hoverProgress`, `presenceP`, `notchAmount`, …) with Tweens rather than `Behavior`s;
+  every bar trigger grows by `Theme.hoverZoom` under the pointer through one.
+- Left as fixed shapes on purpose, with durations still scaled by the setting: the cross-fade between two
+  glyphs or digits (`InOutQuad`), and the password prompt's refusal shake. A busy pulse beats at
+  `Theme.pulseBeat`, a rhythm rather than a transition. The keyboard backlight's fade is hardware, not UI.
 - `Neck.qml` is the surface strip between adjacent bar circles: its cross thickness follows `release`
   (a water‑drop neck letting a circle go as it opens) and `join` (pill→notch fusion), both smoothstepped.
 

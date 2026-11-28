@@ -41,9 +41,8 @@ Item {
         border.color: Theme.stroke
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.durationFor(root.motion)
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: root.motion
             }
         }
     }
@@ -55,9 +54,9 @@ Item {
         color: root.pressed ? Qt.alpha(root.ink, 0.12) : root.hovered ? Qt.alpha(root.ink, 0.08) : Qt.alpha(root.ink, 0)
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.durationFor(root.motion) * 0.56
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: root.motion
+                factor: Theme.hoverFade
             }
         }
     }
@@ -74,7 +73,7 @@ Item {
         Behavior on value {
             NumberAnimation {
                 duration: root.live ? 60 : Theme.durationFor(root.motion)
-                easing.type: Easing.OutCubic
+                easing.type: Theme.settleFor(root.motion)
             }
         }
     }

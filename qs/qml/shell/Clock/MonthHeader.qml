@@ -19,6 +19,7 @@ Item {
         clock: header.clock
         delta: -1
         opened: header.opened
+        motion: header.clock.motion
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         KeyNavigation.tab: nextArrow
@@ -59,6 +60,7 @@ Item {
         clock: header.clock
         delta: 1
         opened: header.opened
+        motion: header.clock.motion
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         KeyNavigation.backtab: prevArrow

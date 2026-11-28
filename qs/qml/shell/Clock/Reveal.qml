@@ -10,7 +10,7 @@ Item {
     property real span: 0
     readonly property real shown: Math.max(0, span)
     property real target: 0
-    property int curve: Easing.OutCubic
+    property string motion: "easeOut"
 
     implicitWidth: across ? span : childrenRect.width
     implicitHeight: across ? cross : span
@@ -27,7 +27,7 @@ Item {
         }
         target = next
         ease.stop()
-        curve = Theme.easingFor(slotMotion)
+        motion = slotMotion
         ease.from = span
         ease.to = next
         ease.start()
@@ -37,8 +37,8 @@ Item {
         id: ease
         target: reveal
         property: "span"
-        duration: Theme.motionDuration
-        easing.type: reveal.curve
+        duration: Theme.durationFor(reveal.motion)
+        easing.type: Theme.easingFor(reveal.motion)
         easing.overshoot: Theme.springOvershoot
     }
 }

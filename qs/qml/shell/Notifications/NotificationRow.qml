@@ -54,9 +54,9 @@ Item {
         border.color: Theme.today
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.durationFor(row.motion) * 0.56
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: row.motion
+                factor: Theme.hoverFade
             }
         }
     }
@@ -201,6 +201,13 @@ Item {
                     Keys.onEnterPressed: modelData.invoke()
                     Keys.onSpacePressed: modelData.invoke()
 
+                    Behavior on color {
+                        Settle {
+                            motion: row.motion
+                            factor: Theme.hoverFade
+                        }
+                    }
+
                     Text {
                         id: label
                         anchors.centerIn: parent
@@ -242,6 +249,13 @@ Item {
         Keys.onReturnPressed: NotificationService.dismiss(row.notificationId)
         Keys.onEnterPressed: NotificationService.dismiss(row.notificationId)
         Keys.onSpacePressed: NotificationService.dismiss(row.notificationId)
+
+        Behavior on color {
+            Settle {
+                motion: row.motion
+                factor: Theme.hoverFade
+            }
+        }
 
         StatusGlyph {
             anchors.centerIn: parent

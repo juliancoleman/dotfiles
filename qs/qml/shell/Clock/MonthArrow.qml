@@ -9,6 +9,7 @@ Item {
     required property Item clock
     property int delta: -1
     property real opened: 0
+    property string motion: "spring"
 
     width: Theme.px(28) * opened
     height: clock.headerH
@@ -30,6 +31,13 @@ Item {
         color: hit.pressed ? Theme.press : hit.containsMouse ? Theme.lift : Theme.clear
         border.width: arrow.activeFocus ? Theme.line : 0
         border.color: Theme.today
+
+        Behavior on color {
+            Settle {
+                motion: arrow.motion
+                factor: Theme.hoverFade
+            }
+        }
     }
 
     Text {

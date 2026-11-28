@@ -15,7 +15,7 @@ Item {
 
     readonly property bool verticalEdge: edge === "left" || edge === "right"
     readonly property bool dateAboveTime: edge === "bottom"
-    readonly property real openZoom: 1.06
+    readonly property real openZoom: Theme.hoverZoom
     property real hoverProgress: 0
     property real openProgress: 0
     property bool calendarOpen: false
@@ -400,8 +400,6 @@ Item {
         parent: root.verticalEdge ? vFace.gridSlot : hFace.gridSlot
         localeName: root.localeName
         today: systemClock.date
-        motionDuration: Theme.motionDuration
-        motionCurve: Theme.easingFor(root.motion)
-        motionNone: root.motion === "none"
+        motion: root.motion
     }
 }

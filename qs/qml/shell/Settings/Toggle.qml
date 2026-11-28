@@ -12,7 +12,6 @@ Item {
     property string motion: "spring"
     signal toggled()
 
-    readonly property int fade: Theme.durationFor(motion) * 0.56
     readonly property real trackWidth: Theme.px(36)
     readonly property real trackHeight: Theme.px(20)
     readonly property real thumbInset: Theme.px(3)
@@ -37,9 +36,9 @@ Item {
         border.color: Theme.today
 
         Behavior on color {
-            ColorAnimation {
-                duration: toggle.fade
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: toggle.motion
+                factor: Theme.hoverFade
             }
         }
     }
@@ -70,9 +69,8 @@ Item {
         border.color: Theme.stroke
 
         Behavior on color {
-            ColorAnimation {
-                duration: Theme.durationFor(toggle.motion)
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: toggle.motion
             }
         }
 
@@ -86,16 +84,13 @@ Item {
             color: toggle.on ? Theme.todayInk : Theme.textSecondary
 
             Behavior on x {
-                NumberAnimation {
-                    duration: Theme.durationFor(toggle.motion)
-                    easing.type: Theme.easingFor(toggle.motion)
-                    easing.overshoot: Theme.springOvershoot
+                Move {
+                    motion: toggle.motion
                 }
             }
             Behavior on color {
-                ColorAnimation {
-                    duration: Theme.durationFor(toggle.motion)
-                    easing.type: Easing.OutCubic
+                Settle {
+                    motion: toggle.motion
                 }
             }
         }

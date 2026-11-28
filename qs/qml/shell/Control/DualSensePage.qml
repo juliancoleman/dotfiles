@@ -106,9 +106,9 @@ Item {
                             opacity: swatch.picked ? 1 : swatchHit.containsMouse ? 0.35 : 0
 
                             Behavior on opacity {
-                                NumberAnimation {
-                                    duration: Theme.durationFor(page.motion) * 0.56
-                                    easing.type: Easing.OutCubic
+                                Settle {
+                                    motion: page.motion
+                                    factor: Theme.hoverFade
                                 }
                             }
                         }

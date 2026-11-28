@@ -132,9 +132,8 @@ Row {
 
         Behavior on width {
             enabled: root.motion !== "none" && !column.snapping
-            NumberAnimation {
-                duration: Theme.durationFor(root.motion)
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: root.motion
             }
         }
     }

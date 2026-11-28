@@ -70,7 +70,9 @@ Loader {
     Component {
         id: placeRow
 
-        LocationPicker {}
+        LocationPicker {
+            motion: row.motion
+        }
     }
 
     Component {

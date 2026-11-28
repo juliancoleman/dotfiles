@@ -33,8 +33,7 @@ Item {
     property real hoverProgress: 0
     readonly property real openP: Math.max(0, openProgress)
     readonly property real hoverP: Math.max(0, hoverProgress)
-    readonly property real openZoom: 1.06
-    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (openZoom - 1)
+    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (Theme.hoverZoom - 1)
     readonly property bool pointerDown: circleHit.pressed
     property alias housingItem: housing
     readonly property alias badge: badge
@@ -67,10 +66,8 @@ Item {
     property real shownContent: listContent
     Behavior on shownContent {
         enabled: root.opened
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Theme.easingFor(root.motion)
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: root.motion
         }
     }
     readonly property real fullHeight: diameter + Theme.panelHeaderGap + shownContent + pad
@@ -85,10 +82,8 @@ Item {
     property real panelHeight: peekMode ? peekHeight : fullHeight
     Behavior on panelHeight {
         enabled: root.openP > 0.01
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Theme.easingFor(root.motion)
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: root.motion
         }
     }
     // Tallest the panel gets, with any circle up to 40 across: a constant, since the window is sized from
@@ -280,9 +275,8 @@ Item {
             // flash the full header on the way.
             Behavior on fullFade {
                 enabled: root.openP > 0.01
-                NumberAnimation {
-                    duration: Theme.durationFor(root.motion)
-                    easing.type: Easing.OutCubic
+                Settle {
+                    motion: root.motion
                 }
             }
 
@@ -323,13 +317,9 @@ Item {
                     anchors.leftMargin: root.mirrored || root.closeActionInBadge ? 0 : root.diameter - Theme.panelHeaderInset
                     spacing: Theme.tileGap
 
-                    Text {
+                    PanelTitle {
                         id: title
                         text: I18n.tr("Notifications")
-                        color: Theme.textPrimary
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.textStrong
-                        font.weight: Theme.fontWeightStrong
                     }
 
                     Text {
@@ -373,6 +363,13 @@ Item {
                         color: clearHit.pressed ? Theme.press : clearHit.containsMouse ? Theme.lift : Theme.clear
                         border.width: clear.activeFocus ? Theme.line : 0
                         border.color: Theme.today
+
+                        Behavior on color {
+                            Settle {
+                                motion: root.motion
+                                factor: Theme.hoverFade
+                            }
+                        }
                     }
 
                     Text {
@@ -450,7 +447,7 @@ Item {
                     anchors.fill: parent
                     opacity: root.closeActionInBadge ? 0 : root.showMedia ? 1 : 0
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { Settle { motion: root.motion; factor: 0.72 } }
 
                     NotificationPicture {
                         id: picture
@@ -476,7 +473,7 @@ Item {
                     height: Theme.px(14)
                     opacity: root.closeActionInBadge ? 0 : root.showMedia ? 0 : 1
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { Settle { motion: root.motion; factor: 0.72 } }
                     icon: ClockConfig.doNotDisturb ? "moon" : "bell"
                 }
                 CloseMark {
@@ -496,7 +493,7 @@ Item {
                 color: Theme.today
                 opacity: root.closeActionInBadge || ClockConfig.doNotDisturb ? 0 : 1
                 visible: opacity > 0.01
-                Behavior on opacity { NumberAnimation { duration: Theme.durationFor(root.motion) * 0.72; easing.type: Easing.OutCubic } }
+                Behavior on opacity { Settle { motion: root.motion; factor: 0.72 } }
 
                 Text {
                     id: count

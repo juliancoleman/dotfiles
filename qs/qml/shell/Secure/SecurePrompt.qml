@@ -54,14 +54,7 @@ Item {
 
     onShownChanged: {
         input.text = ""
-        openEase.stop()
-        if (Theme.durationFor(motion) === 0) {
-            openProgress = shown ? 1 : 0
-        } else {
-            openEase.from = openProgress
-            openEase.to = shown ? 1 : 0
-            openEase.start()
-        }
+        openEase.aim(shown ? 1 : 0)
         if (shown)
             refocus()
     }
@@ -79,13 +72,11 @@ Item {
         }
     }
 
-    NumberAnimation {
+    Tween {
         id: openEase
         target: root
         property: "openProgress"
-        duration: Theme.durationFor(root.motion)
-        easing.type: Theme.easingFor(root.motion)
-        easing.overshoot: Theme.springOvershoot
+        motion: root.motion
     }
 
     SequentialAnimation {
@@ -106,8 +97,8 @@ Item {
         running: SecureInput.busy && root.shown
         loops: Animation.Infinite
         onStopped: pulse.value = 1
-        NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: 500; easing.type: Easing.InOutSine }
-        NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: 500; easing.type: Easing.InOutSine }
+        NumberAnimation { target: pulse; property: "value"; from: 1; to: 0; duration: Theme.pulseBeat; easing.type: Easing.InOutSine }
+        NumberAnimation { target: pulse; property: "value"; from: 0; to: 1; duration: Theme.pulseBeat; easing.type: Easing.InOutSine }
     }
 
     Rectangle {
@@ -151,10 +142,7 @@ Item {
                 border.color: Theme.stroke
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.durationFor(root.motion)
-                        easing.type: Easing.OutCubic
-                    }
+                    Settle { motion: root.motion }
                 }
 
                 Image {
@@ -282,6 +270,10 @@ Item {
                     radius: width / 2
                     // Ready reads like an on knob: an ink disc; otherwise the off knob's outline.
                     color: root.ready ? Theme.today : goHit.pressed ? Theme.press : Theme.clear
+
+                    Behavior on color {
+                        Settle { motion: root.motion; factor: Theme.hoverFade }
+                    }
                     border.width: root.ready ? 0 : Theme.line
                     border.color: Theme.stroke
                     opacity: SecureInput.busy ? 0.45 + 0.55 * pulse.value : 1

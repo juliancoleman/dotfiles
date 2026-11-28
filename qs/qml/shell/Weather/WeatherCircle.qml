@@ -33,6 +33,10 @@ Item {
     readonly property real presenceP: Math.max(0, presence)
     readonly property bool hovered: hit.containsMouse && (ready || opened)
     readonly property bool pointerDown: hit.pressed
+    // Grows under the pointer the way the status ring and the notification badge do.
+    property real hoverProgress: 0
+    readonly property real hoverP: Math.max(0, hoverProgress)
+    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (Theme.hoverZoom - 1)
     property alias housingItem: housing
 
     property bool opened: false
@@ -63,12 +67,14 @@ Item {
     property real maxPanelHeight: Infinity
     // Lent to the notch, the clock's housing supplies the gutter.
     readonly property real pad: lent ? 0 : Theme.panelPad
-    readonly property real panelWidth: 290 + pad * 2
+    // As wide as the control center and the notifications.
+    readonly property real contentWidth: Theme.px(298)
+    readonly property real panelWidth: contentWidth + pad * 2
     readonly property real panelHeight: panel.implicitHeight
     // Tallest the panel gets; past it the forecast scrolls. A constant, like the control center's: the
     // window is sized from it, and a layer-shell resize mid-animation drops a frame.
     readonly property real reserveHeight: 560
-    readonly property real reserveWidth: 290 + Theme.panelPad * 2
+    readonly property real reserveWidth: contentWidth + Theme.panelPad * 2
     readonly property real restWidth: alongY ? diameter : body + endPad
     readonly property real restHeight: alongY ? diameter + endPad : diameter
 
@@ -82,6 +88,7 @@ Item {
             return
         opened = true
         openEase.aim(1)
+        aimHover(false)
         if (Date.now() - WeatherService.updatedAt > 5 * 60 * 1000)
             WeatherService.refresh()
     }
@@ -91,6 +98,11 @@ Item {
             return
         opened = false
         openEase.aim(0)
+        aimHover(hit.containsMouse)
+    }
+
+    function aimHover(next) {
+        hoverEase.aim(next && ready && !opened ? 1 : 0)
     }
 
     function toggle() {
@@ -151,6 +163,13 @@ Item {
         motion: root.motion
     }
 
+    Tween {
+        id: hoverEase
+        target: root
+        property: "hoverProgress"
+        motion: root.motion
+    }
+
     Rectangle {
         id: housing
         readonly property real round: root.diameter / 2 * (1 - Math.min(1, root.openP)) + Theme.radius * root.openP
@@ -163,7 +182,7 @@ Item {
         anchors.fill: parent
         color: Theme.surface
         clip: root.openP > 0.001
-        scale: root.hovered && !root.opened && root.openP < 0.001 ? 1.06 : 1
+        scale: root.zoom
         transformOrigin: root.circleRight
             ? (root.circleBottom ? Item.BottomRight : Item.TopRight)
             : (root.circleBottom ? Item.BottomLeft : Item.TopLeft)
@@ -171,14 +190,6 @@ Item {
         topRightRadius: corner(root.edge === "top" || root.edge === "right", !root.alongY)
         bottomLeftRadius: corner(root.edge === "bottom" || root.edge === "left", root.alongY)
         bottomRightRadius: corner(root.edge === "bottom" || root.edge === "right", true)
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.durationFor(root.motion)
-                easing.type: Theme.easingFor(root.motion)
-                easing.overshoot: Theme.springOvershoot
-            }
-        }
 
         Item {
             id: panelBody
@@ -227,7 +238,7 @@ Item {
             Item {
                 opacity: root.closeActionInFace ? 0 : 1
                 Behavior on opacity {
-                    NumberAnimation { duration: Theme.durationFor(root.motion); easing.type: Easing.OutCubic }
+                    Settle { motion: root.motion }
                 }
 
                 x: root.alongY ? (parent.width - width) / 2 : root.inset
@@ -264,7 +275,7 @@ Item {
                 fontWeight: root.alongY ? Font.DemiBold : Theme.clockFontWeight
                 opacity: root.closeActionInFace ? 0 : 1
                 Behavior on opacity {
-                    NumberAnimation { duration: Theme.durationFor(root.motion); easing.type: Easing.OutCubic }
+                    Settle { motion: root.motion }
                 }
             }
 
@@ -277,7 +288,9 @@ Item {
                 // notifications' do. In the notch the face itself is the close action.
                 enabled: root.lent || !root.opened
                 cursorShape: root.ready || root.opened ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onContainsMouseChanged: if (!pressed) root.aimHover(containsMouse)
                 onPressed: root.toggle()
+                onReleased: root.aimHover(containsMouse)
             }
         }
     }

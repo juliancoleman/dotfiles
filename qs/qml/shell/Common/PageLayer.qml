@@ -19,16 +19,13 @@ Item {
     transform: Translate { x: layer.shift }
 
     Behavior on opacity {
-        NumberAnimation {
-            duration: Theme.durationFor(layer.motion)
-            easing.type: Easing.OutCubic
+        Settle {
+            motion: layer.motion
         }
     }
     Behavior on shift {
-        NumberAnimation {
-            duration: Theme.durationFor(layer.motion)
-            easing.type: Theme.easingFor(layer.motion)
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: layer.motion
         }
     }
 }

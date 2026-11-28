@@ -12,8 +12,6 @@ Item {
     signal picked(string next)
     property string motion: "spring"
 
-    readonly property int fade: Theme.durationFor(motion) * 0.56
-
     implicitHeight: Theme.px(58)
     activeFocusOnTab: visible
     Accessible.role: Accessible.PageTabList
@@ -108,9 +106,9 @@ Item {
                         border.color: Theme.today
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: options.fade
-                                easing.type: Easing.OutCubic
+                            Settle {
+                                motion: options.motion
+                                factor: Theme.hoverFade
                             }
                         }
 
@@ -149,9 +147,9 @@ Item {
             color: Theme.today
 
             Behavior on x {
-                NumberAnimation {
-                    duration: Theme.durationFor(options.motion) * 0.88
-                    easing.type: Easing.OutCubic
+                Move {
+                    motion: options.motion
+                    factor: 0.88
                 }
             }
         }

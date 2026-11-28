@@ -59,22 +59,18 @@ Item {
     property color shownColor: arcColor
 
     Behavior on shownValue {
-        NumberAnimation {
-            duration: root.motionDuration
-            easing.type: root.motionCurve
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: root.motion
         }
     }
     Behavior on shownGap {
-        NumberAnimation {
-            duration: root.motionDuration
-            easing.type: root.motionCurve
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: root.motion
         }
     }
     Behavior on shownColor {
-        ColorAnimation {
-            duration: root.motionDuration
+        Settle {
+            motion: root.motion
         }
     }
 
@@ -334,7 +330,7 @@ Item {
             from: 1
             to: 0
             duration: root.motionDuration * 0.6
-            easing.type: Easing.OutCubic
+            easing.type: Theme.settleFor(root.motion)
         }
         NumberAnimation {
             target: outgoing
@@ -342,7 +338,7 @@ Item {
             from: 1
             to: slide.pop
             duration: root.motionDuration
-            easing.type: Easing.OutCubic
+            easing.type: Theme.settleFor(root.motion)
         }
         NumberAnimation {
             target: outgoingShift
@@ -350,7 +346,7 @@ Item {
             from: 0
             to: slide.to
             duration: root.motionDuration
-            easing.type: Easing.OutCubic
+            easing.type: Theme.settleFor(root.motion)
         }
         NumberAnimation {
             target: incoming
@@ -358,7 +354,7 @@ Item {
             from: 0
             to: 1
             duration: root.motionDuration
-            easing.type: Easing.OutCubic
+            easing.type: Theme.settleFor(root.motion)
         }
         NumberAnimation {
             target: incoming

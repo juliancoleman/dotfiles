@@ -25,8 +25,7 @@ Item {
     property real hoverProgress: 0
     readonly property real openP: Math.max(0, openProgress)
     readonly property real hoverP: Math.max(0, hoverProgress)
-    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (openZoom - 1)
-    readonly property real openZoom: 1.06
+    readonly property real zoom: 1 + hoverP * (1 - Math.min(1, openP)) * (Theme.hoverZoom - 1)
     readonly property bool pointerDown: circleHit.pressed
     property alias housingItem: housing
     readonly property alias status: status
@@ -76,10 +75,8 @@ Item {
     property real shownContent: pageContent
     Behavior on shownContent {
         enabled: root.opened
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Theme.easingFor(root.motion)
-            easing.overshoot: Theme.springOvershoot
+        Move {
+            motion: root.motion
         }
     }
 
@@ -400,6 +397,7 @@ Item {
                         anchors.leftMargin: -Theme.panelHeaderInset
                         anchors.verticalCenter: parent.verticalCenter
                         activeFocusOnTab: root.page !== ""
+                        motion: root.motion
                         title: root.pageTitle
                         onActivated: root.page = root.parentPage()
                     }

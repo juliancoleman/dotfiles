@@ -94,9 +94,8 @@ Item {
             opacity: action.isArmed ? 1 : 0
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: Theme.durationFor(page.motion)
-                    easing.type: Easing.OutCubic
+                Settle {
+                    motion: page.motion
                 }
             }
 

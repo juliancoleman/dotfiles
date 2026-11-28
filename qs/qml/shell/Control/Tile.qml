@@ -10,8 +10,6 @@ Rectangle {
     property bool lifted: false
     property bool pressed: false
 
-    readonly property int motionDuration: Theme.durationFor(motion)
-
     implicitHeight: Theme.rowHeight
     radius: Theme.radiusInput
     color: Theme.clear
@@ -24,9 +22,9 @@ Rectangle {
         color: tile.pressed ? Theme.press : tile.lifted ? Theme.lift : Theme.clear
 
         Behavior on color {
-            ColorAnimation {
-                duration: tile.motionDuration * 0.56
-                easing.type: Easing.OutCubic
+            Settle {
+                motion: tile.motion
+                factor: Theme.hoverFade
             }
         }
     }

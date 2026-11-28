@@ -16,9 +16,8 @@ Item {
     visible: opacity > 0.01
 
     Behavior on opacity {
-        NumberAnimation {
-            duration: Theme.durationFor(root.motion)
-            easing.type: Easing.OutCubic
+        Settle {
+            motion: root.motion
         }
     }
 
