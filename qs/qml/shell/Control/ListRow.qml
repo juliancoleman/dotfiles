@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell.Widgets
 import "../Common"
 import "../Status"
 
@@ -7,6 +8,9 @@ Rectangle {
     id: row
 
     property string icon: ""
+    // An application's own icon (a file URL or icon-theme path) in the glyph's place, for rows that are apps.
+    property string image: ""
+    readonly property bool marked: icon !== "" || image !== ""
     property int wifiBars: 3
     property string title: ""
     property string subtitle: ""
@@ -60,8 +64,8 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: Theme.px(10)
         anchors.verticalCenter: parent.verticalCenter
-        visible: row.icon !== ""
-        width: row.icon !== "" ? Theme.px(16) : 0
+        visible: row.marked
+        width: row.marked ? Theme.px(16) : 0
         height: Theme.px(16)
 
         StatusArc {
@@ -89,11 +93,19 @@ Rectangle {
             wifiBars: row.wifiBars
             ink: row.current ? Theme.today : Theme.textPrimary
         }
+
+        IconImage {
+            anchors.centerIn: parent
+            visible: row.image !== ""
+            implicitSize: Theme.px(18)
+            asynchronous: true
+            source: row.image
+        }
     }
 
     Column {
         anchors.left: glyph.right
-        anchors.leftMargin: row.icon !== "" ? Theme.px(10) : 0
+        anchors.leftMargin: row.marked ? Theme.px(10) : 0
         anchors.right: actionRow.visible ? actionRow.left : mark.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter

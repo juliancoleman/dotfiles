@@ -71,6 +71,7 @@ Item {
         : page === "power" ? powerPage.implicitHeight
         : page === "display" ? displayPage.implicitHeight
         : page === "keyboard" ? keyboardPage.implicitHeight
+        : page === "apps" ? appsPage.implicitHeight
         : onSettings ? settingsPages.implicitHeight
         : grid.height
     property real shownContent: pageContent
@@ -105,6 +106,8 @@ Item {
             return I18n.tr("Display")
         case "keyboard":
             return I18n.tr("Keyboard")
+        case "apps":
+            return I18n.tr("Running")
         case "settings":
             return I18n.tr("Settings")
         }
@@ -145,7 +148,7 @@ Item {
 
     // Most the panel takes, so the bar can reserve room for the spring's overshoot. A constant: the window is
     // sized from it, and a layer-shell resize mid-animation drops a frame.
-    readonly property real reserveHeight: 470
+    readonly property real reserveHeight: 530
     readonly property real reserveWidth: gridWidth + Theme.panelPad * 2
 
     // Pad past the circle along the edge, grown in while fusing so docking into the clock lands flush.
@@ -261,16 +264,18 @@ Item {
 
     // The sources are shared by every screen's panel; each counts the panels showing it and polls (or runs
     // its meter taps) only while one does. A source is wanted only on the pages that show it: the grid has
-    // the meters, usage, brightness, fans and (without Wi-Fi) wired; the audio pages their meter; the fans,
-    // Ethernet and display pages their own.
+    // the meters, usage, brightness, fans, what's running and (without Wi-Fi) wired; the audio pages their
+    // meter; the fans, Ethernet, display and running pages their own.
     readonly property bool gridShown: opened && page === ""
     readonly property bool metersShown: gridShown || opened && (page === "output" || page === "input")
     readonly property bool fansShown: gridShown || opened && page === "fans"
     readonly property bool brightnessShown: gridShown || opened && page === "display"
     readonly property bool wiredWatched: !wifiDevice && (gridShown || opened && page === "ethernet")
+    readonly property bool appsShown: gridShown || opened && page === "apps"
     onGridShownChanged: SystemSource.watchers += gridShown ? 1 : -1
     onBrightnessShownChanged: Brightness.watchers += brightnessShown ? 1 : -1
     onMetersShownChanged: Meter.watchers += metersShown ? 1 : -1
+    onAppsShownChanged: RunningApps.watchers += appsShown ? 1 : -1
     onFansShownChanged: {
         const delta = fansShown ? 1 : -1
         FanSource.watchers += delta
@@ -290,6 +295,8 @@ Item {
         }
         if (wiredWatched)
             WiredSource.watchers -= 1
+        if (appsShown)
+            RunningApps.watchers -= 1
     }
 
     Rectangle {
@@ -603,6 +610,25 @@ Item {
 
             PageLayer {
                 motion: root.motion
+                shown: root.page === "apps"
+                x: root.pad
+                y: body.contentY
+                width: root.gridWidth
+                height: appsPage.implicitHeight
+
+                AppsPage {
+                    id: appsPage
+                    width: parent.width
+                    active: root.opened && root.page === "apps"
+                    motion: root.motion
+                    // Kept within the height the bar reserves for this panel.
+                    maxHeight: root.reserveHeight - root.diameter - Theme.panelHeaderGap - root.pad
+                    onActed: root.close()
+                }
+            }
+
+            PageLayer {
+                motion: root.motion
                 shown: root.onSettings
                 x: root.pad
                 y: body.contentY
@@ -804,6 +830,23 @@ Item {
                             { icon: "cpu", name: I18n.tr("CPU"), value: SystemSource.cpu },
                             { icon: "disk", name: I18n.tr("Disk"), value: SystemSource.disk }
                         ]
+                    }
+
+                    Rule { width: parent.width }
+
+                    // What's running, and how much of it has no window left to show for itself.
+                    ToggleTile {
+                        width: parent.width
+                        motion: root.motion
+                        icon: "view-large"
+                        toggleable: false
+                        readonly property int hidden: RunningApps.apps.filter(app => app.windows === 0).length
+                        on: hidden > 0
+                        title: I18n.tr("Running")
+                        subtitle: (RunningApps.apps.length === 1 ? I18n.tr("1 app")
+                                : I18n.tr("%1 apps").arg(RunningApps.apps.length))
+                            + (hidden > 0 ? " · " + I18n.tr("%1 without a window").arg(hidden) : "")
+                        onOpened: root.page = "apps"
                     }
 
                     Rule {

@@ -1,7 +1,7 @@
 # qs
 
 A Quickshell desktop shell for Niri. One bar per screen holds a clock that opens into a calendar, a status
-circle that opens into a control center (Wi‑Fi, Bluetooth, audio, power, fans, settings), a notification
+circle that opens into a control center (Wi‑Fi, Bluetooth, audio, power, fans, running apps, settings), a notification
 circle, a weather circle, an application/file/calculator launcher, and a secure prompt that answers sudo,
 ssh, git, gpg and polkit requests. It is QML running inside Quickshell plus two small Rust helpers; there is
 no user daemon.
@@ -160,6 +160,26 @@ nor rewritten into the file. Keys and accepted values (defaults from `config/def
 | `keyboard.brightness` | number 0–1 | `0.5` | How bright the keys are when lit (the keyboard slider and the keyboard-brightness keys, 10% a step). Offered only where a `/sys/class/leds/*kbd_backlight` this user may write exists |
 | `keyboard.adaptive` | bool | `true` | With a light sensor, the keys wait for low light: dark from about 160 lux, lit again under about 80, and dimmed toward half of `keyboard.brightness` as the room goes fully dark. Setting the level in a bright room lights them anyway until the room has been dim once (Keyboard brightness → Keyboard, or Settings → Keyboard) |
 | `keyboard.offAfter` | `0` `5` `10` `30` `60` `300` (seconds) | `30` | Time without key, pointer or touch input before the keys fade out; `0` never. Any input fades them back. They also go dark when the idle screen turns off (`display.screenOff`) |
+
+## Running apps
+
+Control center → **Running** lists what the user has running, as a Force Quit list does: apps first, then
+the user's services. It is not a process monitor; it answers "what is open, and what is still running after
+its window went away".
+
+- An **app** is every process that belongs together, found by what survives a front end exiting: the
+  systemd scope the app was started in, the session id, and parentage (`Control/RunningApps.qml`). An app
+  with no window says so; that leftover is what keeps a relaunch from showing anything.
+- **Quit** sends `SIGTERM` to every process of the app. **Force quit** sends `SIGKILL` and takes a second
+  click on the same row. Scopes that hold nothing but that app are signaled whole through
+  `systemctl --user kill`, which also reaches processes started in between.
+- The launcher starts each app with `systemd-run --user --scope` in a unit named
+  `app-qs-<desktop id>-<random>.scope`. Apps started before that (in the shell's own scope) are still
+  grouped, by session; their detached helpers, such as crash reporters, can show up as rows of their own
+  until the app is next started.
+- **Services** are the user's running `*.service` units. Those in `session.slice` (the compositor, the
+  message bus, audio) are listed without actions; the rest can be stopped or force stopped.
+- Clicking an app's row focuses its first window.
 
 ## Fan control
 

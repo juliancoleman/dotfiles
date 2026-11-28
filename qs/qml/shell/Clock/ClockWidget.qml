@@ -14,7 +14,6 @@ Item {
     property string presentation: "pill"
 
     readonly property bool verticalEdge: edge === "left" || edge === "right"
-    readonly property bool horizontalEdge: !verticalEdge
     readonly property bool dateAboveTime: edge === "bottom"
     readonly property real openZoom: 1.06
     property real hoverProgress: 0

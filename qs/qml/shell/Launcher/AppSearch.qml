@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../Control"
 
 // The installed applications, ranked against a query: the name counts most, then what the app is
 // (generic name, keywords), then its description. Apps launched often rise among equally good matches.
@@ -91,11 +92,16 @@ Singleton {
         next[entry.id] = { count: (before ? before.count : 0) + 1, last: Date.now() }
         usage = next
         store.setText(JSON.stringify(next))
-        // DesktopEntry.execute() ignores Terminal=true, so those open in the terminal explicitly.
-        if (entry.runInTerminal)
-            Quickshell.execDetached(["ghostty", "-e"].concat(entry.command))
-        else
-            entry.execute()
+        // Each app starts in a scope of its own, named for its desktop entry, so that whatever it leaves
+        // behind can be found and ended with it (Control/RunningApps). Terminal apps open in the terminal.
+        const context = {
+            command: ["systemd-run", "--user", "--scope", "--collect", "--quiet", "--slice=app.slice",
+                "--unit=" + RunningApps.scopeName(entry.id), "--"]
+                .concat(entry.runInTerminal ? ["ghostty", "-e"] : [], entry.command)
+        }
+        if (entry.workingDirectory)
+            context.workingDirectory = entry.workingDirectory
+        Quickshell.execDetached(context)
     }
 
     FileView {

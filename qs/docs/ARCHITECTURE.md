@@ -39,6 +39,14 @@ Three processes exist:
   and easing every change over 400 ms, writing `multi_intensity` through one long-lived `sh` fed over stdin.
 - `SystemSource` — CPU/memory usage samples for the usage tiles.
 - `WiredSource` — NetworkManager global switch and default route via `nmcli`/`ip`.
+- `RunningApps` — the user's apps and services for the control center's Running page, polled while it or
+  the grid shows. One `sh` pass over `/proc` (builtins only) lists this user's processes with parent,
+  session id and cgroup; `niri msg --json windows` and `systemctl --user list-units` complete it. Scoped
+  processes are merged into apps by union: same scope (except the shell's own, which also holds what the
+  launcher started before it used scopes), same session (except the one niri shares with everything it
+  spawns), and parent to child. The group holding the shell is left out. X11 windows, which niri reports
+  under xwayland-satellite's pid, are matched by app id. `AppSearch.launch` starts apps through
+  `systemd-run --user --scope` in `app-qs-<escaped desktop id>-<random>.scope` so later groupings are exact.
 
 **`Launcher`**
 - `LauncherState` — open/closed and which output (`screenName`) the launcher is on.

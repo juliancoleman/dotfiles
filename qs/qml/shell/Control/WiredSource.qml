@@ -109,11 +109,6 @@ Singleton {
         return { value: Math.round(value), unit: units[unit] }
     }
 
-    function rateText(bytesPerSecond) {
-        const parts = rateParts(bytesPerSecond)
-        return parts.value + " " + parts.unit
-    }
-
     function toggle() {
         on = !on
         switcher.command = ["nmcli", "networking", on ? "on" : "off"]
