@@ -152,7 +152,26 @@ in
       exec = "${open} https://${server}/";
       icon = "network-server";
     };
+    # The file manager is yazi, in a terminal window; this is also what opens when an app shows a folder.
+    files = {
+      name = "Files";
+      genericName = "File manager";
+      exec = "ghostty -e yazi %f";
+      icon = "folder";
+      mimeType = [ "inode/directory" ];
+    };
   };
+  # Written with xdg-mime, so the defaults that apps recorded in the same file stay.
+  home.activation.foldersOpenInYazi = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.xdg-utils}/bin/xdg-mime default files.desktop inode/directory
+  '';
+  # `g n` in yazi goes to the NAS, as `g h` goes home.
+  xdg.configFile."yazi/keymap.toml".text = ''
+    [[mgr.prepend_keymap]]
+    on = ["g", "n"]
+    run = "cd /mnt/nas"
+    desc = "Go to the NAS"
+  '';
   # Brave keeps its own list of trusted authorities and ignores the system's, so the server's goes in too.
   home.activation.trustHomeServer = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     db="$HOME/.pki/nssdb"

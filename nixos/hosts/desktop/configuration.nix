@@ -124,6 +124,12 @@ in
       '';
     };
 
+    # The AppImage keeps its icon inside itself, where no launcher looks; this one is from Signal's source.
+    xdg.dataFile."icons/hicolor/512x512/apps/signal-desktop.png".source = pkgs.fetchurl {
+      url = "https://raw.githubusercontent.com/signalapp/Signal-Desktop/01e59719454fec204b3f7902fb663d68419848c9/build/icons/png/512x512.png";
+      hash = "sha256-OxYUu6Y2KX8c14cBvuS8DcYY+gsC2lx6TEXtGYR4kRQ=";
+    };
+
     xdg.dataFile."applications/signal-desktop.desktop".text = ''
       [Desktop Entry]
       Type=Application
@@ -153,7 +159,7 @@ in
       Name=WhatsApp
       Comment=WhatsApp Desktop
       Exec=whatsapp-launch %U
-      Icon=${pkgs.whatsapp-electron}/share/pixmaps/whatsapp.png
+      Icon=whatsapp
       Categories=Network;InstantMessaging;
       Terminal=false
       StartupWMClass=com.github.dagmoller.whatsapp-electron

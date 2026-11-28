@@ -5,7 +5,6 @@
     inputs.qs.nixosModules.default
     ./modules/greeter.nix
     ./modules/messaging.nix
-    ./modules/files.nix
   ];
 
   # ── Time ──
@@ -21,6 +20,25 @@
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
     };
+  };
+  # OpenSSH's own agent rather than the keyring's. A key joins it the first time it is used.
+  services.gnome.gcr-ssh-agent.enable = false;
+  programs.ssh = {
+    startAgent = true;
+    extraConfig = "AddKeysToAgent yes";
+    # 10.6p2 (2026-11-05) is a security release that the pinned nixpkgs does not carry yet. The server,
+    # the agent and `ssh` use it; this steps aside by itself once nixpkgs is at or past that version.
+    package =
+      if lib.versionOlder pkgs.openssh.version "10.6p2" then
+        pkgs.openssh.overrideAttrs (old: rec {
+          version = "10.6p2";
+          src = pkgs.fetchurl {
+            url = "mirror://openbsd/OpenSSH/portable/openssh-${version}.tar.gz";
+            hash = "sha256-muRIcgkM8vBrPPn/FH5/FvMJZxNAdj7S+ZJIOYrinVs=";
+          };
+        })
+      else
+        pkgs.openssh;
   };
 
   # ── XDG Desktop Portal ──
@@ -46,6 +64,8 @@
 
   # ── Compositor ──
   programs.niri.enable = true;
+  # The module would otherwise install Nautilus to draw file dialogs; the GTK portal draws them here.
+  programs.niri.useNautilus = false;
 
   # ── Shell (Quickshell bar, wallpaper) ──
   services.qs = {

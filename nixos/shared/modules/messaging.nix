@@ -6,5 +6,6 @@
   # The password typed at the greeter unlocks the keyring.
   security.pam.services.greetd.enableGnomeKeyring = lib.mkDefault true;
 
-  environment.systemPackages = [ pkgs.appimage-run ];
+  # appimage-run runs the desktop's Signal; seahorse shows what the keyring holds.
+  environment.systemPackages = [ pkgs.appimage-run pkgs.seahorse ];
 }
