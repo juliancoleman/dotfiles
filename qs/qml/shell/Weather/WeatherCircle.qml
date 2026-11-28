@@ -271,6 +271,10 @@ Item {
                 id: hit
                 anchors.fill: parent
                 hoverEnabled: true
+                // Open in the pill, the face has faded out and the panel's own close button sits where it
+                // was; standing aside lets that button take the pointer, as the control center's and the
+                // notifications' do. In the notch the face itself is the close action.
+                enabled: root.lent || !root.opened
                 cursorShape: root.ready || root.opened ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onPressed: root.toggle()
             }
