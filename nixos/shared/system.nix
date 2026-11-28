@@ -1,5 +1,11 @@
 # Shared system configuration — common to all hosts
 { config, lib, pkgs, inputs, ... }:
+let
+  # On the NVIDIA machine, Electron apps with no use for the graphics card stay off it: their GPU
+  # processes logged driver errors (Xid 32) as they started, and the desktop froze twice soon after one
+  # did. Empty everywhere else.
+  offGpu = lib.optionalString (builtins.elem "nvidia" config.services.xserver.videoDrivers) "--disable-gpu";
+in
 {
   imports = [
     inputs.qs.nixosModules.default
@@ -215,11 +221,18 @@
     telegram-desktop
     vesktop
     element-desktop
-    bitwarden-desktop
+    (if offGpu == "" then bitwarden-desktop else symlinkJoin {
+      name = "${bitwarden-desktop.name}-off-gpu";
+      paths = [ bitwarden-desktop ];
+      nativeBuildInputs = [ makeWrapper ];
+      postBuild = "wrapProgram $out/bin/bitwarden --add-flags ${offGpu}";
+    })
     # Productivity
     # Electron does not know niri as a desktop and would keep Obsidian's keychain in plain text; this
     # names the keyring that is running (the same flag Signal gets).
-    (obsidian.override { commandLineArgs = "--password-store=gnome-libsecret"; })
+    (obsidian.override {
+      commandLineArgs = lib.concatStringsSep " " (lib.filter (flag: flag != "") [ "--password-store=gnome-libsecret" offGpu ]);
+    })
     openscad
     # Utilities
     wl-clipboard
