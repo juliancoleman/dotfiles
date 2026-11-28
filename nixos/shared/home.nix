@@ -153,10 +153,11 @@ in
       icon = "network-server";
     };
     # The file manager is yazi, in a terminal window; this is also what opens when an app shows a folder.
+    # Closing that window should just close it, not ask about the program still running in it.
     files = {
       name = "Files";
       genericName = "File manager";
-      exec = "ghostty -e yazi %f";
+      exec = "ghostty --confirm-close-surface=false -e yazi %f";
       icon = "folder";
       mimeType = [ "inode/directory" ];
     };
