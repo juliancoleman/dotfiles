@@ -45,6 +45,9 @@ cursor {
 environment {
     QT_QPA_PLATFORM "wayland"
     XDG_SESSION_TYPE "wayland"
+    // Where the shell finds icons that are not an app's own: a folder, a server, the stand-in for an app
+    // that ships none. Without a theme named, those come up empty.
+    QS_ICON_THEME "Adwaita"
 }
 
 // ── Appearance ─────────────────────────────────────────────────

@@ -144,7 +144,7 @@ in
       name = "Photos";
       genericName = "Immich photo library";
       exec = "${open} https://${server}:8443/";
-      icon = "camera-photo";
+      icon = "image-x-generic";
     };
     home-services = {
       name = "Home services";
