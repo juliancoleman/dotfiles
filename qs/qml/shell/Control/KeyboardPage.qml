@@ -26,7 +26,7 @@ Item {
             onMoved: next => KeyboardBacklight.set(next)
         }
 
-        // Settings → Keyboard's own controls, so each key is defined once.
+        // Defined with the other settings, so the launcher finds them; this page is the one place they show.
         SettingControl {
             width: parent.width
             motion: page.motion

@@ -218,6 +218,7 @@ Singleton {
         },
         {
             id: "keyboard",
+            page: "keyboard",
             icon: "keyboard",
             title: "Keyboard",
             controls: [
